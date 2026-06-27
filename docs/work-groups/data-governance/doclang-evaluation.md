@@ -7,6 +7,10 @@ This note supports issue
 [DocLang](https://doclang.ai/) as a possible document format standard for
 Tapestry data preparation and training workflows.
 
+DocLang is the open document-format specification being evaluated here.
+Docling is one converter/toolkit that can import and export DocLang; piloting
+DocLang should not imply that Tapestry requires Docling.
+
 ## Summary Recommendation
 
 Do not adopt DocLang as the required Tapestry document format yet. It is
@@ -31,7 +35,8 @@ Recommended near-term position:
 DocLang is an XML-based document markup format designed for model consumption.
 The official specification describes version 0.7 and focuses on representing
 document structure, semantics, geometry, formatting, and complex document
-components such as tables, charts, formulas, code, forms, and pictures.
+components such as tables, charts, formulas, code, forms, pictures, audio
+transcripts, and video segments.
 
 The format is intentionally more structured than plain Markdown and more
 token-conscious than general HTML. It also includes governance and compliance
@@ -44,7 +49,7 @@ metadata concepts that are relevant to Tapestry data-governance requirements.
 | Is it an improvement over the current ad hoc approach? | Potentially, for complex source documents. | It can preserve structure, layout, tables, formulas, images, and metadata more explicitly than plain extracted text. The benefit is smaller for already-clean plain text or simple JSONL records. |
 | Is it stable and mature enough to adopt? | Not as a required project standard yet. | The current spec is version 0.7. Its versioning section treats 0.x as initial development where breaking compatibility is possible. |
 | Is it flexible for different document kinds? | Yes for many document types, with validation needed. | The spec covers text, lists, tables, forms, code, formulas, pictures, charts, geometry, page breaks, and custom metadata. Tapestry still needs tests across real participant corpora. |
-| What about non-text, such as images, audio, and video? | Images and charts are represented; audio and video are not first-class core elements in the current spec. | `<picture>` can reference image URIs or embedded data URIs, and charts can include structured tabular data. Audio and video would likely need custom metadata or a companion artifact convention. |
+| What about non-text, such as images, audio, and video? | Images, audio, and video are described as first-class content. | `<picture>` can reference image URIs or embedded data URIs, charts can include structured tabular data, and current DocLang materials describe native primitives for transcripts, speakers, timestamps, scenes, and audio-visual grounding. Tapestry still needs pilot tests for real media-heavy corpora and its own governance metadata. |
 | What would be the cost/effort required to adopt it? | Medium for a pilot, high for full standardization. | Adoption requires converters, validators, metadata mapping, quality tests, storage conventions, and downstream pipeline support. |
 
 ## Potential Fit For Tapestry
@@ -77,13 +82,13 @@ DocLang is less necessary for:
 | Converter quality variance | Poor extraction can preserve structure while corrupting content. | Compare DocLang conversion against source documents and existing extraction outputs. |
 | Pipeline complexity | Training pipelines may need additional conversion steps. | Treat DocLang as a source/preparation format, not the final training format. |
 | Metadata mismatch | Tapestry governance fields may not map cleanly to DocLang defaults. | Define a Tapestry metadata namespace or companion manifest. |
-| Multimodal gaps | Audio and video are not clearly first-class core document elements. | Keep non-document media in separate governed artifacts with references from manifests. |
-| Tooling lock-in | Early tools may shape the workflow before requirements are proven. | Keep JSONL/Parquet outputs and converter tests as the pipeline contract. |
+| Multimodal validation | First-class media support still needs validation against Tapestry corpora. | Include audio/video samples in a pilot and verify transcript, timestamp, speaker, scene, provenance, and rights metadata. |
+| Tooling lock-in | Early tools may shape the workflow before requirements are proven. | Evaluate DocLang as the interchange format separately from any one converter, including Docling; keep JSONL/Parquet outputs and converter tests as the pipeline contract. |
 
 ## Pilot Plan
 
 1. Choose a small corpus with varied source formats: PDF, HTML, scanned pages,
-   tables, formulas, images, and forms.
+   tables, formulas, images, forms, audio, and video.
 2. Convert the corpus into DocLang and into the current baseline extraction
    format.
 3. Compare content fidelity, table fidelity, metadata preservation, token cost,
@@ -108,14 +113,16 @@ Before Tapestry adopts DocLang beyond pilot use, it should demonstrate:
 - a reversible or auditable path from source document to prepared training
   record;
 - compatibility with participant-private and local-only workflows;
-- clear handling for images, charts, and companion media artifacts.
+- clear handling for images, charts, audio, video, and companion media
+  artifacts.
 
 ## Open Decisions
 
 - Should Tapestry define a DocLang profile with a restricted subset of elements?
 - Should governance metadata live inside DocLang, in a companion manifest, or
   both?
-- Which converter should be treated as the reference implementation for pilots?
+- Which converter or converters should be used for pilots, and how do we avoid
+  making Docling a required dependency unless later evidence supports that?
 - What corpus should be used for the first conversion benchmark?
 - How should non-document media be linked to source, provenance, and prepared
   training artifacts?

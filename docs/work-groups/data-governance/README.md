@@ -28,10 +28,14 @@ Out of scope: implementing training infrastructure, defining model-update privac
 ## Early deliverables
 
 - A data-tier taxonomy for Tapestry participants.
-- [DocLang evaluation](doclang-evaluation.md).
+- [Data management infrastructure requirements](data-management-infrastructure.md).
 - A minimum dataset card / provenance record template.
 - A list of blocked-data scenarios where raw data must never leave the participant.
 - Requirements handed to Security & Privacy and Infrastructure & Operations.
+
+## Related evaluations
+
+- [DocLang evaluation](doclang-evaluation.md).
 
 ## Interfaces
 
