@@ -65,13 +65,15 @@ override each time; baseline 10 min 30 s):
 
 (Env vars verified present in the running SuperNode's `/proc/<pid>/environ`.)
 
-**Root cause class — confirmed; fix verified for one direction.** The measured
-~100 KB in flight per RTT matches gRPC C-core's per-stream read-ahead limit,
+**Root cause class — confirmed.** The measured ~100 KB in flight per RTT matches gRPC
+C-core's per-stream read-ahead limit,
 [`grpc.http2.lookahead_bytes`](https://grpc.github.io/grpc/core/group__grpc__arg__keys.html)
 (`GRPC_ARG_HTTP2_STREAM_LOOKAHEAD_BYTES`, default 64 KB) — documented as the knob to
-raise "on high-latency connections." Flower's channel construction
-(`flwr/supercore/grpc.py`) sets only message-length options, so it runs the 64 KB
-default, and the option is not operator-configurable.
+raise "on high-latency connections." gRPC normally outgrows that default on its own via
+BDP probing (verified in the simulation section below), so the field path was also
+defeating the auto-tuning — but forcing a large window removes the dependence on BDP
+probing behaving. Flower's channel construction (`flwr/supercore/grpc.py`) sets only
+message-length options, and the window option is not operator-configurable.
 
 **Patch results** (fresh Quebec↔Norway pair, 97 ms RTT; `patch_lookahead.py` in this
 directory adds `("grpc.http2.lookahead_bytes", 16 MB)` to Flower's client channels and
@@ -81,13 +83,15 @@ server options; unpatched same-pair baseline 8 min 13 s for 0.5 GB ×2):
   **~90–128 Mbit/s patched**, reproduced across three runs including 4 GB — near raw
   single-stream TCP for the path. Consistent with flow-control mechanics: the pull
   receiver is the patched *client channel*.
-- **Push leg (node→SuperLink) is NOT fixed by the channel arg**: ~10–16 Mbit/s in every
+- **Push leg (node→SuperLink) was NOT fixed in the field runs**: ~10–16 Mbit/s in every
   steady-state run, patched or not (4 GB patched round: 1 h 1 m, vs 1 h 24 m unpatched).
-  The push receiver is Flower's gRPC *server*; the equivalent server-side receive-window
-  fix needs to happen inside Flower/gRPC-core (or the object push path needs streaming/
-  multiple connections). Also ruled out for the push leg: chunk size, app-level transfer
-  concurrency, connection age (fresh-SuperNode rerun), and SuperLink state (fresh-SuperLink
-  rerun).
+  At the time we concluded the server-side receive window couldn't be set from outside
+  gRPC-core — **the local-simulation follow-up below overturned that conclusion**: the
+  same option on the *server* does govern the push leg. The most likely field explanation
+  is that the SuperLink process was not actually running the patched module (the original
+  patch had no runtime verification; it now logs a banner at import). Also ruled out for
+  the push leg: chunk size, app-level transfer concurrency, connection age
+  (fresh-SuperNode rerun), and SuperLink state (fresh-SuperLink rerun).
 - One 0.5 GB patched run completed in 78 s (~103 Mbit/s both legs) but did **not
   reproduce** under identical fresh-restart conditions (6–9 min in three attempts).
   Possible object-store dedup effect (the echo payload's content hashes match objects the
@@ -100,14 +104,59 @@ Implications for the epic:
   a real WAN; no message-size or memory failures at 4 GB per direction.
 - **Cost as shipped**: ~1.5 h per 2B exchange on a ~100 ms path (flwr 1.32.1 defaults).
   DiLoCo-cadence sync absorbs this; frequent-sync patterns cannot.
-- **Cost with the 2-line client-side fix**: the SuperLink→node direction becomes
-  raw-TCP-limited (2–3× on our path); the node→SuperLink push still needs an upstream
-  server-side fix, and it dominates the round (patched 4 GB round: 1 h 1 m).
-- No matching issue exists in the Flower tracker (checked 2026-07-03) — file upstream
-  with these numbers, the patch, and the open push-leg question; until it ships, nodes
-  can apply `patch_lookahead.py` for the pull-leg win.
+- **Cost with the patch**: the SuperLink→node direction becomes raw-TCP-limited (2–3× on
+  our path, field-verified). Per the local simulation below, the same patch applied on the
+  SuperLink fixes the node→SuperLink push too (73→218 Mbit/s in the sim); the field push
+  numbers predate the verifiable patch and need one re-run to confirm.
+- No matching issue exists in the Flower tracker (checked 2026-07-03) — the right upstream
+  ask is "make the HTTP/2 window options configurable on SuperLink/SuperNode", backed by
+  these numbers and the simulation A/B; until it ships, apply `patch_lookahead.py` on
+  every host (SuperLink and SuperNodes) and check the daemon logs for the patch banner.
 - Channel-level gzip compression would not help: weights are near-incompressible and the
   bottleneck is flow-control round trips, not bytes.
+
+## Follow-up: local WAN simulation (2026-07-03)
+
+The field boxes were gone, so to dig further we rebuilt the conditions locally: an
+unprivileged network namespace gives full `tc netem` control over its own loopback with
+no root required (`unshare -rn`, then `tc qdisc add dev lo root netem delay 50ms` =
+100 ms RTT). The entire stack — SuperLink, SuperNode, `flwr run` — runs inside the
+namespace; set `FLWR_DISABLE_RUNTIME_DEPENDENCY_INSTALLATION=1` since the namespace has
+no route to PyPI.
+
+Findings (flwr 1.32.1, grpcio 1.81.1, 100 ms RTT):
+
+1. **Flower is not inherently slow at 100 ms.** Unpatched, 200 MB down + 200 MB up
+   completes in 30 s (pull ~87 Mbit/s, push ~137 Mbit/s): gRPC's default BDP probing
+   grows the flow-control windows fine on a clean path. The field path was defeating BDP
+   probing (trigger not yet reproduced locally — pure delay, jitter, 0.05–0.3 % loss, and
+   a 200 Mbit rate limit all still ramp).
+2. **The server-side window option works** — the field conclusion above was wrong.
+   `grpcbench.py` (in this directory) isolates the two directions; with BDP probing
+   disabled to emulate the field's frozen-window regime, `grpc.http2.lookahead_bytes`
+   16 MB on the *server* takes the push leg 73 → 218 Mbit/s, while the same option on
+   the client does nothing for push (as HTTP/2 flow control predicts: the receiver's
+   window governs). The option is harmless with BDP probing left on.
+3. `patch_lookahead.py` therefore covers **both** legs when applied on both hosts. It now
+   appends an import-time log banner (`wan-spike lookahead patch active`) so a running
+   daemon proves it loaded the patched module — the missing verification that most likely
+   explains the field push result.
+4. One repro hazard worth knowing: `uv pip install` hardlinks files from its cache, so
+   patching a venv's flwr in place can silently poison the cached wheel — later "fresh"
+   installs come up already patched. `uv cache clean flwr` before reinstalling.
+
+Example `grpcbench.py` A/B at 100 ms RTT (8 MB unary messages, BDP probing disabled,
+first message includes ramp):
+
+| variant | push (node→server analog) |
+| :-- | :-- |
+| no lookahead | 51, 73, 74 Mbit/s |
+| lookahead 16 MB on client only | 51, 73, 74 Mbit/s |
+| lookahead 16 MB on server only | 66, 215, 219 Mbit/s |
+
+Remaining open item: one field re-run with the verifiable patch on both hosts, to confirm
+the push leg reaches raw-TCP speeds over a real WAN and to close the question of what
+breaks BDP probing on that path.
 
 ## Gotchas found (flwr 1.32)
 
@@ -126,6 +175,10 @@ Implications for the epic:
 
 Environment (both hosts): Python ≥3.10, `pip install "flwr>=1.32,<1.33" numpy`, plus this
 app installed (`pip install -e .`) wherever the SuperNode and SuperLink run.
+
+For the patched configuration, run `python patch_lookahead.py` with each daemon's own
+interpreter on **both** hosts, restart the daemons, and confirm each daemon's log prints
+`wan-spike lookahead patch active` — a daemon without the banner is running unpatched code.
 
 Central node:
 
