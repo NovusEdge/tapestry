@@ -5,6 +5,21 @@ epic: **can a ~2B-parameter model's weights round-trip through a Flower SuperLin
 real WAN, and how long does a round take?** This measures transport only — the "training"
 node echoes the weights back unchanged.
 
+## Bottom line
+
+**Flower's transport is not a performance concern for this epic.** On a healthy ~100 ms
+WAN path, stock flwr 1.32.1 moves weights within ~15 % of raw single-stream TCP in both
+directions with no tuning — **a 2B-parameter (4 GB each way) exchange costs ~10 minutes
+per round** ([field re-run](#field-re-run-2026-07-03-fresh-box-pair)). That comfortably
+supports DiLoCo-cadence sync and is workable even for frequent-sync patterns.
+
+The initial spike measured much worse (~1.5 h per 2B round) — that turned out to be a
+**degraded network path on the first box pair, not Flower**: the identical setup on a
+fresh pair, plus a local latency-simulation A/B, showed gRPC's flow-control auto-tuning
+normally handles high-RTT paths fine. The sections below keep the full investigation
+record, including the optional `patch_lookahead.py` hardening that pins throughput at the
+raw-TCP limit and protects against paths where that auto-tuning fails.
+
 ## Design
 
 - **Payload**: 2,000,000,000 parameters in float16 = **4.0 GB** each direction, split into
@@ -16,11 +31,16 @@ node echoes the weights back unchanged.
   single-node FedAvg round; the client echoes it back; FedAvg aggregates (N=1 identity).
 - **NumPy-only** app: node setup is `pip install flwr numpy`, no torch.
 
-## Results
+## Initial results (first box pair — timings later attributed to a degraded path)
 
 WAN topology used: SuperLink + ServerApp on a Quebec (CA) vast.ai instance, SuperNode +
 ClientApp on a Sweden (SE) instance. Measured path RTT ≈ 106 ms; raw single-stream TCP on
 the same path: 114 Mbit/s (QC→SE), 167 Mbit/s (SE→QC).
+
+> **Note:** the WAN timings in this section did not reproduce on a fresh box pair (see
+> [field re-run](#field-re-run-2026-07-03-fresh-box-pair)) — they characterize that
+> specific path, not Flower. The functional results (payload integrity at 4 GB per
+> direction) stand.
 
 | leg | payload | round-trip (1 round) | effective throughput* |
 | :-- | :-- | :-- | :-- |
@@ -40,16 +60,17 @@ Flower's object store/serialization path, not bandwidth, is the first ceiling. F
 outer loops (sync every ~500+ inner steps) a couple of minutes per exchange is comfortably
 affordable; for frequent-sync patterns it would dominate.
 
-**WAN finding (the important one):** the WAN round is dominated by Flower's object
-transfer layer, not the network. Per-leg reconstruction of the 0.5 GB round: server→node
+**WAN finding (superseded — see field re-run):** on this pair the WAN round ran far below
+the path's raw TCP capacity. Per-leg reconstruction of the 0.5 GB round: server→node
 delivery ran at ~47 Mbit/s (~2.4× below raw TCP on that path), but the node→server **push
 of the reply ran at ~7.5 Mbit/s — ~20× below raw TCP** (167 Mbit/s measured with a plain
 socket seconds later on the same path). The rate corresponds to only ~100 KB in flight
 per 106 ms round trip — a small effective window somewhere in the push path.
 
 The 4.0 GB round scales linearly from the 0.5 GB one (~12.7 vs ~13 Mbit/s effective), so
-the overhead is proportional to bytes moved, not a fixed per-round cost: **a 2B-param
-model exchange on this path costs ~1.5 h per round as shipped.** Arrays are split into
+the overhead is proportional to bytes moved, not a fixed per-round cost: a 2B-param
+model exchange cost ~1.5 h per round *on this pair's path* (a healthy path costs ~10 min —
+see the field re-run). Arrays are split into
 5 MB chunk objects (`FLWR_PRIVATE_MAX_ARRAY_CHUNK_SIZE`); raising the chunk size 13×
 did not change the round time (table below), so the cost is *per byte in flight*, not
 per chunk boundary — consistent with a small effective in-flight window on the 106 ms
@@ -75,9 +96,10 @@ defeating the auto-tuning — but forcing a large window removes the dependence 
 probing behaving. Flower's channel construction (`flwr/supercore/grpc.py`) sets only
 message-length options, and the window option is not operator-configurable.
 
-**Patch results** (fresh Quebec↔Norway pair, 97 ms RTT; `patch_lookahead.py` in this
-directory adds `("grpc.http2.lookahead_bytes", 16 MB)` to Flower's client channels and
-server options; unpatched same-pair baseline 8 min 13 s for 0.5 GB ×2):
+**Patch results on the original spike's second pair** (Quebec↔Norway, 97 ms RTT — still
+the degraded-path regime; `patch_lookahead.py` in this directory adds
+`("grpc.http2.lookahead_bytes", 16 MB)` to Flower's client channels and server options;
+unpatched same-pair baseline 8 min 13 s for 0.5 GB ×2):
 
 - **Pull leg (SuperLink→node) is reliably fixed**: ~47 Mbit/s unpatched →
   **~90–128 Mbit/s patched**, reproduced across three runs including 4 GB — near raw
@@ -109,10 +131,12 @@ Implications for the epic:
 - **Cost with the patch**: pins the SuperLink→node direction at the raw-TCP limit
   (field-verified) and defends both legs against paths where gRPC's window auto-tuning
   fails (simulation below: push 73→218 Mbit/s with auto-tuning disabled).
-- No matching issue exists in the Flower tracker (checked 2026-07-03) — the right upstream
-  ask is "make the HTTP/2 window options configurable on SuperLink/SuperNode", backed by
-  these numbers and the simulation A/B; until it ships, apply `patch_lookahead.py` on
-  every host (SuperLink and SuperNodes) and check the daemon logs for the patch banner.
+- The patch is **optional hardening, not a requirement**: healthy paths need nothing. For
+  sovereign nodes on links of unknown quality, apply `patch_lookahead.py` on every host
+  (SuperLink and SuperNodes) and check the daemon logs for the patch banner. A low-priority
+  upstream feature request ("expose HTTP/2 window options as SuperLink/SuperNode config")
+  would make this unnecessary; no matching issue exists in the Flower tracker as of
+  2026-07-03.
 - Channel-level gzip compression would not help: weights are near-incompressible and the
   bottleneck is flow-control round trips, not bytes.
 
