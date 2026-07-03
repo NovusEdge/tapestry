@@ -26,8 +26,11 @@ the same path: 114 Mbit/s (QC→SE), 167 Mbit/s (SE→QC).
 | :-- | :-- | :-- | :-- |
 | loopback (WSL2, same host) | 0.5 GB ×2 | 20.5 s | ~0.39 Gbit/s |
 | loopback (WSL2, same host) | 4.0 GB ×2 | 138.1 s | ~0.46 Gbit/s |
-| WAN Quebec↔Sweden | 0.5 GB ×2 | 10 min 30 s | ~13 Mbit/s |
-| WAN Quebec↔Sweden | 4.0 GB ×2 | 1 h 24 min | ~12.7 Mbit/s |
+| WAN Quebec↔Sweden (106 ms) | 0.5 GB ×2 | 10 min 30 s | ~13 Mbit/s |
+| WAN Quebec↔Sweden (106 ms) | 4.0 GB ×2 | 1 h 24 min | ~12.7 Mbit/s |
+| WAN Quebec↔Norway (97 ms), unpatched | 0.5 GB ×2 | 8 min 13 s | ~16 Mbit/s |
+| WAN Quebec↔Norway, lookahead patch | 0.5 GB ×2 | 6–9 min (3 runs; one 78 s outlier) | pull fixed, push not |
+| WAN Quebec↔Norway, lookahead patch | 4.0 GB ×2 | 1 h 1 min | pull ~128 Mbit/s, push ~10 Mbit/s |
 
 \* total bytes moved ÷ round time; includes flwr's serialization and store-and-forward
 through the SuperLink object store, so this is *system* throughput, not link speed.
@@ -62,21 +65,47 @@ override each time; baseline 10 min 30 s):
 
 (Env vars verified present in the running SuperNode's `/proc/<pid>/environ`.)
 
-**Diagnosis.** Both operator-accessible knobs are exonerated, and the measured ~100 KB
-in flight per RTT matches gRPC's default HTTP/2 flow-control window (64 KB initial,
-applied per connection — which is also why 16 concurrent streams changed nothing).
-The fix lives in Flower's channel construction (HTTP/2 window options / BDP probing),
-which is not operator-configurable in flwr 1.32.
+**Root cause class — confirmed; fix verified for one direction.** The measured
+~100 KB in flight per RTT matches gRPC C-core's per-stream read-ahead limit,
+[`grpc.http2.lookahead_bytes`](https://grpc.github.io/grpc/core/group__grpc__arg__keys.html)
+(`GRPC_ARG_HTTP2_STREAM_LOOKAHEAD_BYTES`, default 64 KB) — documented as the knob to
+raise "on high-latency connections." Flower's channel construction
+(`flwr/supercore/grpc.py`) sets only message-length options, so it runs the 64 KB
+default, and the option is not operator-configurable.
+
+**Patch results** (fresh Quebec↔Norway pair, 97 ms RTT; `patch_lookahead.py` in this
+directory adds `("grpc.http2.lookahead_bytes", 16 MB)` to Flower's client channels and
+server options; unpatched same-pair baseline 8 min 13 s for 0.5 GB ×2):
+
+- **Pull leg (SuperLink→node) is reliably fixed**: ~47 Mbit/s unpatched →
+  **~90–128 Mbit/s patched**, reproduced across three runs including 4 GB — near raw
+  single-stream TCP for the path. Consistent with flow-control mechanics: the pull
+  receiver is the patched *client channel*.
+- **Push leg (node→SuperLink) is NOT fixed by the channel arg**: ~10–16 Mbit/s in every
+  steady-state run, patched or not (4 GB patched round: 1 h 1 m, vs 1 h 24 m unpatched).
+  The push receiver is Flower's gRPC *server*; the equivalent server-side receive-window
+  fix needs to happen inside Flower/gRPC-core (or the object push path needs streaming/
+  multiple connections). Also ruled out for the push leg: chunk size, app-level transfer
+  concurrency, connection age (fresh-SuperNode rerun), and SuperLink state (fresh-SuperLink
+  rerun).
+- One 0.5 GB patched run completed in 78 s (~103 Mbit/s both legs) but did **not
+  reproduce** under identical fresh-restart conditions (6–9 min in three attempts).
+  Possible object-store dedup effect (the echo payload's content hashes match objects the
+  store may still hold) or transient path conditions — flagged as an open question for
+  upstream rather than claimed as a result.
 
 Implications for the epic:
 
 - **Functionally proven**: a 2B-param payload round-trips intact through SuperLink over
   a real WAN; no message-size or memory failures at 4 GB per direction.
-- **Cost as shipped**: ~1.5 h per 2B exchange on a 106 ms path. DiLoCo-cadence sync
-  (hundreds of inner steps per outer round) absorbs this; frequent-sync patterns cannot.
-- The ~20× gap below raw TCP is Flower-specific (flwr 1.32.1; no matching issue found in
-  the Flower tracker as of 2026-07-03) and worth raising upstream with these numbers —
-  it should be a small fix (channel options) for a large win.
+- **Cost as shipped**: ~1.5 h per 2B exchange on a ~100 ms path (flwr 1.32.1 defaults).
+  DiLoCo-cadence sync absorbs this; frequent-sync patterns cannot.
+- **Cost with the 2-line client-side fix**: the SuperLink→node direction becomes
+  raw-TCP-limited (2–3× on our path); the node→SuperLink push still needs an upstream
+  server-side fix, and it dominates the round (patched 4 GB round: 1 h 1 m).
+- No matching issue exists in the Flower tracker (checked 2026-07-03) — file upstream
+  with these numbers, the patch, and the open push-leg question; until it ships, nodes
+  can apply `patch_lookahead.py` for the pull-leg win.
 - Channel-level gzip compression would not help: weights are near-incompressible and the
   bottleneck is flow-control round trips, not bytes.
 
