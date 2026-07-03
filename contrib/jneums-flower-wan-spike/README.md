@@ -102,12 +102,13 @@ Implications for the epic:
 
 - **Functionally proven**: a 2B-param payload round-trips intact through SuperLink over
   a real WAN; no message-size or memory failures at 4 GB per direction.
-- **Cost as shipped**: ~1.5 h per 2B exchange on a ~100 ms path (flwr 1.32.1 defaults).
-  DiLoCo-cadence sync absorbs this; frequent-sync patterns cannot.
-- **Cost with the patch**: the SuperLink→node direction becomes raw-TCP-limited (2–3× on
-  our path, field-verified). Per the local simulation below, the same patch applied on the
-  SuperLink fixes the node→SuperLink push too (73→218 Mbit/s in the sim); the field push
-  numbers predate the verifiable patch and need one re-run to confirm.
+- **Cost as shipped**: ~1.5 h per 2B exchange *on the original degraded path* — the field
+  re-run below shows a healthy ~100 ms path costs **~10 min per 2B round with no patch at
+  all** (~75 s for 0.5 GB each way). Even the degraded-path worst case is absorbed by
+  DiLoCo-cadence sync; frequent-sync patterns need a healthy path or the window fix.
+- **Cost with the patch**: pins the SuperLink→node direction at the raw-TCP limit
+  (field-verified) and defends both legs against paths where gRPC's window auto-tuning
+  fails (simulation below: push 73→218 Mbit/s with auto-tuning disabled).
 - No matching issue exists in the Flower tracker (checked 2026-07-03) — the right upstream
   ask is "make the HTTP/2 window options configurable on SuperLink/SuperNode", backed by
   these numbers and the simulation A/B; until it ships, apply `patch_lookahead.py` on
@@ -154,9 +155,37 @@ first message includes ramp):
 | lookahead 16 MB on client only | 51, 73, 74 Mbit/s |
 | lookahead 16 MB on server only | 66, 215, 219 Mbit/s |
 
-Remaining open item: one field re-run with the verifiable patch on both hosts, to confirm
-the push leg reaches raw-TCP speeds over a real WAN and to close the question of what
-breaks BDP probing on that path.
+## Field re-run (2026-07-03, fresh box pair)
+
+Same topology rebuilt from scratch the same day: fresh Quebec (SuperLink) and Norway
+(SuperNode) vast.ai instances, same stack (flwr 1.32.1, grpcio 1.81.1, Python 3.12 venv),
+same vast Docker-NAT port mappings, measured path RTT ~101–107 ms, raw single-stream TCP
+215 Mbit/s (NO→QC) / 138 Mbit/s (QC→NO) — a faithful stand-in for the original pair.
+
+| run (0.5 GB down + 0.5 GB up) | round | pull leg | push leg |
+| :-- | :-- | :-- | :-- |
+| unpatched #1 | 81.6 s | 32.8 s (~122 Mbit/s) | 48.8 s (~82 Mbit/s) |
+| patched, banner-verified both hosts | 65.5 s | 29.1 s (~137 Mbit/s, at raw-TCP limit) | 36.5 s (~110 Mbit/s) |
+| unpatched #2 (flwr reinstalled, banner absent) | 72.7 s | 32.8 s (~122 Mbit/s) | 39.9 s (~100 Mbit/s) |
+
+Compare the original pair's consistent **8 min 13 s** unpatched (pull ~47, push ~7.5
+Mbit/s). Conclusions:
+
+- **The original slowness does not reproduce** on a fresh identical-topology pair. Two
+  unpatched runs land at 73–82 s — within ~15 % of raw TCP on both legs, with TCP
+  autotuning reaching ~3 MB receive windows during the push (`ss -ti` sampled on the
+  SuperLink during the run). The original spike's one unexplained "78 s outlier" was the
+  healthy behavior; the 6–9 min runs were the anomaly, specific to that box pair/path.
+- **The patch is field-verified as harmless and mildly beneficial**: it pins the pull leg
+  at the raw-TCP limit and the round improves ~10–20 %. The import-banner verification
+  works in the field (present in both patched daemon logs, absent after reinstall).
+- Practical cost for the epic: at these rates a 2B-param (4 GB each way) exchange costs
+  **~10 min per round, not ~1.5 h** — the original spike's headline number reflected a
+  degraded path, not Flower's design. What exactly degraded the original path (that
+  specific host's link, middlebox, or transient conditions) is no longer testable — the
+  boxes are gone; the local simulation above shows the *mechanism* such a path uses to
+  hurt Flower (frozen flow-control windows) and that forcing large windows defends
+  against it.
 
 ## Gotchas found (flwr 1.32)
 
