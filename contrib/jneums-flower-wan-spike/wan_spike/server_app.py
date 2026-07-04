@@ -6,16 +6,22 @@ from flwr.app import ArrayRecord, Context
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 
-from wan_spike.task import make_ndarrays, total_bytes
+from wan_spike.task import make_ndarrays, total_bytes, validate_positive_int
 
 app = ServerApp()
 
 
 @app.main()
 def main(grid: Grid, context: Context) -> None:
-    payload_params: int = context.run_config["payload-params"]
-    tensor_params: int = context.run_config["tensor-params"]
-    num_rounds: int = context.run_config["num-server-rounds"]
+    payload_params = validate_positive_int(
+        "payload-params", int(context.run_config["payload-params"])
+    )
+    tensor_params = validate_positive_int(
+        "tensor-params", int(context.run_config["tensor-params"])
+    )
+    num_rounds = validate_positive_int(
+        "num-server-rounds", int(context.run_config["num-server-rounds"])
+    )
 
     t0 = time.time()
     ndarrays = make_ndarrays(payload_params, tensor_params)
