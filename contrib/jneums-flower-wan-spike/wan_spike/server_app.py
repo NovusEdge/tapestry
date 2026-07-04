@@ -13,12 +13,10 @@ app = ServerApp()
 
 @app.main()
 def main(grid: Grid, context: Context) -> None:
-    payload_params = validate_positive_int(
-        "payload-params", int(context.run_config["payload-params"])
-    )
-    tensor_params = validate_positive_int(
-        "tensor-params", int(context.run_config["tensor-params"])
-    )
+    # payload/tensor params are validated inside make_ndarrays; num_rounds is
+    # only used here, so it is validated at this call site.
+    payload_params = int(context.run_config["payload-params"])
+    tensor_params = int(context.run_config["tensor-params"])
     num_rounds = validate_positive_int(
         "num-server-rounds", int(context.run_config["num-server-rounds"])
     )
