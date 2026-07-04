@@ -12,12 +12,22 @@ from __future__ import annotations
 import numpy as np
 
 
+def validate_positive_int(name: str, value: int) -> int:
+    """Return ``value`` when positive, otherwise raise a clear config error."""
+    if value <= 0:
+        raise ValueError(f"{name} must be positive; got {value}")
+    return value
+
+
 def make_ndarrays(payload_params: int, tensor_params: int, seed: int = 7) -> list[np.ndarray]:
     """Random fp16 tensors totalling ``payload_params`` parameters.
 
     Random (not zeros) so any transparent compression on the path cannot
     flatter the measurement.
     """
+    validate_positive_int("payload_params", payload_params)
+    validate_positive_int("tensor_params", tensor_params)
+
     rng = np.random.default_rng(seed)
     out: list[np.ndarray] = []
     remaining = payload_params

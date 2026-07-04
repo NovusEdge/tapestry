@@ -17,10 +17,11 @@ Idempotent: skips if already patched.
 """
 
 import sys
+from pathlib import Path
 
 from flwr.supercore import grpc as _mod
 
-PATH = _mod.__file__
+PATH = Path(_mod.__file__)
 LOOKAHEAD = '        ("grpc.http2.lookahead_bytes", 16 * 1024 * 1024),\n'
 BANNER = (
     "\nfrom logging import INFO as _WAN_SPIKE_INFO\n"
@@ -28,7 +29,7 @@ BANNER = (
     '16 MB HTTP/2 windows (client channels + servers)")\n'
 )
 
-src = open(PATH).read()
+src = PATH.read_text(encoding="utf-8")
 if "lookahead_bytes" in src:
     print(f"already patched: {PATH}")
     sys.exit(0)
@@ -45,7 +46,8 @@ new_client = """    channel_options = [
         ("grpc.http2.lookahead_bytes", 16 * 1024 * 1024),
     ]
 """
-assert src.count(old_client) == 1, "client options block not found"
+if src.count(old_client) != 1:
+    raise RuntimeError("client options block not found")
 src = src.replace(old_client, new_client)
 
 # 2. Server options in generic_create_grpc_server
@@ -55,13 +57,16 @@ new_server = (
     + LOOKAHEAD
     + "    ]\n"
 )
-assert src.count(old_server) == 1, "server options block not found"
+if src.count(old_server) != 1:
+    raise RuntimeError("server options block not found")
 src = src.replace(old_server, new_server)
 
 # 3. Import-time banner so patched daemons are verifiable from their logs
 src += BANNER
 
-open(PATH, "w").write(src)
+PATH.write_text(src, encoding="utf-8")
 print(f"patched OK: {PATH}")
-print("restart the daemon and confirm its log shows "
-      "'wan-spike lookahead patch active'")
+print(
+    "restart the daemon and confirm its log shows "
+    "'wan-spike lookahead patch active'"
+)
