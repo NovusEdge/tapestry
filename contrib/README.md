@@ -179,7 +179,9 @@ unit-tests-prerequisite::
 
 (Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built.) Here, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
 
-> [!WARNING] One or Two Trailing Colons??
+> [!WARNING]
+>
+> **One or Two Trailing Colons??**
 >
 > Did you notice that the top level `.common.mk` has `pylint-prerequisite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
 >
