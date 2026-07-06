@@ -17,7 +17,7 @@ make view-pages         # View the published GitHub pages in a browser.
 make view-local         # View the pages locally (requires Jekyll).
                         # Makes the targets 'setup-jekyll' and 'run-jekyll'
                         # Tip: "JEKYLL_PORT=8000 make view-local" uses port 8000 instead of 4000!
-make setup-jekyll       # Install Jekyll. Make sure Ruby is installed. 
+make setup-jekyll       # Install Jekyll. Make sure Ruby is installed.
                         # (Only needed for local viewing of the document.)
 make run-jekyll         # Used by "view-local"; assumes everything is already built.
                         # Tip: Build this target instead of 'view-local' to avoid repeating 'setup-jekyll'.
@@ -68,7 +68,7 @@ ruby-installed-check:
 
 bundle-command-check:
 	@command -v bundle > /dev/null || \
-		${MAKE} bundle-missing-error 
+		${MAKE} bundle-missing-error
 
 # NOTE: We call make to run these %-error targets, because if you try
 # some_command || $(error "didn't work"), the $(error ...) function is always
@@ -101,7 +101,7 @@ ERROR:   Bundler found conflicting requirements for the RubyGems version:
 ERROR:     In Gemfile:
 ERROR:       foo-bar (>= 3.0.0) was resolved to 3.0.0, which depends on
 ERROR:         RubyGems (>= 3.3.22)
-ERROR:   
+ERROR:
 ERROR:     Current RubyGems version:
 ERROR:       RubyGems (= 3.3.11)
 ERROR: In this case, try "brew upgrade ruby" to get a newer version.
@@ -112,7 +112,7 @@ define bundle-error-message
 
 ERROR: Did the bundle command fail with a message like this?
 ERROR: 	 "/usr/local/opt/ruby/bin/bundle:25:in `load': cannot load such file -- /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z/exe/bundle (LoadError)"
-ERROR: Check that the /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z directory actually exists. 
+ERROR: Check that the /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z directory actually exists.
 ERROR: If not, try running the clean-jekyll command first:
 ERROR:   make clean-jekyll setup-jekyll
 ERROR: Answer "y" (yes) to the prompts and ignore any warnings that you can't uninstall a "default" gem.
