@@ -1,6 +1,6 @@
 # See comment at the bottom of this file about "-include .custom.mk".
 
-SRC_DIR             := src
+SRC_DIR             ?= src
 CLEAN_DIRS          :=
 CONTRIB_DIR         := contrib
 CONTRIB_DIRS        := $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
