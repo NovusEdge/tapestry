@@ -1,9 +1,10 @@
 # See comment at the bottom of this file about "-include .custom.mk".
 
-SRC_DIR      := src
-CLEAN_DIRS   :=
-CONTRIB_DIR  := contrib
-CONTRIB_DIRS = $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
+SRC_DIR             := src
+CLEAN_DIRS          :=
+CONTRIB_DIR         := contrib
+CONTRIB_DIRS        := $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
+CONTRIB_TARGETS_MKS := $(foreach dir,${CONTRIB_DIRS},$(wildcard $(dir)/.targets.mk))
 
 QUALITY_CHECKS := format ruff pylint type-check tests
 
