@@ -74,7 +74,7 @@ This target builds the following targets used to format the code and verify that
 
 All these targets are defined in the top-level `.common.mk` file.
 
-> [!WARN]
+> [!WARNING]
 > The `format` target may modify your source code. Inspect those changes and commit them. If you think they are "wrong" in some way and the formatting should be changed globally for all source code, [post an issue](https://github.com/The-AI-Alliance/tapestry/issues). If you just want to disable the reformatting for your contribution, use the mechanisms described below.
 
 **_By default, these same targets are built for every contribution, too!_** However, since `contrib` contributions are not necessarily production quality, and we want to encourage such contributions with minimal "friction", a make "protocol" is provided to customize which quality checks are skipped. This is how `.custom.mk` is used.
@@ -179,7 +179,7 @@ unit-tests-prerequisite::
 
 (Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built.) Here, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
 
-> [!WARN] One or Two Trailing Colons??
+> [!WARNING] One or Two Trailing Colons??
 >
 > Did you notice that the top level `.common.mk` has `pylint-prerequisite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
 >
