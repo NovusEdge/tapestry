@@ -133,14 +133,14 @@ Two of the supported customization mechanisms are shown here.
 
 #### Help on Custom Targets You Define
 
-We will see below, that you can define programs that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you you _override_ the definition of `help_targets_message` as shown here.
+We will see below, that you can define targets that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you you _override_ the definition of `help_targets_message` as shown here.
 
 This message will be printed whenever the user runs `make help-targets` (a target defined in the top level `.common.mk`), along with similar messages for all the other contributions. In this example, there are two program targets defined, `consortium-experiment` and `consortium-tests`.
 
 > [!NOTE]
 > Note the `override` keyword for the definition for `help_targets_message`. By default, the top-level `.common.mk` provides a default definition, but we override it here to customize it for this particular directory.
 
-Try `make help-targets` in the top-level directory to see all the help messages about programs in contributions, as well as the main code base.
+Try `make help-targets` in the top-level directory to see all the help messages about targets in contributions, as well as the main code base.
 
 #### Disable Some Quality Checks
 
