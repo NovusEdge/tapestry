@@ -74,6 +74,8 @@ This target builds the following targets used to format the code and verify that
 
 All these targets are defined in the top-level `.common.mk` file.
 
+> [!WARN]
+> The `format` target may modify your source code. Inspect those changes and commit them. If you think they are "wrong" in some way and the formatting should be changed globally for all source code, [post an issue](https://github.com/The-AI-Alliance/tapestry/issues). If you just want to disable the reformatting for your contribution, use the mechanisms described below.
 
 **_By default, these same targets are built for every contribution, too!_** However, since `contrib` contributions are not necessarily production quality, and we want to encourage such contributions with minimal "friction", a make "protocol" is provided to customize which quality checks are skipped. This is how `.custom.mk` is used.
 
