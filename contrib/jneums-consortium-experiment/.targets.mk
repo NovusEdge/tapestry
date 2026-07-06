@@ -1,8 +1,10 @@
 # This file is included in the top-level Makefile
 
-.PHONY: consortium-experiment consortium-tests
+.PHONY: consortium-experiment-all consortium-experiment consortium-tests
 
 CONSORTIUM_EXPERIMENT_DIR := contrib/jneums-consortium-experiment
+
+consortium-experiment-all:: consortium-experiment consortium-tests
 
 consortium-experiment::
 	@echo "${INFO}Running the consortium-training experiment metrics...${_END}"

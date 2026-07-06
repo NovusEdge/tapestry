@@ -2,7 +2,9 @@
 
 CULTURAL_CPT_DIR := contrib/jneums-cultural-cpt-validation
 
-.PHONY: cultural-cpt-validation cultural-cpt-aggregation cultural-cpt-stats cultural-cpt-tests cultural-cpt-fetch-seed cultural-cpt-validate-corpus
+.PHONY: cultural-cpt-all cultural-cpt-validation cultural-cpt-aggregation cultural-cpt-stats cultural-cpt-tests cultural-cpt-fetch-seed cultural-cpt-validate-corpus
+
+cultural-cpt-all:: cultural-cpt-validation cultural-cpt-aggregation cultural-cpt-stats cultural-cpt-tests cultural-cpt-fetch-seed cultural-cpt-validate-corpus
 
 cultural-cpt-validation::
 	@echo "${INFO}Running the EXP-001 cultural-CPT validation (smoke mode)...${_END}"

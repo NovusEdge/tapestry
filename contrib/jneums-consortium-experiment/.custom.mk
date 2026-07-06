@@ -2,6 +2,8 @@
 override define help_targets_message
 For the consortium-training prototype:
 
+make consortium-experiment-all  # Make all the following targets.
+
 make consortium-experiment
                         # Run deterministic PoC metrics for consortium-training rounds.
 make consortium-tests   # Run only the consortium-training prototype tests.
