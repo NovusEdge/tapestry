@@ -185,12 +185,7 @@ contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
 		echo "${INFO}In directory $$d:${_END}"; \
-		tmp=$$(mktemp); \
-		if ${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} > "$$tmp" 2>&1; \
-		then status=0; else status=$$?; fi; \
-		egrep -v -e '(overriding|ignoring old) commands for target' "$$tmp" || true; \
-		rm -f "$$tmp"; \
-		[ $$status -eq 0 ] || exit $$status; \
+		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
 	done
 
 .PHONY: one-time-setup clean-setup
