@@ -59,17 +59,11 @@ def run_server(args):
     handler = grpc.method_handlers_generic_handler(
         "bench",
         {
-            "Push": grpc.unary_unary_rpc_method_handler(
-                push, request_deserializer=ident, response_serializer=ident
-            ),
-            "Pull": grpc.unary_unary_rpc_method_handler(
-                pull, request_deserializer=ident, response_serializer=ident
-            ),
+            "Push": grpc.unary_unary_rpc_method_handler(push, request_deserializer=ident, response_serializer=ident),
+            "Pull": grpc.unary_unary_rpc_method_handler(pull, request_deserializer=ident, response_serializer=ident),
         },
     )
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=8), options=build_options(args)
-    )
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=8), options=build_options(args))
     server.add_generic_rpc_handlers((handler,))
     server.add_insecure_port(ADDR)
     server.start()
@@ -79,12 +73,8 @@ def run_server(args):
 
 def run_client(args):
     channel = grpc.insecure_channel(ADDR, options=build_options(args))
-    push = channel.unary_unary(
-        "/bench/Push", request_serializer=ident, response_deserializer=ident
-    )
-    pull = channel.unary_unary(
-        "/bench/Pull", request_serializer=ident, response_deserializer=ident
-    )
+    push = channel.unary_unary("/bench/Push", request_serializer=ident, response_deserializer=ident)
+    pull = channel.unary_unary("/bench/Pull", request_serializer=ident, response_deserializer=ident)
     grpc.channel_ready_future(channel).result(timeout=10)
     payload = bytes(MSG)
 
@@ -98,8 +88,7 @@ def run_client(args):
             fn(arg, timeout=300)
             rates.append(MSG * 8 / (time.monotonic() - t0) / 1e6)
         print(
-            f"{name}: " + " ".join(f"{r:7.1f}" for r in rates)
-            + "  Mbit/s per 8MB msg",
+            f"{name}: " + " ".join(f"{r:7.1f}" for r in rates) + "  Mbit/s per 8MB msg",
             flush=True,
         )
 
