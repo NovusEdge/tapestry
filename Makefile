@@ -4,13 +4,13 @@ include .website.mk
 define help_top_level_message
 For additional help:
 
-make help-programs      # Print help on executable tools, PoCs, etc. (including "contribs").
+make help-targets       # Print help on custom targets, e.g., demonstration commands, etc. (including "contribs").
 make help-website       # Print help for the documentation website.
 endef
 
-define help_top_level_programs_message
-For the consortium-training prototype:
+define help_top_level_targets_message
 
+For the consortium-training prototype:
 make consortium-demo    # Run the N+1 consortium-training proof-of-concept demo.
 endef
 

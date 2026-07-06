@@ -1,5 +1,5 @@
 
-override define help_programs_message
+override define help_targets_message
 For the EXP-001 cultural-CPT validation harness (contrib):
 
 make cultural-cpt-validation   # Run the arms experiment, single seed (smoke mode).

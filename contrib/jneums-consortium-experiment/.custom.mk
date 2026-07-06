@@ -1,5 +1,5 @@
 
-override define help_programs_message
+override define help_targets_message
 For the consortium-training prototype:
 
 make consortium-experiment

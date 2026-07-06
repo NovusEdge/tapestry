@@ -114,7 +114,7 @@ The `do-contrib-before-pr` target mentioned above also uses this command, runnin
 You can find examples in most of the `contrib/*` directories. Customization is done by creating a `.custom.mk` file. Here is an example, `contrib/jneums-consortium-experiment/.custom.mk` (at the time of this writing):
 
 ```makefile
-override define help_programs_message
+override define help_targets_message
 For the consortium-training prototype:
 
 make consortium-experiment
@@ -131,16 +131,16 @@ pylint-default type-check-default:
 
 Two of the supported customization mechanisms are shown here.
 
-#### Help on "Programs" You Define
+#### Help on Custom Targets You Define
 
-We will see below, that you can define programs that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you you _override_ the definition of `help_programs_message` as shown here.
+We will see below, that you can define programs that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you you _override_ the definition of `help_targets_message` as shown here.
 
-This message will be printed whenever the user runs `make help-programs` (a target defined in the top level `.common.mk`), along with similar messages for all the other contributions. In this example, there are two program targets defined, `consortium-experiment` and `consortium-tests`.
+This message will be printed whenever the user runs `make help-targets` (a target defined in the top level `.common.mk`), along with similar messages for all the other contributions. In this example, there are two program targets defined, `consortium-experiment` and `consortium-tests`.
 
 > [!NOTE]
-> Note the `override` keyword for the definition for `help_programs_message`. By default, the top-level `.common.mk` provides an empty definition, but we override it here to customize it for this particular directory.
+> Note the `override` keyword for the definition for `help_targets_message`. By default, the top-level `.common.mk` provides a default definition, but we override it here to customize it for this particular directory.
 
-Try `make help-programs` in the top-level directory to see all the help messages about programs in contributions, as well as the main code base.
+Try `make help-targets` in the top-level directory to see all the help messages about programs in contributions, as well as the main code base.
 
 #### Disable Some Quality Checks
 

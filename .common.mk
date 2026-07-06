@@ -89,18 +89,23 @@ help-%::
 	$(info )
 	@true
 
-define help_programs_message
+define help_targets_message
+  No custom targets defined.
 endef
 
-help-programs:: help-top-level-programs custom-program-help contrib-custom-program-help
-help-top-level-programs:
-	$(info )
-	$(info ${help_top_level_programs_message})
+help-targets:: help-top-level-targets-prefix help-top-level-targets contrib-custom-program-help
+	@true  # for some reason, this needs to be here to avoid some undesirable, extra output
+
+help-top-level-targets-prefix:
+	@echo "${INFO}For the examples:${_END}"
+
+help-top-level-targets:
+	$(info ${help_top_level_targets_message})
 	$(info )
 	@true
 custom-program-help:
 	$(info )
-	$(info ${help_programs_message})
+	$(info ${help_targets_message})
 	$(info )
 	@true
 
@@ -179,7 +184,7 @@ type-check-watch-default:
 contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
-		echo "In directory $$d:"; \
+		echo "${INFO}In directory $$d:${_END}"; \
 		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} 2>&1 | \
 			egrep -v -e '(overriding|ignoring old) commands for target' || exit $$?; \
 	done
