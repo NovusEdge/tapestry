@@ -133,7 +133,7 @@ Two of the supported customization mechanisms are shown here.
 
 #### Help on Custom Targets You Define
 
-We will see below, that you can define targets that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you you _override_ the definition of `help_targets_message` as shown here.
+We will see below, that you can define targets that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you _override_ the definition of `help_targets_message` as shown here.
 
 This message will be printed whenever the user runs `make help-targets` (a target defined in the top level `.common.mk`), along with similar messages for all the other contributions. In this example, there are two program targets defined, `consortium-experiment` and `consortium-tests`.
 
@@ -149,8 +149,8 @@ The second customization mechanism is shown for `pylint` and `type-check`. In th
 In the top level `.common.mk`, the `pylint` target is defined as follows (the other quality targets like `type-check` are similar):
 
 ```makefile
-pylint:: pylint-prerequsite pylint-default pylint-postrequisite
-pylint-prerequsite pylint-postrequisite::
+pylint:: pylint-prerequisite pylint-default pylint-postrequisite
+pylint-prerequisite pylint-postrequisite::
 pylint-default:
   @echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
   uv run pylint ${SRC_DIR}
@@ -181,7 +181,7 @@ unit-tests-prerequisite::
 
 > [!WARN] One or Two Trailing Colons??
 >
-> Did you notice that the top level `.common.mk` has `pylint-prerequsite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
+> Did you notice that the top level `.common.mk` has `pylint-prerequisite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
 >
 > When a target has two trailing colons, `make` allows _more than one_ definition of that target. This is a tool for adding additional dependencies to a target or additional commands to execute. consider this contrived example,
 >
@@ -206,7 +206,7 @@ unit-tests-prerequisite::
 > b
 > finished!
 > ```
-> We exploit this feature to have a "no-op" default behavior for `pylint-prerequsite` and allow contributions to define any additional prerequisite behavior they want.
+> We exploit this feature to have a "no-op" default behavior for `pylint-prerequisite` and allow contributions to define any additional prerequisite behavior they want.
 >
 > In contrast, `pylint-default:` has one trailing colon; _the last definition overrides all previous definitions seen._ We only want a _single_ definition of this target to be used. For example,
 > ```makefile
@@ -227,7 +227,7 @@ unit-tests-prerequisite::
 
 ### How to Add Custom Targets
 
-The optional `.targets.mk` allows you to define custom targets that will be visible to the top-level `make` process. For example, you should consider adding targets to run demonstrations of your contribution. _Also had help messages for them, as mentioned above, using `.custom.mk`._
+The optional `.targets.mk` allows you to define custom targets that will be visible to the top-level `make` process. For example, you should consider adding targets to run demonstrations of your contribution. _Also add help messages for them, as mentioned above, using `.custom.mk`._
 
 Here is an example from `contrib/jneums-consortium-experiment/.targets.mk`:
 
