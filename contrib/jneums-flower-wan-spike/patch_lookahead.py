@@ -52,11 +52,7 @@ src = src.replace(old_client, new_client)
 
 # 2. Server options in generic_create_grpc_server
 old_server = '        ("grpc.keepalive_permit_without_calls", 0),\n    ]\n'
-new_server = (
-    '        ("grpc.keepalive_permit_without_calls", 0),\n'
-    + LOOKAHEAD
-    + "    ]\n"
-)
+new_server = '        ("grpc.keepalive_permit_without_calls", 0),\n' + LOOKAHEAD + "    ]\n"
 if src.count(old_server) != 1:
     raise RuntimeError("server options block not found")
 src = src.replace(old_server, new_server)
@@ -66,7 +62,4 @@ src += BANNER
 
 PATH.write_text(src, encoding="utf-8")
 print(f"patched OK: {PATH}")
-print(
-    "restart the daemon and confirm its log shows "
-    "'wan-spike lookahead patch active'"
-)
+print("restart the daemon and confirm its log shows " "'wan-spike lookahead patch active'")

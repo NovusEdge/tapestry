@@ -17,9 +17,7 @@ def main(grid: Grid, context: Context) -> None:
     # only used here, so it is validated at this call site.
     payload_params = int(context.run_config["payload-params"])
     tensor_params = int(context.run_config["tensor-params"])
-    num_rounds = validate_positive_int(
-        "num-server-rounds", int(context.run_config["num-server-rounds"])
-    )
+    num_rounds = validate_positive_int("num-server-rounds", int(context.run_config["num-server-rounds"]))
 
     t0 = time.time()
     ndarrays = make_ndarrays(payload_params, tensor_params)
@@ -28,8 +26,7 @@ def main(grid: Grid, context: Context) -> None:
     del ndarrays
     t1 = time.time()
     print(
-        f"SPIKE server: payload built: {gb:.3f} GB in {len(arrays)} tensors "
-        f"({t1 - t0:.1f}s), unix={t1:.3f}",
+        f"SPIKE server: payload built: {gb:.3f} GB in {len(arrays)} tensors " f"({t1 - t0:.1f}s), unix={t1:.3f}",
         flush=True,
     )
 

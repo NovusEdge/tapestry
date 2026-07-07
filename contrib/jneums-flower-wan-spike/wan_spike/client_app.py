@@ -16,8 +16,7 @@ def train(msg: Message, context: Context) -> Message:
     nbytes = sum(len(arr.data) for arr in arrays.values())
     t1 = time.time()
     print(
-        f"SPIKE client: received {nbytes / 1e9:.3f} GB "
-        f"(handler_start_unix={t0:.3f}, counted at {t1:.3f})",
+        f"SPIKE client: received {nbytes / 1e9:.3f} GB " f"(handler_start_unix={t0:.3f}, counted at {t1:.3f})",
         flush=True,
     )
 
