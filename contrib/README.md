@@ -23,16 +23,39 @@ A maintainer will review, discuss, and either request changes, merge for further
 
 ### Suggested Subdirectory Layout
 
+The details about each file are discussed below.
+
 ```
 contrib/
 └── <your-handle>-<topic>/
-    ├── README.md      # what it is, why, status, how to try it
-    ├── LICENSE        # license for this contribution (optional - see below)
-    ├── Makefile       # contains targets for running any custom executables (optional)
+    ├── README.md      # What it is, why, status, how to try it
+    ├── LICENSE        # License for this contribution (optional)
+    ├── .custom.mk     # Customize project-wide make targets, like "tests" (optional)
+    ├── .targets.mk    # Add project-wide make targets for the contribution (optional)
+    ├── Makefile       # Standalone make processes; not connected to the main make processes (optional)
     └── ...            # code, notes, diagrams, data pointers, etc.
 ```
 
-## Pass the Code Quality "Gates"
+## The Project-wide Make Processes
+
+The files `.custom.mk` and `.targets.mk` are optional files that tie your contribution into the project-wide `make` processes. (Note the leading `.` in the names) They are _include_ files that will be read by the top-level `Makefile` and `.common.mk` files.
+
+There are two files because they play two different roles and they are loaded in two different ways. We discuss the details below, but briefly, here is how they are used:
+
+* `.custom.mk` - Override the behaviors of common targets like `tests`, `format`, etc.
+* `.targets.mk` - Define targets for the contribution that will be visible in the top-level `make` process, such as commands to run the contribution's code.
+
+You can find examples of these files in some of the `contrib/*` directories.
+
+Optionally, you can include your own `Makefile` for other "standalone" purposes that don't need exposure in the top-level processes. If useful, your `Makefile` can include `.common.mk` using a relative path to it:
+
+```makefile
+include ../../.common.mk
+```
+
+Now lets discuss the quality enforcement and how to customize them using `.custom.mk`.
+
+## Pass the Code Quality Enforcement
 
 The top-level `Makefile` has a target `before-pr`, which we ask everyone to run before opening a pull request.
 
@@ -40,24 +63,194 @@ The top-level `Makefile` has a target `before-pr`, which we ask everyone to run 
 make before-pr
 ```
 
-It verifies that all existing _production_ code under `src` is properly formatted (the `Makefile`'s `format` target), lints cleanly (the `ruff` and `pylint` targets), type checks (the `type-check` target), and the tests pass (the `tests` target).
+This target builds the following targets used to format the code and verify that **all** existing _production_ code under `src` meets our quality criteria:
 
-Since `contrib` contributions are not necessarily production quality, the `before-pr` target currently only runs the `tests` target for each contribution. (We don't even require the contribution to have tests...) That's the minimum threshold.
+| Targets | Purpose |
+| :------ | :------ |
+| `format` | Format the Python code consistently. |
+| `ruff` and `pylint` | _Lint_ the code for potential problems. |
+| `type-check` | Verify the optional type annotations are valid. |
+| `tests` | Run the unit tests. |
 
-However, if you intend for your contribution to become part of the production code, it will eventually be necessary for all the quality checks to pass for the code, including a comprehensive test suite.
+All these targets are defined in the top-level `.common.mk` file.
 
-You can run the targets for your contribution as follows. Let's assume your contribution is named `contrib/johndoe-foo`, then use this command _in the top-level directory_:
+> [!WARNING]
+> The `format` target may modify your source code. Inspect those changes and commit them. If you think they are "wrong" in some way and the formatting should be changed globally for all source code, [post an issue](https://github.com/The-AI-Alliance/tapestry/issues). If you just want to disable the reformatting for your contribution, use the mechanisms described below.
+
+**_By default, these same targets are built for every contribution, too!_** However, since `contrib` contributions are not necessarily production quality, and we want to encourage such contributions with minimal "friction", a make "protocol" is provided to customize which quality checks are skipped. This is how `.custom.mk` is used.
+
+> If you intend for your contribution to become part of the production code, it will eventually be necessary for all these quality enforcement targets to work successfully for your contribution, so we recommend making them work ASAP.
+
+Before discussing customization options, let's describe how you can build these quality `make` targets for your contribution, without running them for all code.
+
+First, to run the checks for _all_ the contributions, start in the _top-level directory_ and run either of the following commands:
 
 ```shell
-make SRC_DIR=contrib/johndoe-foo format ruff pylint type-check tests
+make do-contrib-before-pr  # run all of the checks for all contrib/*
+make contrib-pylint        # run just `pylint` for all contrib/*
 ```
 
+(Substitute `pylint` with any of the other quality checks mentioned above, as desired.)
+
+To run checks for your contribution only, let's assume it is named `contrib/johndoe-foo`, then use the following command in the top-level directory to run all the quality targets:
+
+```shell
+make SRC_DIR=contrib/johndoe-foo --include-dir=contrib/johndoe-foo format ruff pylint type-check tests
+```
+
+The `SRC_DIR=...` definition points to the contribution's directory so the quality targets run from there. The `--include-dir=...` argument is used to tell `make` to search in the same directory for include files, in our case, the customization file `.custom.mk`.
+
+The `do-contrib-before-pr` target mentioned above also uses this command, running it once for each contribution. Similarly, the `contrib-x` targets also use this command, with the `x` target being one of the list of all the quality targets: `format ruff pylint type-check tests`.
+
 > [!TIP]
-> Problems found while type checking often take the most time to fix, use this command to keep running the type checker as you fix issues and save the files:
+> Problems found while type checking often take the most time to fix, use this command to continuously and automatically re-run the type checker as you fix issues and save the files:
 > ```shell
-> make SRC_DIR=contrib/johndoe-foo type-check-watch
+> make SRC_DIR=contrib/johndoe-foo --include-dir=contrib/johndoe-foo type-check-watch
 > ```
 > Exit using control-C.
+
+### How to Customize the Quality Checks
+
+You can find examples in most of the `contrib/*` directories. Customization is done by creating a `.custom.mk` file. Here is an example, `contrib/jneums-consortium-experiment/.custom.mk` (at the time of this writing):
+
+```makefile
+override define help_targets_message
+For the consortium-training prototype:
+
+make consortium-experiment
+                        # Run deterministic PoC metrics for consortium-training rounds.
+make consortium-tests   # Run only the consortium-training prototype tests.
+endef
+
+# This definition effectively skips the "pylint" and "type-check" targets defined
+# in the top-level Makefile.
+pylint-default type-check-default:
+  @echo "${WARN} ${skip-contrib-target}${_END}"
+  @true
+```
+
+Two of the supported customization mechanisms are shown here.
+
+#### Help on Custom Targets You Define
+
+We will see below, that you can define targets that can be executed to demonstrate your contribution using the `.targets.mk` file. You provide a brief description of all these commands in `.custom.mk`, where you _override_ the definition of `help_targets_message` as shown here.
+
+This message will be printed whenever the user runs `make help-targets` (a target defined in the top level `.common.mk`), along with similar messages for all the other contributions. In this example, there are two program targets defined, `consortium-experiment` and `consortium-tests`.
+
+> [!NOTE]
+> Note the `override` keyword for the definition for `help_targets_message`. By default, the top-level `.common.mk` provides a default definition, but we override it here to customize it for this particular directory.
+
+Try `make help-targets` in the top-level directory to see all the help messages about targets in contributions, as well as the main code base.
+
+#### Disable Some Quality Checks
+
+The second customization mechanism is shown for `pylint` and `type-check`. In this contribution, they don't currently pass (and don't really need to pass at this time). Hence, they are _disabled_ by _overriding_ the definitions of the `pylint-default` and `type-check-default` targets to print a warning message (as a reminder to the user), but not actually invoke `pylint` and `type-check`, respectively.
+
+In the top level `.common.mk`, the `pylint` target is defined as follows (the other quality targets like `type-check` are similar):
+
+```makefile
+pylint:: pylint-prerequisite pylint-default pylint-postrequisite
+pylint-prerequisite pylint-postrequisite::
+pylint-default:
+  @echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
+  uv run pylint ${SRC_DIR}
+```
+
+So, if you don't override the definition of `pylint-default` in your `.custom.mk`, the definition in the top level `.common.mk` will be used to run `pylint` on your code.
+
+> [!NOTE]
+> Anytime you disable a quality check by overriding the definition of `x-default`, please use the commands shown in the example above for `contrib/jneums-consortium-experiment/.custom.mk`, so the warning message is issued for the user's benefit!
+
+The third and fourth customization mechanisms can be seen in the snippet from the top level `.common.mk` above. The `pylint-prerequisite` target does nothing by default, but if you need to do something _before_ `pylint` is invoked, you can add a definition for this target in your `.custom.mk` file. Similarly, `pylint-postrequisite` does nothing by default, but it can be defined to do work after `pylint` finishes, for example, cleaning up temporary files.
+
+Let's look at how the prerequisite hook is used before tests are run to set up a custom environment in a different contribution, `contrib/nguyennm1024-sociocultural-alignment/`. In that directory's `.custom.mk` you will find this definition:
+
+```makefile
+unit-tests-prerequisite::
+  @cd ${SRC_DIR}; \
+    if [ -d .venv ]; \
+    then echo "'.venv' already exists; not running 'uv venv'."; \
+    else \
+      uv venv; \
+      echo "running: uv pip install --requirements requirements.txt"; \
+      uv pip install --requirements requirements.txt; \
+    fi
+```
+
+(Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built.) Here, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
+
+> [!WARNING]
+>
+> **One or Two Trailing Colons??**
+>
+> Did you notice that the top level `.common.mk` has `pylint-prerequisite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
+>
+> When a target has two trailing colons, `make` allows _more than one_ definition of that target. This is a tool for adding additional dependencies to a target or additional commands to execute. consider this contrived example,
+>
+> ```makefile
+> foo::
+>   @echo "foo - no dependencies"
+> foo:: a
+>   @echo "foo - dependency: a"
+> foo:: b
+> a::
+>   @echo "a"
+> b::
+>   @echo "b"
+> foo::
+>   @echo "finished!"
+> ```
+> If you run `make foo`, this is what gets printed:
+> ```text
+> foo - no dependencies
+> a
+> foo - dependency: a
+> b
+> finished!
+> ```
+> We exploit this feature to have a "no-op" default behavior for `pylint-prerequisite` and allow contributions to define any additional prerequisite behavior they want.
+>
+> In contrast, `pylint-default:` has one trailing colon; _the last definition overrides all previous definitions seen._ We only want a _single_ definition of this target to be used. For example,
+> ```makefile
+> bar:
+>   @echo "bar V1!"
+> bar:
+>   @echo "bar V2!"
+> ```
+> Running `make bar` prints the following:
+> ```text
+> Makefile:32: warning: overriding commands for target `bar'
+> Makefile:30: warning: ignoring old commands for target `bar'
+> bar V2!
+> ```
+> Two warnings are printed about overriding a previous definition of `bar` (Ignore the line numbers shown...). _We filter out these messages in our commands that use this idiom._
+>
+> You have to use `::` or `:` consistently for a given target or `make` will throw an error for the target definition. So, if and when you define a `x-prerequisite::`,  `x-postrequisite::`, or `x-default:` target, be careful to use one or two colons, as shown.
+
+### How to Add Custom Targets
+
+The optional `.targets.mk` allows you to define custom targets that will be visible to the top-level `make` process. For example, you should consider adding targets to run demonstrations of your contribution. _Also add help messages for them, as mentioned above, using `.custom.mk`._
+
+Here is an example from `contrib/jneums-consortium-experiment/.targets.mk`:
+
+```makefile
+.PHONY: consortium-experiment ...
+
+CONSORTIUM_EXPERIMENT_DIR := contrib/jneums-consortium-experiment
+
+consortium-experiment::
+  @echo "${INFO}Running the consortium-training experiment metrics...${_END}"
+  PYTHONPATH="${PWD}/${SRC_DIR}:${PWD}/${CONSORTIUM_EXPERIMENT_DIR}" uv run python ${CONSORTIUM_EXPERIMENT_DIR}/run.py
+
+...
+```
+
+> [!NOTE]
+> These targets are meant to be built in the top-level directory, not the contribution's directory. Also, when they are built, `${SRC_DIR}`, if used, will refer to the production code's `src` directory. This is different from how this variable is defined when content in `.custom.mk` is used, where it will be defined to be the contribution's directory.
+
+Because the `.targets.mk` files are included in the top level `Makefile`, the `.targets.mk` files don't need to include the top level `.common.mk`. The definitions in `.common.mk` will already be visible to it.
+
+Once you have added one or more custom targets to a `.targets.mk`, verify they work by going to the project's top level directory and running `make my_target`, such as `make consortium-experiment` in the example just shown.
 
 ## Reviewer-Friendly Checklist
 
@@ -68,7 +261,7 @@ they are small, runnable, and explicit about their maturity. It is preferable to
 
 - Prefer several focused submissions over one large PR that mixes ideas,
   experiments, data notes, and implementation changes.
-- Make the top-level `README.md` a "travel guide" through the contribution: what
+- Make the `README.md` a "travel guide" through the contribution: what
   to read first, what to run, where the important code or data pointers live,
   and what result a reviewer should expect.
 - Keep code and documentation readable enough that another contributor can
@@ -85,8 +278,7 @@ Tell reviewers how to run the contribution from beginning to end:
 - Expected runtime, approximate resource use, and expected outputs.
 - Known limitations, shortcuts, skipped steps, or non-deterministic results.
 
-When possible, automate the workflow with scripts or a local `Makefile` so a
-reviewer does not have to reconstruct the command sequence manually.
+Whenever possible, automate any workflow and command with definitions in `.targets.mk`, a custom `Makefile`, and/or shell scripts, so the reviewer does not have to reconstruct the command sequence manually.
 
 ### State the Readiness Level
 
@@ -108,11 +300,7 @@ For code that might be adopted later, reduce integration friction:
 - Use `argparse` or an equivalent CLI framework for command-line tools, with
   helpful descriptions for every argument.
 - Include automated tests for behavior that Tapestry would rely on.
-- Use type annotations for (almost) everything and make sure the `type-check` target passes.
-
-### Optional Makefile "Contract"
-
-If your contribution needs its own workflow commands, include a `Makefile` in your contribution directory. For consistency with the top-level `Makefile`, begin by including `../../common.mk`. Use this `Makefile` your custom executables and build steps, but rely on the top-level `Makefile` for standard targets like `tests`, `lint`, etc.
+- Use type annotations for (almost) everything and make sure the `type-check` target passes, as well as the other quality checks discussed above.
 
 ## Contribution Policy
 
