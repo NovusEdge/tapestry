@@ -254,3 +254,7 @@ See the contributing guide [section on DCO](CONTRIBUTING.md#developer-certificat
 The [website](https://the-ai-alliance.github.io/tapestry/) for this repository provides another way to discover and navigate the technical documentation content in [`docs`](/docs). However, at this time, the site mostly just points to the content in [`docs`](docs/). Eventually, it will publish "refined" versions of the `docs` content.
 
 The website sources are written in Markdown, HTML, JavaScript, etc. and are found in the [`website`](website/) directory. The website is published using [GitHub Pages](https://pages.github.com/), which uses the [Jekyll](https://github.com/jekyll/jekyll) engine. See [GITHUB_PAGES.md](GITHUB_PAGES.md) for all the details.
+
+----
+
+_Project Tapestry is an initiative of the AI Alliance Innovation Association, 501(c)(6) non-profit._
