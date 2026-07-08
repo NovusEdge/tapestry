@@ -322,9 +322,9 @@ Every contribution must be clearly licensed. Unless you state otherwise, Tapestr
 
 | Content type | Default license |
 | :----------- | :-------------- |
-| Code | [Apache 2.0](../LICENSE.Apache-2.0) |
-| Documentation | [CC BY 4.0](../LICENSE.CC-BY-4.0) |
-| Data | [CDLA Permissive 2.0](../LICENSE.CDLA-2.0) |
+| Code | [Apache 2.0](../LICENSES/LICENSE.Apache-2.0) |
+| Documentation | [CC BY 4.0](../LICENSES/LICENSE.CC-BY-4.0) |
+| Data | [CDLA Permissive 2.0](../LICENSES/LICENSE.CDLA-2.0) |
 
 If your contribution uses a different (but compatible, permissive) license, state it explicitly in your subdirectory's `LICENSE` and `README.md`. Contributions without a clear, _compatible_ license cannot be accepted.
 
