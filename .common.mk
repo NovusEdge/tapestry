@@ -141,10 +141,10 @@ tests:: unit-tests
 unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
 unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
-	@echo "${INFO}Running the unit tests in ${SRC_DIR}/tests:${_END}"
+	@echo "${INFO}Running the unit tests (with coverage) in ${SRC_DIR}/tests:${_END}"
 	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN} No test directory ${SRC_DIR}/tests found!${_END}"; \
-	else echo "cd ${SRC_DIR}; uv run python -m pytest tests -q"; \
-		cd ${SRC_DIR}; uv run python -m pytest tests -q; \
+	else echo "cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s"; \
+		cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s && uv run coverage report -m; \
 	fi
 
 # Convenient short hand for the two linters.
