@@ -16,6 +16,8 @@ unit-tests-prerequisite::
 unit-tests-default:
 	@cd ${SRC_DIR}; \
 	echo "${INFO}Building $@ in $$(pwd).${_END}"; \
+	echo "running: which source"; \
+	which source; \
 	echo "running: source $$(pwd)/.venv/bin/activate"; \
 	source $$(pwd)/.venv/bin/activate; \
 	echo "running: ${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}"; \
