@@ -187,12 +187,24 @@ type-check-watch-default:
 
 # Contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
 # although the construction of ${CONTRIB_DIRS} should prevent this from happening.
+# Also, "set -o pipefail" is used to ensure that if the nested make command fails,
+# we don't ignore the error because egrep always succeeds!
 contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
 		echo "${INFO}In directory $$d:${_END}"; \
-		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
+		set -o pipefail && \
+			${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} 2>&1 | \
+			egrep -v -e '(overriding|ignoring old) commands for target' || exit $$?; \
 	done
+
+# This is really a test target for testing contrib-%, but it's reasonably useful
+# when you want to list all the contrib/* directories.
+# Try "make LIST_FILTER='*.md' contrib-list", for example.
+LIST_FILTER :=
+.PHONY: list
+list:
+	cd ${SRC_DIR} && ls -al ${LIST_FILTER}
 
 .PHONY: one-time-setup clean-setup
 .PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
