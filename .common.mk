@@ -9,6 +9,9 @@ CONTRIB_TARGETS_MKS := $(foreach dir,${CONTRIB_DIRS},$(wildcard $(dir)/.targets.
 QUALITY_CHECKS      := format ruff pylint type-check tests
 PYLINT_IGNORE_ARGS  := --ignore=.venv --ignore-pattern='.*cache.*'
 
+PYTEST_RUN_CMD        := uv run --active coverage run -m pytest -q -v -s
+PYTEST_COV_REPORT_CMD := uv run --active coverage report -m
+
 # Environment variables
 MAKEFLAGS     = --warn-undefined-variables
 UNAME        ?= $(shell uname)
@@ -144,8 +147,10 @@ unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
 	@echo "${INFO}Running the unit tests (with coverage) in ${SRC_DIR}/tests:${_END}"
 	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN} No test directory ${SRC_DIR}/tests found!${_END}"; \
-	else echo "cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s && uv run coverage report -m"; \
-		cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s && uv run coverage report -m; \
+	else \
+		cd ${SRC_DIR}; \
+		echo "Running: ${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}"; \
+		${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}; \
 	fi
 
 # Convenient short hand for the two linters.

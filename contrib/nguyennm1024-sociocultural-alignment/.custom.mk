@@ -1,12 +1,13 @@
 unit-tests-prerequisite::
 	@cd ${SRC_DIR}; \
-		if [ -d .venv ]; \
-		then echo "'.venv' already exists; not running 'uv venv'."; \
-		else \
-			uv venv; \
-			echo "running: uv pip install --requirements requirements.txt"; \
-			uv pip install --requirements requirements.txt; \
-		fi
+	echo "Building $@ in $$(pwd)."; \
+	if [ -d .venv ]; \
+	then echo "${WARN}'.venv' already exists; not running 'uv venv'.${_END}"; \
+	else \
+		uv venv; \
+		echo "running: uv pip install --requirements requirements.txt"; \
+		uv pip install --requirements requirements.txt; \
+	fi
 
 # Override the default, even though we run similar commands as are used in
 # ../../Makefile, because the unit-tests-default defined there runs in the
@@ -14,11 +15,11 @@ unit-tests-prerequisite::
 # directory, because a separate environment is setup here.
 unit-tests-default:
 	@cd ${SRC_DIR}; \
-	echo "${INFO}Running the unit tests in ${PWD}/tests:${_END}"; \
-	echo "running: source .venv/bin/activate"; \
-	source .venv/bin/activate; \
-	echo "running: uv run --active python -m pytest tests -q"; \
-	uv run --active python -m pytest tests -q
+	echo "${INFO}Building $@ in $$(pwd).${_END}"; \
+	echo "running: source $$(pwd)/.venv/bin/activate"; \
+	source $$(pwd)/.venv/bin/activate; \
+	echo "running: ${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}"; \
+	${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}
 
 # This definition effectively skips the, "ruff", "pylint" and "type-check"
 # targets defined in the top-level Makefile.
