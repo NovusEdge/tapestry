@@ -16,7 +16,10 @@ dependencies = [
 # Installed by default by `uv run`, so the top-level `make contrib-tests`
 # (which runs pytest with this contribution's own uv project environment)
 # finds pytest here.
-dev = ["pytest>=8.0"]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["wan_spike"]

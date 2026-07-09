@@ -6,7 +6,8 @@ CONTRIB_DIR         := contrib
 CONTRIB_DIRS        := $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
 CONTRIB_TARGETS_MKS := $(foreach dir,${CONTRIB_DIRS},$(wildcard $(dir)/.targets.mk))
 
-QUALITY_CHECKS := format ruff pylint type-check tests
+QUALITY_CHECKS      := format ruff pylint type-check tests
+PYLINT_IGNORE_ARGS  := --ignore=.venv --ignore-pattern='.*cache.*'
 
 # Environment variables
 MAKEFLAGS     = --warn-undefined-variables
@@ -143,7 +144,7 @@ unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
 	@echo "${INFO}Running the unit tests (with coverage) in ${SRC_DIR}/tests:${_END}"
 	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN} No test directory ${SRC_DIR}/tests found!${_END}"; \
-	else echo "cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s"; \
+	else echo "cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s && uv run coverage report -m"; \
 		cd ${SRC_DIR}; uv run coverage run -m pytest -q -v -s && uv run coverage report -m; \
 	fi
 
@@ -166,7 +167,7 @@ pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
 	@echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
-	uv run pylint ${SRC_DIR}
+	uv run pylint ${PYLINT_IGNORE_ARGS} ${SRC_DIR}
 
 type-check:: type-check-prerequisite type-check-default type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
