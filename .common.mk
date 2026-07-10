@@ -6,7 +6,11 @@ CONTRIB_DIR         := contrib
 CONTRIB_DIRS        := $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
 CONTRIB_TARGETS_MKS := $(foreach dir,${CONTRIB_DIRS},$(wildcard $(dir)/.targets.mk))
 
-QUALITY_CHECKS := format ruff pylint type-check tests
+QUALITY_CHECKS      := format ruff pylint type-check tests
+PYLINT_IGNORE_ARGS  := --ignore=.venv --ignore-pattern='.*cache.*'
+
+PYTEST_RUN_CMD        := uv run --active coverage run -m pytest -q -v -s
+PYTEST_COV_REPORT_CMD := uv run --active coverage report -m
 
 # Environment variables
 MAKEFLAGS     = --warn-undefined-variables
@@ -141,10 +145,12 @@ tests:: unit-tests
 unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
 unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
-	@echo "${INFO}Running the unit tests in ${SRC_DIR}/tests:${_END}"
+	@echo "${INFO}Running the unit tests (with coverage) in ${SRC_DIR}/tests:${_END}"
 	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN} No test directory ${SRC_DIR}/tests found!${_END}"; \
-	else echo "cd ${SRC_DIR}; uv run python -m pytest tests -q"; \
-		cd ${SRC_DIR}; uv run python -m pytest tests -q; \
+	else \
+		cd ${SRC_DIR}; \
+		echo "Running: ${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}"; \
+		${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}; \
 	fi
 
 # Convenient short hand for the two linters.
@@ -166,7 +172,7 @@ pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
 	@echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
-	uv run pylint ${SRC_DIR}
+	uv run pylint ${PYLINT_IGNORE_ARGS} ${SRC_DIR}
 
 type-check:: type-check-prerequisite type-check-default type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
@@ -179,14 +185,32 @@ type-check-watch-default:
 	@echo "${INFO}$@: Running 'ty' to type check the code in ${SRC_DIR} using 'watch' mode.${_END}"
 	uv run ty check --watch ${SRC_DIR}
 
-# Contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
+# The next recipe contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
 # although the construction of ${CONTRIB_DIRS} should prevent this from happening.
+# Also, the output is filtered with egrep to remove unhelpful warnings from make when
+# targets are redefined, which we exploit intentionally. These this target by running:
+# make contrib-list  # list the contributions root directories.
+# make contrib-ls    # should fail for first contribution, because there isn't an "ls" target!
+#
+# (Implementation note: this filtering is done on the whole for loop, not using a pipe on
+# the nested make invocation. The reason is that "make ... | egrep ..." would always
+# succeed if the make command fails! We tried using "set -o pipefail" to prevent this
+# silent failure, but that isn't support by "/bin/sh" on Linux, which is the Bourne shell-
+# compatible shell "dash".)
 contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
 		echo "${INFO}In directory $$d:${_END}"; \
-		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
-	done
+			${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} 2>&1 || exit $$?; \
+	done | egrep -v -e '(overriding|ignoring old) commands for target' 
+
+# This is really a test target for testing contrib-%, but it's reasonably useful
+# when you want to list all the contrib/* directories.
+# Try "make LIST_FILTER='*.md' contrib-list", for example.
+LIST_FILTER :=
+.PHONY: list
+list:
+	cd ${SRC_DIR} && ls -al ${LIST_FILTER}
 
 .PHONY: one-time-setup clean-setup
 .PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
