@@ -91,7 +91,6 @@ make contrib-pylint        # run just `pylint` for all contrib/*
 ```
 
 (Substitute `pylint` with any of the other quality checks mentioned above, as desired.)
-
 To run checks for your contribution only, let's assume it is named `contrib/johndoe-foo`, then use the following command in the top-level directory to run all the quality targets:
 
 ```shell
@@ -117,19 +116,21 @@ You can find examples in most of the `contrib/*` directories. Customization is d
 override define help_targets_message
 For the consortium-training prototype:
 
-make consortium-experiment
+${CODE}make consortium-experiment${_END}
                         # Run deterministic PoC metrics for consortium-training rounds.
-make consortium-tests   # Run only the consortium-training prototype tests.
+${CODE}make consortium-tests${_END}   # Run only the consortium-training prototype tests.
 endef
 
 # This definition effectively skips the "pylint" and "type-check" targets defined
 # in the top-level Makefile.
 pylint-default type-check-default:
-  @echo "${WARN} ${skip-contrib-target}${_END}"
+  @echo "${skip-contrib-target}"
   @true
 ```
 
 Two of the supported customization mechanisms are shown here.
+
+But first, note the `${CODE}` and `${_END}` `make` variables used in the help message. They provide color highlighting of the output. `${CODE}` starts a string of highlighting and `${_END}` stops it (returning to normal console output). They make messages more readable, but you can omit them in your help messages. See `../.console-colors.mk` for more details about these and other highlighting definitions. See other message definitions in `../.common.mk` for more examples, as well as the examples below that use `${INFO}`, which behaves similarly to `${CODE}` (it takes affect until `${_END}` is seen) and `${INFO_LABEL}`, which shows a highlighted leading "label", `INFO:`, and immediately resets to the normal output, so `${_END}` isn't necessary.
 
 #### Help on Custom Targets You Define
 
@@ -144,7 +145,7 @@ Try `make help-targets` in the top-level directory to see all the help messages 
 
 #### Disable Some Quality Checks
 
-The second customization mechanism is shown for `pylint` and `type-check`. In this contribution, they don't currently pass (and don't really need to pass at this time). Hence, they are _disabled_ by _overriding_ the definitions of the `pylint-default` and `type-check-default` targets to print a warning message (as a reminder to the user), but not actually invoke `pylint` and `type-check`, respectively.
+The second customization mechanism is shown for `pylint` and `type-check` in the example contribution. These quality targets don't currently pass (and don't really need to pass at this time). Hence, they are _disabled_ by _overriding_ the definitions of the `pylint-default` and `type-check-default` targets to print a warning message (as a reminder to the user), but not actually invoke `pylint` and `type-check`, respectively.
 
 In the top level `.common.mk`, the `pylint` target is defined as follows (the other quality targets like `type-check` are similar):
 
@@ -152,32 +153,34 @@ In the top level `.common.mk`, the `pylint` target is defined as follows (the ot
 pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
-  @echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
+  @echo "${INFO} $@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
   uv run pylint ${SRC_DIR}
 ```
 
 So, if you don't override the definition of `pylint-default` in your `.custom.mk`, the definition in the top level `.common.mk` will be used to run `pylint` on your code.
 
 > [!NOTE]
-> Anytime you disable a quality check by overriding the definition of `x-default`, please use the commands shown in the example above for `contrib/jneums-consortium-experiment/.custom.mk`, so the warning message is issued for the user's benefit!
+> Anytime you disable a quality check by overriding the definition of `x-default`, please use the commands shown in the example above, so the warning message is issued for the user's benefit!
 
-The third and fourth customization mechanisms can be seen in the snippet from the top level `.common.mk` above. The `pylint-prerequisite` target does nothing by default, but if you need to do something _before_ `pylint` is invoked, you can add a definition for this target in your `.custom.mk` file. Similarly, `pylint-postrequisite` does nothing by default, but it can be defined to do work after `pylint` finishes, for example, cleaning up temporary files.
+The third and fourth customization mechanisms can be "suggested" in the snippet from the top level `.common.mk` above. The `pylint-prerequisite` target does nothing by default, but if you need to do something _before_ `pylint` is invoked, you can add a definition for this target in your `.custom.mk` file. Similarly, `pylint-postrequisite` does nothing by default, but it can be defined to do work after `pylint` finishes, for example, cleaning up temporary files.
 
-Let's look at how the prerequisite hook is used before tests are run to set up a custom environment in a different contribution, `contrib/nguyennm1024-sociocultural-alignment/`. In that directory's `.custom.mk` you will find this definition:
+Let's look at how a prerequisite hook can be used before tests are run to set up a custom environment in a different contribution, adapted from `contrib/nguyennm1024-sociocultural-alignment/`:
 
 ```makefile
 unit-tests-prerequisite::
   @cd ${SRC_DIR}; \
     if [ -d .venv ]; \
-    then echo "'.venv' already exists; not running 'uv venv'."; \
+    then echo "${INFO_LABEL}'.venv' already exists; not running 'uv venv'."; \
     else \
       uv venv; \
-      echo "running: uv pip install --requirements requirements.txt"; \
+      echo "${INFO_LABEL}running: uv pip install --requirements requirements.txt"; \
       uv pip install --requirements requirements.txt; \
     fi
 ```
 
-(Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built.) Here, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
+Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built. The `${INFO_LABEL}` renders as a bright green `INFO:` prefix, so the messages stand out. 
+
+In this recipe, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
 
 > [!WARNING]
 >

@@ -26,6 +26,7 @@ TIP          = ${BOLD}${DARK_GREEN}TIP:
 HIGHLIGHT    = ${BOLD}${BLUE}
 
 # "Labels" for when you just want to, e.g., "ERROR:" colored, but the rest of the line should be "normal".
+# No "${_END}" has to be provided when these labels are used.
 ERROR_LABEL     = ${BOLD}${RED}ERROR:${_END} 
 WARN_LABEL      = ${BOLD}${ORANGE}WARNING:${_END} 
 WARNING_LABEL   = ${BOLD}${ORANGE}WARNING:${_END} 

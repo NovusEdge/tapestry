@@ -18,7 +18,7 @@ endef
 .PHONY: consortium-demo
 
 consortium-demo::
-	@echo "${INFO}Running the consortium-training demo...${_END}"
+	@echo "${INFO_LABEL}Running the consortium-training demo: ${CODE}examples/consortium_training_demo.py${_END}"
 	uv run python examples/consortium_training_demo.py
 
 # This construct uses the list of .targets.mk files in $(CONTRIB_TARGETS_MKS) and

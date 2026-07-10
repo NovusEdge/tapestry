@@ -80,7 +80,7 @@ help-targets:: help-top-level-targets-prefix help-top-level-targets contrib-cust
 	@true  # for some reason, this needs to be here to avoid some undesirable, extra output
 
 help-top-level-targets-prefix:
-	@echo "${INFO}For the examples:${_END}"
+	@echo "${INFO_LABEL}For the ${CODE}examples${_END}:"
 
 help-top-level-targets:
 	$(info ${help_top_level_targets_message})
@@ -126,11 +126,11 @@ tests:: unit-tests
 unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
 unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
-	@echo "${INFO}Running the unit tests (with coverage) in ${SRC_DIR}/tests:${_END}"
-	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN} No test directory ${SRC_DIR}/tests found!${_END}"; \
+	@echo "${INFO_LABEL} $@: Running the unit tests (with coverage) in ${CODE}${SRC_DIR}/tests${_END}:"
+	@if [ ! -d "${SRC_DIR}/tests" ]; then echo "${WARN_LABEL} No test directory ${CODE}${SRC_DIR}/tests${_END} found!"; \
 	else \
 		cd ${SRC_DIR}; \
-		echo "Running: ${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}"; \
+		echo "${INFO_LABEL} Running: ${CODE}${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}${_END}"; \
 		${PYTEST_RUN_CMD} && ${PYTEST_COV_REPORT_CMD}; \
 	fi
 
@@ -140,30 +140,30 @@ lint:: ruff pylint
 format:: format-prerequisite format-default format-postrequisite
 format-prerequisite format-postrequisite::
 format-default:
-	@echo "${INFO}$@: Running 'black' on the code in ${SRC_DIR}.${_END}"
+	@echo "${INFO_LABEL} $@: Running ${CODE}black${_END} on the code in ${CODE}${SRC_DIR}${_END}."
 	uv run black ${SRC_DIR}
 
 ruff:: ruff-prerequisite ruff-default ruff-postrequisite
 ruff-prerequisite ruff-postrequisite::
 ruff-default:
-	@echo "${INFO}$@: Running 'ruff' to lint the code in ${SRC_DIR}.${_END}"
+	@echo "${INFO_LABEL} $@: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END}."
 	uv run ruff check --fix ${SRC_DIR}
 
 pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
-	@echo "${INFO}$@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
+	@echo "${INFO_LABEL} $@: Running ${CODE}pylint${_END} on the code in ${CODE}${SRC_DIR}${_END} (configuration in ${CODE}pylintrc.toml${_END})"
 	uv run pylint ${PYLINT_IGNORE_ARGS} ${SRC_DIR}
 
 type-check:: type-check-prerequisite type-check-default type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
 type-check-default:
-	@echo "${INFO}$@: Running 'ty' to type check the code in ${SRC_DIR}.${_END}"
+	@echo "${INFO_LABEL} $@: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END}."
 	uv run ty check ${SRC_DIR}
 
 type-check-watch:: type-check-prerequisite type-check-watch-default type-check-postrequisite
 type-check-watch-default:
-	@echo "${INFO}$@: Running 'ty' to type check the code in ${SRC_DIR} using 'watch' mode.${_END}"
+	@echo "${INFO_LABEL} $@: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
 	uv run ty check --watch ${SRC_DIR}
 
 # Provide a concrete recipe for the contrib-help target, so the "contrib-%" target pattern below 
@@ -186,7 +186,7 @@ contrib-help::
 contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
-		echo "${INFO}For directory ${CODE}$$d${_END}:"; \
+		echo "${INFO_LABEL}For directory ${CODE}$$d${_END}:"; \
 			${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
 	done 2>&1 | egrep -v -e '(overriding|ignoring old) (commands|recipe) for target' 
 
@@ -207,11 +207,11 @@ setup one-time-setup:: install-uv uv-venv install-dev-dependencies
 
 install-%::
 	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
-		echo "${INFO}$$cmd is already installed${_END}" || ${MAKE} help-command-$$cmd
+		echo "${INFO_LABEL}command ${CODE}$$cmd${_END} is already installed." || ${MAKE} help-command-$$cmd
 
 uv-venv:: command-check-uv
-	@test -d .venv && echo "'.venv' already exists; not running 'uv venv'." || uv venv
-	@echo "run: 'source .venv/bin/activate' if subsequent commands fail!"
+	@test -d .venv && echo "${INFO_LABEL}directory ${CODE}.venv${_END} already exists; not running ${CODE}uv venv${_END}." || uv venv
+	@echo "${INFO_LABEL}run ${CODE}source .venv/bin/activate${_END} if subsequent commands fail!"
 
 install-dev-dependencies::
 	uv pip install -e ".[dev]"
