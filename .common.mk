@@ -229,15 +229,13 @@ help-command-uv help-command-uvx::
 	@echo
 
 define help-message-uv
-
-The Python environment management tool "uv" is required.
-See https://docs.astral.sh/uv/ for installation instructions.
-
-If you want to uninstall uv and you used HomeBrew to install it,
-use 'brew uninstall uv'. Otherwise, if you executed one of the
-installation commands on the website above, find the installation
-location and delete uv.
-
+${NOTE_LABEL}The Python environment management tool ${CODE}uv${_END} is required.
+${NOTE_LABEL}See ${CODE}https://docs.astral.sh/uv/${_END} for installation instructions.
+${NOTE_LABEL}
+${NOTE_LABEL}If you want to uninstall uv and you used HomeBrew to install it,
+${NOTE_LABEL}use ${CODE}brew uninstall uv${_END}. Otherwise, if you executed one of the
+${NOTE_LABEL}installation commands on the website above, find the installation
+${NOTE_LABEL}location and delete uv.
 endef
 
 define skip-contrib-target

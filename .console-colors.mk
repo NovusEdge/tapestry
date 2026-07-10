@@ -27,10 +27,10 @@ HIGHLIGHT    = ${BOLD}${BLUE}
 
 # "Labels" for when you just want to, e.g., "ERROR:" colored, but the rest of the line should be "normal".
 ERROR_LABEL     = ${BOLD}${RED}ERROR:${_END} 
-WARN_LABEL      = ${ORANGE}WARNING:${_END} 
-WARNING_LABEL   = ${ORANGE}WARNING:${_END} 
-NOTE_LABEL      = ${GREEN}NOTE:${_END} 
-INFO_LABEL      = ${DARK_GREEN}INFO:${_END} 
+WARN_LABEL      = ${BOLD}${ORANGE}WARNING:${_END} 
+WARNING_LABEL   = ${BOLD}${ORANGE}WARNING:${_END} 
+NOTE_LABEL      = ${BOLD}${GREEN}NOTE:${_END} 
+INFO_LABEL      = ${BOLD}${DARK_GREEN}INFO:${_END} 
 TIP_LABEL       = ${BOLD}${DARK_GREEN}TIP:${_END} 
 
 # For "special" strings in output:
