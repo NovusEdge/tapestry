@@ -1,5 +1,7 @@
 # Flower WAN Weight-Transfer Spike
 
+**Status: Speculative**
+
 De-risk spike for the [issue #70](https://github.com/The-AI-Alliance/tapestry/issues/70)
 epic: **can a ~2B-parameter model's weights round-trip through a Flower SuperLink over a
 real WAN, and how long does a round take?** This measures transport only — the "training"
