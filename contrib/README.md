@@ -4,6 +4,21 @@ This directory is a staging area for **contributed ideas, techniques, and experi
 
 Think of `contrib/` as the front porch. Promising contributions may later be promoted into `src/`, `docs/`, or `examples/` after discussion and review. Material here is **not** part of the supported codebase and carries no stability guarantees.
 
+## Current Contributions
+
+| Contribution | Contributor(s) | Status | What it is |
+| :----------- | :------------- | :----- | :--------- |
+| [`jneums-consortium-experiment`](jneums-consortium-experiment/README.md) | jneums | Speculative | Deterministic measurement layer around the consortium-training proof of concept |
+| [`jneums-cultural-cpt-validation`](jneums-cultural-cpt-validation/README.md) | jneums | Speculative | Runnable harness for EXP-001: does culturally grounded continued pretraining shift alignment beyond language exposure? |
+| [`jneums-flower-wan-spike`](jneums-flower-wan-spike/README.md) | jneums | Speculative | De-risk spike for #70: 2B-parameter weight round-trip through a Flower SuperLink over a real WAN |
+| [`nguyennm1024-sociocultural-alignment`](nguyennm1024-sociocultural-alignment/README.md) | nguyennm1024 | Speculative | LoRA + consortium learning + Inglehart–Welzel evaluation for sovereign cultural alignment (Vietnamese case study) |
+| [`oli-sovereign-eval-evidence`](oli-sovereign-eval-evidence/README.md) | oli | Speculative | Evidence layer connecting cultural-alignment evaluation, data sovereignty, and certification claims |
+
+Statuses are `Speculative`, `Candidate`, or `Promoted` — see
+[State the Readiness Level](#state-the-readiness-level) and
+[Promotion to Production](#promotion-to-production) below. The table is
+maintained by hand for now: when you add a contribution, add your row.
+
 ## How to Contribute
 
 We follow normal _GitOps_ practices (see the top-level [`CONTRIBUTING.md`](../CONTRIBUTING.md)). To add a contribution:
@@ -304,6 +319,21 @@ For code that might be adopted later, reduce integration friction:
   helpful descriptions for every argument.
 - Include automated tests for behavior that Tapestry would rely on.
 - Use type annotations for (almost) everything and make sure the `type-check` target passes, as well as the other quality checks discussed above.
+
+## Promotion to Production
+
+The exact promotion process is **TBD**, but the skeleton is what you would
+expect:
+
+- **Who decides:** the maintainers, after discussion on an issue or the
+  contribution's PR.
+- **What must be true:** the "candidate for adoption" criteria above — the
+  full quality gates pass without skips (`format`, `lint`, `type-check`,
+  `tests`), the package/test shape matches `src/`, and the contribution has
+  demonstrated value worth supporting.
+- **How it happens:** a normal PR that moves the code under `src/` (or the
+  material under `docs/` / `examples/`), with its tests, and updates the
+  contribution's status to `Promoted` in the index above.
 
 ## Contribution Policy
 
