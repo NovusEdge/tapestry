@@ -22,7 +22,7 @@ The rest of this README provides information for contributors and users of this 
 Project Tapestry has big plans, and we're starting with some fundamental building blocks.
 
 * [LLM Cultural Alignment and Re-alignment](https://github.com/The-AI-Alliance/tapestry/issues/22) - help us develop techniques for cultural alignment, initially based on the [Inglehart–Welzel Cultural Map](https://en.wikipedia.org/wiki/Inglehart%E2%80%93Welzel_cultural_map_of_the_world) as a metric. This task will implement a corresponding evaluation and implement tuning experiments to understand how to shift alignment without compromising general model performance. Prior expertise in evaluation and tuning technologies are especially welcome.
-* [Consortium Training](https://github.com/The-AI-Alliance/tapestry/issues/24) - Tapestry's approach to global model development relies on a balance between centralized and distributed training that preserves use and privacy requirements for data sets. Help us adapt and develop optimal techniqes with ideas from both federated learning and the latest LLM pre-training and post-training methods. Prior expertise in large scale LLM training, distributed infrastructure, and federated learning are especially welcome.
+* [Consortium Training](https://github.com/The-AI-Alliance/tapestry/issues/24) - Tapestry's approach to global model development relies on a balance between centralized and distributed training that preserves use and privacy requirements for data sets. Help us adapt and develop optimal techniques with ideas from both federated learning and the latest LLM pre-training and post-training methods. Prior expertise in large scale LLM training, distributed infrastructure, and federated learning are especially welcome.
 * [Global Training Data Corpus](https://thealliance.ai/projects/tapestry/training-data-proposals) A core thesis of project Tapestry is that bringing together a much more diverse set of data can provide a path to a better frontier base model for all. What unique datasets exist that could be brought to Tapestry model training? They don't have to be fully open; we will work with you to define and enforce appropriate requirements.
 * Tapestry Model Development Roadmap - _coming soon_ - we want your input!
 
@@ -231,7 +231,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. In particular, [read this
 
 Have an idea, technique, or experiment you'd like the project to consider? The [**`contrib/`**](contrib/README.md) directory is a lightweight staging area where contributors can propose work via a PR into their own subdirectory. See [**`contrib/README.md`**](contrib/README.md) for the simple workflow and contribution policy.
 
-You can also join one or more work groups that are being organized to identify requirements in several areas and to start the engineering work to prototype and test ideas, followed by the initial implementation iterations. Details are are being documented in [**`docs/work-groups/`**](docs/work-groups/).
+You can also join one or more work groups that are being organized to identify requirements in several areas and to start the engineering work to prototype and test ideas, followed by the initial implementation iterations. Details are being documented in [**`docs/work-groups/`**](docs/work-groups/).
 
 
 ### Licenses
