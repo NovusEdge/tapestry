@@ -13,5 +13,9 @@ numpy>=1.26.0
 matplotlib>=3.8.0
 vllm>=0.6.0
 
+# --- testing ---
+pytest>=9.1.1
+pytest-cov>=7.1.0
+
 # The evaluation R scripts (if used) additionally need r-base with:
 # psych, dplyr, haven, jsonlite (installed via apt/R, not pip).
