@@ -91,7 +91,7 @@
             <mxPoint x="360" y="580" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="syFpzNw0Nt3ccXYTVD9k-33" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;fillColor=#f9f7ed;strokeColor=#36393d;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Weights, not data, exchanged when&lt;/span&gt;&lt;div style=&quot;color: rgb(0, 0, 0);&quot;&gt;jointly training models. No exchanges when tuning local, custom models.&lt;/div&gt;" vertex="1">
+        <mxCell id="syFpzNw0Nt3ccXYTVD9k-33" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;fillColor=#f9f7ed;strokeColor=#36393d;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Weights, not data, exchanged when&lt;/span&gt;&lt;div style=&quot;color: rgb(0, 0, 0);&quot;&gt;jointly training &quot;global&quot; models. No exchanges when tuning local, custom models.&lt;/div&gt;" vertex="1">
           <mxGeometry height="130" width="130" x="391" y="360" as="geometry" />
         </mxCell>
         <mxCell id="syFpzNw0Nt3ccXYTVD9k-35" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.54;direction=north;size=30;position=0.42;fillColor=#f9f7ed;strokeColor=#36393d;base=25;" value="Collaborate with Core for foundation models. Work in isolation for local custom models" vertex="1">
