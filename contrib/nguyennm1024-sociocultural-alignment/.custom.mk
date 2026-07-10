@@ -30,5 +30,5 @@
 # This definition effectively skips the, "ruff", "pylint", "type-check",
 # and "unit-tests" targets defined in the top-level Makefile.
 ruff-default pylint-default type-check-default unit-tests-default:
-	@echo "${WARN} ${skip-contrib-target}${_END}"
+	@echo "${skip-contrib-target}"
 	@true

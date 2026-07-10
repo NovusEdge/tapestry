@@ -1,4 +1,9 @@
+  # .common.mk
 # See comment at the bottom of this file about "-include .custom.mk".
+
+# Definitions of RED, GREEN, etc., and INFO, ERROR, etc. for console output.
+# To see them in action, try "make show-colors".
+include .console-colors.mk
 
 SRC_DIR             ?= src
 CLEAN_DIRS          :=
@@ -21,60 +26,34 @@ ARCHITECTURE ?= $(shell uname -m)
 GIT_HASH     ?= $(shell git show --pretty="%H" --abbrev-commit |head -1)
 NOW          ?= $(shell date +"%Y%m%d-%H%M%S")
 
-# Colors used to make some messages stand out more than others...
-RED          := \033[31m
-BOLD_RED     := \033[1;31m
-GREEN        := \033[32m
-BOLD_GREEN   := \033[1;32m
-YELLOW       := \033[33m
-BOLD_YELLOW  := \033[1;33m
-BLUE         := \033[34m
-BOLD_BLUE    := \033[1;34m
-PURPLE       := \033[35m
-BOLD_PURPLE  := \033[1;35m
-CYAN         := \033[36m
-BOLD_CYAN    := \033[1;36m
-
-ERROR        := ${BOLD_RED}ERROR:
-WARN         := ${BOLD_YELLOW}WARNING:
-NOTE         := ${BOLD_PURPLE}NOTE:
-INFO         := ${BOLD_PURPLE}
-TIP          := ${BOLD_BLUE}TIP:
-HIGHLIGHT    := ${BOLD_GREEN}
-_END         := \033[0m
-
-
 define help_message
 Quick help for this make process.
 
-make all                # Makes the 'help' and 'print-info' targets (see below).
-make help               # Prints this output.
-make print-info         # Print the current values of some make env. variables.
+${CODE}make all${_END}                # Makes the 'help' and 'print-info' targets (see below).
+${CODE}make help${_END}               # Prints this output.
+${CODE}make print-info${_END}         # Print the current values of some make env. variables.
 
 Working with code:
 
-make tests              # Run the test suite.
-make clean              # Remove built artifacts, etc.
-make format             # Format the Python code with 'black'.
-make lint               # Lint the Python code by making the ruff and pylint targets.
-make ruff               # Lint the Python code with 'ruff'.
-make pylint             # Lint the Python code with 'pylint'.
-make type-check         # Type check the Python code with 'ty'.
-make type-check-watch   # Type check the Python code with 'ty' in "watch" mode,
+${CODE}make one-time-setup${_END}     # "One time setup" of dependencies. Requires MacOS or Linux.
+${CODE}make tests${_END}              # Run the test suite.
+${CODE}make clean${_END}              # Remove built artifacts, etc.
+${CODE}make format${_END}             # Format the Python code with ${CODE}black${_END}.
+${CODE}make lint${_END}               # Lint the Python code by making the ${CODE}ruff${_END} and ${CODE}pylint${_END} targets.
+${CODE}make ruff${_END}               # Lint the Python code with ${CODE}ruff${_END}.
+${CODE}make pylint${_END}             # Lint the Python code with ${CODE}pylint${_END}.
+${CODE}make type-check${_END}         # Type check the Python code with ${CODE}ty${_END}.
+${CODE}make type-check-watch${_END}   # Type check the Python code with ${CODE}ty${_END} in "watch" mode,
                         # so you can fix mistakes and keep it updating.
-make before-pr          # Make format, lint, type-check, and tests for "src" AND
+${CODE}make before-pr${_END}          # Make ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}type-check${_END}, and ${CODE}tests${_END} for "src" AND
                         # every "contrib" directory.
                         # DO THIS BEFORE SUBMITTING A PR!
 
-For contributed code in "contrib", any of the targets help, format, lint, ruff, pylint,
-type-check, type-check-watch, and before-pr, can be invoked by prefixing the targets
-name with "contrib-". This will run the corresponding target in all the contrib/* directories.
+For contributed code in "contrib", any of the targets ${CODE}help${_END}, ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}ruff${_END}, ${CODE}pylint${_END},
+${CODE}type-check${_END}, ${CODE}type-check-watch${_END}, and ${CODE}before-pr${_END}, can be invoked by prefixing the targets
+name with ${CODE}contrib-${_END}. This will run the corresponding target in all the contrib/* directories.
 
 ${help_top_level_message}
-endef
-
-define missing_shell_command_error_message
-is needed by ${PWD}/Makefile. Try 'make help' and look at the README.
 endef
 
 
@@ -94,7 +73,7 @@ help-%::
 	@true
 
 define help_targets_message
-  No custom targets defined.
+  ${NOTE}No custom targets defined.${_END}
 endef
 
 help-targets:: help-top-level-targets-prefix help-top-level-targets contrib-custom-program-help
@@ -118,14 +97,16 @@ clean::
 	rm -rf ${CLEAN_DIRS}
 
 print-info::
-	@echo "source               ${SRC_DIR}"
-	@echo "tests                ${SRC_DIR}/tests"
-	@echo "current dir:         ${PWD}"
-	@echo "MAKEFLAGS:           ${MAKEFLAGS}"
-	@echo "UNAME:               ${UNAME}"
-	@echo "ARCHITECTURE:        ${ARCHITECTURE}"
-	@echo "GIT_HASH:            ${GIT_HASH}"
-	@echo "NOW:                 ${NOW}"
+	@echo "${DARK_GREEN}MAKEFLAGS:${_END}          ${CODE}${MAKEFLAGS}${_END}"
+	@echo "${DARK_GREEN}UNAME:${_END}              ${CODE}${UNAME}${_END}"
+	@echo "${DARK_GREEN}ARCHITECTURE:${_END}       ${CODE}${ARCHITECTURE}${_END}"
+	@echo "${DARK_GREEN}GIT_HASH:${_END}           ${CODE}${GIT_HASH}${_END}"
+	@echo "${DARK_GREEN}NOW:${_END}                ${CODE}${NOW}${_END}"
+	@echo
+	@echo "${DARK_GREEN}Current Directory:${_END}  ${CODE}${PWD}${_END}"
+	@echo "${DARK_GREEN}Sources:${_END}            ${CODE}${SRC_DIR}${_END}"
+	@echo "${DARK_GREEN}Tests:${_END}              ${CODE}${SRC_DIR}/tests${_END}"
+	@echo "${DARK_GREEN}Contributions:${_END}      ${CODE}${CONTRIB_DIRS}${_END}"
 
 .PHONY: before-pr do-before-pr do-contrib-before-pr
 
@@ -185,6 +166,11 @@ type-check-watch-default:
 	@echo "${INFO}$@: Running 'ty' to type check the code in ${SRC_DIR} using 'watch' mode.${_END}"
 	uv run ty check --watch ${SRC_DIR}
 
+# Provide a concrete recipe for the contrib-help target, so the "contrib-%" target pattern below 
+# doesn't get used, because it does the wrong thing in this special case...
+contrib-help:: 
+	@${MAKE} help-targets
+
 # The next recipe contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
 # although the construction of ${CONTRIB_DIRS} should prevent this from happening.
 # Also, the output is filtered with egrep to remove unhelpful warnings from make when
@@ -200,17 +186,19 @@ type-check-watch-default:
 contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
-		echo "${INFO}In directory $$d:${_END}"; \
-			${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} 2>&1 || exit $$?; \
-	done | egrep -v -e '(overriding|ignoring old) commands for target' 
+		echo "${INFO}For directory ${CODE}$$d${_END}:"; \
+			${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
+	done 2>&1 | egrep -v -e '(overriding|ignoring old) (commands|recipe) for target' 
 
-# This is really a test target for testing contrib-%, but it's reasonably useful
-# when you want to list all the contrib/* directories.
+# These are really test targets for testing contrib-%, but they are reasonably useful,
+# e.g., using "make contrib-list" to list all the contrib/* directories.
 # Try "make LIST_FILTER='*.md' contrib-list", for example.
 LIST_FILTER :=
-.PHONY: list
+.PHONY: list pwd
 list:
-	cd ${SRC_DIR} && ls -al ${LIST_FILTER}
+	@cd ${SRC_DIR} && ls -al ${LIST_FILTER}
+pwd:
+	@cd ${SRC_DIR} && echo "Currently in directory: ${CODE}$$(pwd)${_END}"
 
 .PHONY: one-time-setup clean-setup
 .PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
@@ -253,7 +241,7 @@ location and delete uv.
 endef
 
 define skip-contrib-target
-Skipping target \"${@:%-default=%}\" in ${SRC_DIR}! Overridden in ${SRC_DIR}/.custom.mk (see target \"$@\").
+${WARNING_LABEL}Skipping target ${CODE}${@:%-default=%}${_END} in ${CODE}${SRC_DIR}${_END}! Support target ${CODE}$@${_END} is overridden in ${CODE}${SRC_DIR}/.custom.mk${_END}.
 endef
 
 # Include a .custom.mk that _may or may not_ exist. The leading "-"
