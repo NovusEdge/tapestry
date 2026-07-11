@@ -16,9 +16,9 @@ For the `LICENSE`, we recommend including content like the following:
 ```
 This contribution follows the repository default licenses:
 
-- Code: Apache License, Version 2.0. See ../../LICENSE.Apache-2.0.
-- Documentation: Creative Commons Attribution 4.0 International. See ../../LICENSE.CC-BY-4.0.
-- Data, if added later: CDLA Permissive 2.0. See ../../LICENSE.CDLA-2.0.
+- Code: Apache License, Version 2.0. See [LICENSES/LICENSE.Apache-2.0](LICENSES/LICENSE.Apache-2.0).
+- Documentation: Creative Commons Attribution 4.0 International. See [LICENSES/LICENSE.CC-BY-4.0](LICENSES/LICENSE.CC-BY-4.0).
+- Data, if added later: CDLA Permissive 2.0. See [LICENSES/LICENSE.CDLA-2.0](LICENSES/LICENSE.CDLA-2.0).
 ```
 
 Because having too many licenses can make managing the project difficult, please justify any choices that don't follow our defaults.
@@ -46,7 +46,7 @@ Provide an overview of the most important details about the code:
 
 ### Testing Performed
 
-Describe key aspects of the testing performed to validate the contribution:
+Describe key aspects of automated and/or manual testing of executable code that was performed to validate the contribution:
 
 * Unit tests included in a `tests` subdirectory
 * Integration tests performed
