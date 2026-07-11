@@ -53,3 +53,4 @@ Avoid consecutive plain Markdown lines like `**Status:** ...` / `**Date:** ...`;
 | [TAP-005](adr-005-sovereign-pipeline.md) | The Sovereign Build | proposed | 4/5 |
 | [TAP-006](adr-006-phased-base-model.md) | Phased base model strategy | proposed | 4/5 |
 | [TAP-007](adr-007-architecture-comparison.md) | Training architecture comparison | proposed | 4/5 |
+| [TAP-009](adr-009-goal-derived-base-model-selection.md) | Goal-derived base model selection | proposed | 3/5 |
