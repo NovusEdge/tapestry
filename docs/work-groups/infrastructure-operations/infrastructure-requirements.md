@@ -16,7 +16,7 @@ In scope:
 - participant node requirements;
 - coordinator services and shared artifacts;
 - heterogeneous compute and accelerator support;
-- governed data ingress and egress;
+- governed data movement across Tapestry-managed boundaries;
 - observability, logging, and audit evidence;
 - checkpoint, artifact, and model-update integrity;
 - operational readiness for training, tuning, and evaluation workloads.
@@ -35,14 +35,14 @@ Out of scope:
 | :-- | :---------- | :-------- |
 | INF-1 | Define a minimum viable participant node. | Participants need a clear baseline for storage, compute, networking, identity, logging, and operational ownership. |
 | INF-2 | Support heterogeneous hardware and software backends. | Tapestry participants will not all use the same accelerators, drivers, orchestration tools, or operating environments. |
-| INF-3 | Govern and observe all data ingress and egress. | Data movement must respect dataset-specific residency, visibility, license, and allowed-use constraints. |
+| INF-3 | Govern and observe data that crosses a Tapestry-managed boundary. | Shared contributions, shared experiments, and certification claims must respect dataset-specific residency, visibility, license, and allowed-use constraints without governing every private participant activity. |
 | INF-4 | Keep participant-local workloads possible. | Local-only data and sovereign pipelines must be able to run inside participant boundaries. |
 | INF-5 | Track checkpoint, artifact, and model-update lineage. | Training and certification claims need reproducible links between inputs, jobs, outputs, and approvals. |
 | INF-6 | Validate model updates before aggregation or distribution. | Distributed updates need quality, compatibility, anomaly, and policy checks before they affect shared artifacts. |
 | INF-7 | Provide observability without exposing restricted data. | Operators need health, performance, and audit signals while preserving participant confidentiality. |
-| INF-8 | Separate central coordinator responsibilities from participant responsibilities. | The platform should avoid turning the coordinator into a data-control or lock-in point. |
+| INF-8 | Separate central coordinator responsibilities from participant responsibilities. | The platform should avoid turning the coordinator into a data-control, audit, approval, or lock-in point for participant-private work. |
 | INF-9 | Support failure recovery and intermittent participation. | Consortium nodes may have different maintenance windows, network reliability, and operational constraints. |
-| INF-10 | Produce evidence for governance and certification workflows. | Infrastructure events should feed release gates, contribution accounting, and audit records. |
+| INF-10 | Produce proportionate evidence for governance and certification workflows. | Infrastructure events should feed release gates, contribution accounting, and audit records with only the evidence needed for the claim or shared contribution. |
 
 ## Minimum Viable Participant Node
 
@@ -50,9 +50,12 @@ A participant node should be able to:
 
 - authenticate operators and workload identities;
 - store local datasets, manifests, checkpoints, logs, and generated artifacts;
-- run approved data-preparation, training, tuning, and evaluation workloads;
-- enforce local data-use constraints before data leaves the node;
-- export approved metadata, hashes, metrics, attestations, or model updates;
+- run private participant-governed workloads, plus approved workloads when they
+  contribute to the Shared Commons or claim Tapestry certification;
+- enforce local data-use constraints before data crosses a Tapestry-managed
+  boundary;
+- export approved metadata, opaque references, hashes, metrics, attestations, or
+  model updates for shared contributions and certification claims;
 - receive shared-base artifacts and verify their integrity before use;
 - retain enough logs for audit and incident review.
 
@@ -75,47 +78,57 @@ participant data:
 
 Coordinator services should treat participant data boundaries as first-class
 constraints. A coordinator may receive model updates, metadata, hashes, and
-audit evidence, but it should not assume raw data can be copied into a central
-environment.
+minimum necessary audit evidence, but it should not assume raw data can be
+copied into a central environment. Shared protocols, schemas, registries, and
+coordinator services should be open, replaceable, independently deployable, and
+exportable so that participants can exit without losing access to their own
+artifacts, logs, manifests, or operational history.
 
 ## Governed Data Movement
 
-All data ingress and egress should be policy-aware:
+Data movement should be policy-aware when it crosses a Tapestry-managed
+boundary, is used in a shared contribution, supports a shared experiment, or
+backs a Tapestry certification claim:
 
 | Flow | Required controls |
 | :--- | :---------------- |
 | Dataset enters a node | Source, license, consent, residency, owner, and allowed-use metadata are recorded. |
 | Dataset is prepared | Processing job, tool version, configuration, input snapshot, output snapshot, and quality signals are recorded. |
 | Artifact leaves a node | Export is checked against visibility, residency, and allowed-use constraints. |
-| Model update leaves a node | Update is linked to approved input manifests, training configuration, and validation results. |
-| Shared artifact enters a node | Signature, hash, version, and compatibility are verified before use. |
+| Model update leaves a node for shared use | Update is linked to training configuration, validation results, and a participant-local manifest, opaque reference, confidential review, attestation, or technical evaluation that does not require revealing restricted dataset identity. |
+| Shared artifact enters a node | Trusted hash, authenticated provenance, version, and compatibility are verified before use; signatures should be used where appropriate. |
 
 The infrastructure should integrate with the Data Governance requirements and
 avoid embedding policy decisions directly in ad hoc scripts.
 
 ## Model-Update Validation
 
-Before a participant update is aggregated, published, or used for downstream
-experiments, the platform should validate:
+Before a participant update is aggregated, published, used in a
+Tapestry-governed shared experiment, or cited in a Tapestry certification claim,
+the platform should validate:
 
 - schema and version compatibility;
 - expected tensor shapes and parameter coverage;
 - update magnitude and anomaly thresholds;
-- training configuration and approved input references;
+- training configuration and an appropriate local, opaque, confidential, or
+  attested input reference;
 - quality metrics and regression signals;
 - policy compliance for the declared data and workload;
-- signature, hash, and submitter identity.
+- trusted hash, authenticated provenance, submitter identity, and signatures
+  where appropriate.
 
 The first implementation can use conservative checks and human review. The
 important requirement is that update acceptance is explicit, recorded, and
-repeatable.
+repeatable. These shared-boundary checks do not govern a participant's private
+downstream experiments unless the participant uses them for a shared
+contribution, shared experiment, publication, or certification claim.
 
 ## Observability Requirements
 
 Infrastructure observability should cover:
 
 - workload status, duration, resource usage, and failures;
-- data-movement events and export approvals;
+- data-movement events and export approvals for shared-boundary flows;
 - artifact versions, hashes, and retention status;
 - checkpoint creation, promotion, rollback, and deletion;
 - update validation outcomes;
@@ -124,7 +137,10 @@ Infrastructure observability should cover:
 
 Telemetry should be classified by visibility tier. Public or consortium-wide
 dashboards should prefer aggregate health and readiness signals, while
-participant-private logs can retain local operational detail.
+participant-private logs can retain local operational detail. Logs, manifests,
+lineage, and audit evidence can remain participant-local or confidential when
+that satisfies the governance purpose; coordinator services should receive only
+the minimum evidence needed for contribution acceptance or certification.
 
 ## Security Baseline
 
@@ -135,7 +151,8 @@ practices:
 - workload identity rather than shared long-lived credentials;
 - encrypted storage and transport for restricted artifacts;
 - secret management outside source control;
-- signed or hashed artifacts;
+- artifact integrity verification through trusted hashes plus authenticated
+  provenance, using signatures where appropriate;
 - patching and dependency-update process;
 - incident-response contact and escalation path for each participant node.
 
@@ -152,7 +169,8 @@ For the first infrastructure pass, define:
 3. A minimal update-validation checklist.
 4. A visibility-tiered logging plan.
 5. A shared artifact registry convention with hashes and versions.
-6. A small readiness review before any node participates in shared experiments.
+6. A small readiness review before any node participates in Tapestry-governed
+   shared experiments or certification workflows.
 
 This creates enough operational structure for early experiments while leaving
 room for participants to run different hardware, storage, and orchestration
