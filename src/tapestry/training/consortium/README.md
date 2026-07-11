@@ -20,7 +20,7 @@ front and center.
 | `model.py` | `TinyCausalModel`, a small next-token model for fast tests and demos. |
 | `node.py` | `SovereignTrainingNode`, which runs local Contributed CPT and keeps a sovereign model artifact. |
 | `coordinator.py` | `ConsortiumCoordinator`, which evolves the shared base from governed contributions. |
-| `merge.py` | Outer merge strategies, including weighted averaging, delta averaging, and a DiLoCo-inspired momentum delta option. |
+| `merge.py` | Outer merge strategies, including weighted averaging, delta averaging, and a generic momentum-delta option. |
 | `policy.py` | `ContributionPolicy`, a minimal quality-floor and anti-capture policy with quality-weighted and equal-influence modes. |
 | `messages.py` | Data classes for sovereign artifacts, contributions, and round results. |
 | `../../../../contrib/jneums-consortium-experiment/` | Contrib experiment runner and metrics helpers that record round metrics and summaries without changing core training logic. |
@@ -86,8 +86,8 @@ The coordinator also supports multiple outer merge strategies through
   averaging accepted local model states.
 - `delta` applies a weighted average of node deltas to the previous shared base,
   with an outer learning rate.
-- `momentum-delta` applies outer momentum to the weighted deltas, giving the PoC
-  a small DiLoCo-style outer optimizer comparison point.
+- `momentum-delta` applies ordinary outer momentum to the weighted deltas. This
+  is a generic merge-formula variant, not a DiLoCo implementation.
 
 Run one outer merge strategy:
 
@@ -102,9 +102,13 @@ PYTHONPATH="$PWD/src" uv run python examples/consortium_training_demo.py --outer
 ```
 
 The comparison output includes per-round shared-base movement and a final
-distance-from-initialization summary. `weighted-average` and `delta` are
-equivalent when `outer_lr=1.0`, so comparison mode runs the delta strategies
-with a lower outer learning rate to make the behavioral differences visible.
+distance-from-initialization summary. These are parameter-movement diagnostics:
+they show that merge formulas move the shared base differently, but they do not
+measure loss, convergence, stability, model quality, or retention. Issue #127
+should remain open for a real DiLoCo evaluation and outcome-metric comparison.
+`weighted-average` and `delta` are equivalent when `outer_lr=1.0`, so comparison
+mode runs the delta strategies with a lower outer learning rate to make the
+formula differences visible.
 
 ## What This Demonstrates
 

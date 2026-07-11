@@ -17,14 +17,14 @@ class OuterMergeStrategy(str, Enum):
     MOMENTUM_DELTA = "momentum-delta"
 
 
-class OuterMerge:
+class OuterMerge:  # pylint: disable=too-few-public-methods
     """Merge accepted local model states into the shared base.
 
     ``weighted-average`` is the existing FedAvg-class behavior. ``delta`` applies
     a weighted average of node deltas to the previous shared base, with an outer
-    learning rate. ``momentum-delta`` adds a small outer momentum buffer, letting
-    the PoC compare DiLoCo-style outer merge behavior without
-    changing the local sovereign training loop.
+    learning rate. ``momentum-delta`` adds a small ordinary outer momentum
+    buffer. These strategies are scaffolding for comparing merge formulas, not a
+    claim about training quality or DiLoCo-equivalent optimization.
     """
 
     def __init__(
@@ -38,6 +38,16 @@ class OuterMerge:
             raise ValueError("outer_lr must be positive")
         if not 0.0 <= outer_momentum < 1.0:
             raise ValueError("outer_momentum must be in [0, 1)")
+        if (
+            self.strategy is OuterMergeStrategy.WEIGHTED_AVERAGE
+            and outer_lr != 1.0
+        ):
+            raise ValueError("outer_lr is only active for delta merge strategies")
+        if (
+            self.strategy is not OuterMergeStrategy.MOMENTUM_DELTA
+            and outer_momentum != 0.0
+        ):
+            raise ValueError("outer_momentum is only active for momentum-delta")
         if self.strategy is OuterMergeStrategy.MOMENTUM_DELTA and outer_momentum == 0.0:
             raise ValueError("momentum-delta requires outer_momentum > 0")
         self.outer_lr = outer_lr
@@ -54,7 +64,11 @@ class OuterMerge:
         if self.strategy is OuterMergeStrategy.WEIGHTED_AVERAGE:
             return self._weighted_average(local_states_by_node, weights)
 
-        weighted_delta = self._weighted_delta(previous_state, local_states_by_node, weights)
+        weighted_delta = self._weighted_delta(
+            previous_state,
+            local_states_by_node,
+            weights,
+        )
         if self.strategy is OuterMergeStrategy.MOMENTUM_DELTA:
             weighted_delta = self._apply_momentum(weighted_delta)
 
@@ -89,17 +103,17 @@ class OuterMerge:
         for name, base_tensor in previous_state.items():
             delta = torch.zeros_like(base_tensor)
             for node_id, weight in weights.items():
-                delta = delta + (local_states_by_node[node_id][name] - base_tensor) * weight
+                delta = (
+                    delta
+                    + (local_states_by_node[node_id][name] - base_tensor) * weight
+                )
             delta_state[name] = delta
         return delta_state
 
     def _apply_momentum(self, weighted_delta: ModelState) -> ModelState:
         """Apply outer momentum to weighted deltas."""
         if not self._velocity:
-            self._velocity = {
-                name: torch.zeros_like(delta)
-                for name, delta in weighted_delta.items()
-            }
+            self._velocity = {name: torch.zeros_like(delta) for name, delta in weighted_delta.items()}
 
         next_delta: ModelState = {}
         for name, delta in weighted_delta.items():

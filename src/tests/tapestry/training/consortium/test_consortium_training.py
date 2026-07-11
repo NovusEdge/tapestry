@@ -187,8 +187,17 @@ def test_delta_outer_merge_applies_scaled_weighted_delta() -> None:
     assert merged["weight"].item() == pytest.approx(6.5)
 
 
+def test_outer_merge_rejects_inactive_parameters() -> None:
+    """Inactive outer-merge settings are rejected instead of silently reported."""
+    with pytest.raises(ValueError, match="outer_lr is only active"):
+        OuterMerge(strategy=OuterMergeStrategy.WEIGHTED_AVERAGE, outer_lr=0.5)
+
+    with pytest.raises(ValueError, match="outer_momentum is only active"):
+        OuterMerge(strategy=OuterMergeStrategy.DELTA, outer_momentum=0.5)
+
+
 def test_momentum_delta_outer_merge_accumulates_outer_velocity() -> None:
-    """Momentum merge carries an outer optimizer buffer across rounds."""
+    """Momentum merge carries an ordinary outer momentum buffer across rounds."""
     previous_state = {"weight": torch.tensor([0.0])}
     local_states = {"a": {"weight": torch.tensor([1.0])}}
     merge = OuterMerge(
