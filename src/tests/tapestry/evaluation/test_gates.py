@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 from tapestry.evaluation import (
+    BenchmarkConfig,
     BenchmarkKind,
     BenchmarkSpec,
     EvaluationBundle,
@@ -13,6 +14,40 @@ from tapestry.evaluation import (
     GateStatus,
     benchmark_config_hash,
 )
+
+# pylint: disable=missing-class-docstring,missing-function-docstring
+
+
+def _config(
+    task_version: str = "mmlu-lite/v1",
+    dataset_revision: str = "2026-07-01",
+    prompt_template: str = "default-zero-shot",
+    few_shot_count: int = 0,
+    runner_config: dict[str, str] | None = None,
+) -> BenchmarkConfig:
+    return BenchmarkConfig(
+        task_version=task_version,
+        dataset_revision=dataset_revision,
+        prompt_template=prompt_template,
+        few_shot_count=few_shot_count,
+        runner_config=runner_config or {"temperature": "0", "max_tokens": "8"},
+    )
+
+
+def _bundle(
+    gate: EvaluationGate,
+    results: tuple[EvaluationResult, ...],
+    config_hash: str | None = None,
+    schema_version: str = "m0-evaluation-gate/v1",
+) -> EvaluationBundle:
+    return EvaluationBundle(
+        results=results,
+        config_hash=config_hash or gate.config_hash,
+        model_artifact_id="model://tapestry/m0-smoke@sha256:abc123",
+        runner_id="lm-evaluation-harness",
+        runner_version="0.4.9",
+        schema_version=schema_version,
+    )
 
 
 class EvaluationGateTest(unittest.TestCase):
@@ -24,6 +59,7 @@ class EvaluationGateTest(unittest.TestCase):
                     name="MMLU Lite",
                     kind=BenchmarkKind.CAPABILITY,
                     metric="accuracy",
+                    config=_config(task_version="mmlu-lite/v1"),
                     threshold=0.62,
                 ),
                 BenchmarkSpec(
@@ -31,6 +67,7 @@ class EvaluationGateTest(unittest.TestCase):
                     name="Toxicity Rate",
                     kind=BenchmarkKind.SAFETY,
                     metric="rate",
+                    config=_config(task_version="toxicity-rate/v1"),
                     threshold=0.05,
                     higher_is_better=False,
                 ),
@@ -59,6 +96,7 @@ class EvaluationGateTest(unittest.TestCase):
                     name="Cultural Alignment Smoke Test",
                     kind=BenchmarkKind.CULTURAL_ALIGNMENT,
                     metric="agreement",
+                    config=_config(task_version="cultural-alignment-smoke/v1"),
                     threshold=0.7,
                 )
             ]
@@ -77,6 +115,7 @@ class EvaluationGateTest(unittest.TestCase):
                     name="Domain Extra",
                     kind=BenchmarkKind.DOMAIN,
                     metric="accuracy",
+                    config=_config(task_version="domain-extra/v1"),
                     threshold=0.8,
                     required=False,
                 )
@@ -96,6 +135,7 @@ class EvaluationGateTest(unittest.TestCase):
                     name="Capability Core",
                     kind=BenchmarkKind.CAPABILITY,
                     metric="accuracy",
+                    config=_config(task_version="capability-core/v1"),
                     threshold=0.6,
                 )
             ]
@@ -117,6 +157,7 @@ class EvaluationGateTest(unittest.TestCase):
             name="Capability Core",
             kind=BenchmarkKind.CAPABILITY,
             metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
             threshold=0.6,
         )
 
@@ -138,6 +179,7 @@ class EvaluationGateTest(unittest.TestCase):
             name="Capability Core",
             kind=BenchmarkKind.CAPABILITY,
             metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
             threshold=0.6,
         )
         safety = BenchmarkSpec(
@@ -145,6 +187,7 @@ class EvaluationGateTest(unittest.TestCase):
             name="Toxicity Rate",
             kind=BenchmarkKind.SAFETY,
             metric="rate",
+            config=_config(task_version="toxicity-rate/v1"),
             threshold=0.05,
             higher_is_better=False,
         )
@@ -155,19 +198,46 @@ class EvaluationGateTest(unittest.TestCase):
         self.assertEqual(first_hash, second_hash)
         self.assertEqual(len(first_hash), 64)
 
+    def test_config_hash_changes_when_evaluation_setup_changes(self) -> None:
+        base = BenchmarkSpec(
+            benchmark_id="capability-core",
+            name="Capability Core",
+            kind=BenchmarkKind.CAPABILITY,
+            metric="accuracy",
+            config=_config(prompt_template="baseline", few_shot_count=0),
+            threshold=0.6,
+        )
+        changed_prompt = BenchmarkSpec(
+            benchmark_id="capability-core",
+            name="Capability Core",
+            kind=BenchmarkKind.CAPABILITY,
+            metric="accuracy",
+            config=_config(prompt_template="cot", few_shot_count=0),
+            threshold=0.6,
+        )
+        changed_shots = BenchmarkSpec(
+            benchmark_id="capability-core",
+            name="Capability Core",
+            kind=BenchmarkKind.CAPABILITY,
+            metric="accuracy",
+            config=_config(prompt_template="baseline", few_shot_count=5),
+            threshold=0.6,
+        )
+
+        self.assertNotEqual(benchmark_config_hash([base]), benchmark_config_hash([changed_prompt]))
+        self.assertNotEqual(benchmark_config_hash([base]), benchmark_config_hash([changed_shots]))
+
     def test_gate_decides_versioned_bundle_with_matching_config_hash(self) -> None:
         spec = BenchmarkSpec(
             benchmark_id="capability-core",
             name="Capability Core",
             kind=BenchmarkKind.CAPABILITY,
             metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
             threshold=0.6,
         )
         gate = EvaluationGate([spec])
-        bundle = EvaluationBundle(
-            results=(EvaluationResult("capability-core", 0.7),),
-            config_hash=gate.config_hash,
-        )
+        bundle = _bundle(gate, (EvaluationResult("capability-core", 0.7),))
 
         decision = gate.decide_bundle(bundle)
 
@@ -180,13 +250,11 @@ class EvaluationGateTest(unittest.TestCase):
             name="Capability Core",
             kind=BenchmarkKind.CAPABILITY,
             metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
             threshold=0.6,
         )
         gate = EvaluationGate([spec])
-        bundle = EvaluationBundle(
-            results=(EvaluationResult("capability-core", 0.7),),
-            config_hash="0" * 64,
-        )
+        bundle = _bundle(gate, (EvaluationResult("capability-core", 0.7),), config_hash="0" * 64)
 
         decision = gate.decide_bundle(bundle)
 
@@ -199,12 +267,13 @@ class EvaluationGateTest(unittest.TestCase):
             name="Capability Core",
             kind=BenchmarkKind.CAPABILITY,
             metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
             threshold=0.6,
         )
         gate = EvaluationGate([spec])
-        bundle = EvaluationBundle(
-            results=(EvaluationResult("capability-core", 0.7),),
-            config_hash=gate.config_hash,
+        bundle = _bundle(
+            gate,
+            (EvaluationResult("capability-core", 0.7),),
             schema_version="m0-evaluation-gate/v0",
         )
 
@@ -212,6 +281,35 @@ class EvaluationGateTest(unittest.TestCase):
 
         self.assertFalse(decision.passed)
         self.assertEqual(decision.blocking_findings[0].status, GateStatus.INVALID)
+
+    def test_bundle_requires_model_and_runner_identity(self) -> None:
+        spec = BenchmarkSpec(
+            benchmark_id="capability-core",
+            name="Capability Core",
+            kind=BenchmarkKind.CAPABILITY,
+            metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
+            threshold=0.6,
+        )
+        gate = EvaluationGate([spec])
+
+        with self.assertRaisesRegex(ValueError, "model_artifact_id must not be empty"):
+            EvaluationBundle(
+                results=(EvaluationResult("capability-core", 0.7),),
+                config_hash=gate.config_hash,
+                model_artifact_id=" ",
+                runner_id="lm-evaluation-harness",
+                runner_version="0.4.9",
+            )
+
+        with self.assertRaisesRegex(ValueError, "runner_version must not be empty"):
+            EvaluationBundle(
+                results=(EvaluationResult("capability-core", 0.7),),
+                config_hash=gate.config_hash,
+                model_artifact_id="model://tapestry/m0-smoke@sha256:abc123",
+                runner_id="lm-evaluation-harness",
+                runner_version=" ",
+            )
 
 
 if __name__ == "__main__":

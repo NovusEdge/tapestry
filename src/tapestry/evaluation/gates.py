@@ -41,23 +41,51 @@ class GateStatus(str, Enum):
 
 
 @dataclass(frozen=True)
-class BenchmarkSpec:
+class BenchmarkConfig:
+    """The versioned evaluation setup bound into a benchmark config hash."""
+
+    task_version: str
+    dataset_revision: str
+    prompt_template: str
+    few_shot_count: int = 0
+    runner_config: Mapping[str, str] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        _require_text("task_version", self.task_version)
+        _require_text("dataset_revision", self.dataset_revision)
+        _require_text("prompt_template", self.prompt_template)
+        if self.few_shot_count < 0:
+            raise ValueError("few_shot_count must not be negative")
+        object.__setattr__(self, "runner_config", _freeze_metadata(self.runner_config))
+
+    def to_hash_payload(self) -> dict[str, object]:
+        """Return the JSON-serializable setup payload for config hashing."""
+        return {
+            "dataset_revision": self.dataset_revision,
+            "few_shot_count": self.few_shot_count,
+            "prompt_template": self.prompt_template,
+            "runner_config": dict(self.runner_config),
+            "task_version": self.task_version,
+        }
+
+
+@dataclass(frozen=True)
+class BenchmarkSpec:  # pylint: disable=too-many-instance-attributes
     """A benchmark result required or accepted by an evaluation gate."""
 
     benchmark_id: str
     name: str
     kind: BenchmarkKind | str
     metric: str
+    config: BenchmarkConfig
     threshold: float
     higher_is_better: bool = True
     required: bool = True
-    evidence_visibility: str = "public"
 
     def __post_init__(self) -> None:
         _require_text("benchmark_id", self.benchmark_id)
         _require_text("name", self.name)
         _require_text("metric", self.metric)
-        _require_text("evidence_visibility", self.evidence_visibility)
         _require_finite("threshold", self.threshold)
         object.__setattr__(self, "kind", BenchmarkKind(self.kind))
 
@@ -80,7 +108,7 @@ class EvaluationResult:
     def __post_init__(self) -> None:
         _require_text("benchmark_id", self.benchmark_id)
         _require_finite("score", self.score)
-        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+        object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
 
 
 @dataclass(frozen=True)
@@ -89,17 +117,23 @@ class EvaluationBundle:
 
     results: tuple[EvaluationResult, ...]
     config_hash: str
+    model_artifact_id: str
+    runner_id: str
+    runner_version: str
     schema_version: str = SCHEMA_VERSION
     metadata: Mapping[str, str] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         _require_text("config_hash", self.config_hash)
+        _require_text("model_artifact_id", self.model_artifact_id)
+        _require_text("runner_id", self.runner_id)
+        _require_text("runner_version", self.runner_version)
         _require_text("schema_version", self.schema_version)
         duplicate_ids = _duplicates(result.benchmark_id for result in self.results)
         if duplicate_ids:
             raise ValueError(f"duplicate benchmark results: {', '.join(duplicate_ids)}")
         object.__setattr__(self, "results", tuple(self.results))
-        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
+        object.__setattr__(self, "metadata", _freeze_metadata(self.metadata))
 
 
 @dataclass(frozen=True)
@@ -238,9 +272,9 @@ def benchmark_config_hash(specs: Iterable[BenchmarkSpec]) -> str:
     payload = [
         {
             "benchmark_id": spec.benchmark_id,
-            "evidence_visibility": spec.evidence_visibility,
+            "config": spec.config.to_hash_payload(),
             "higher_is_better": spec.higher_is_better,
-            "kind": spec.kind.value,
+            "kind": BenchmarkKind(spec.kind).value,
             "metric": spec.metric,
             "name": spec.name,
             "required": spec.required,
@@ -271,6 +305,14 @@ def _require_text(name: str, value: str) -> None:
 def _require_finite(name: str, value: float) -> None:
     if not isfinite(value):
         raise ValueError(f"{name} must be finite")
+
+
+def _freeze_metadata(metadata: Mapping[str, str]) -> Mapping[str, str]:
+    frozen = dict(metadata)
+    for key, value in frozen.items():
+        _require_text("metadata key", key)
+        _require_text(f"metadata[{key!r}]", value)
+    return MappingProxyType(frozen)
 
 
 def _duplicates(values: Iterable[str]) -> list[str]:

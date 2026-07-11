@@ -1,6 +1,7 @@
 """Evaluation gate helpers for Tapestry release decisions."""
 
 from tapestry.evaluation.gates import (
+    BenchmarkConfig,
     BenchmarkKind,
     BenchmarkSpec,
     EvaluationBundle,
@@ -13,6 +14,7 @@ from tapestry.evaluation.gates import (
 )
 
 __all__ = [
+    "BenchmarkConfig",
     "BenchmarkKind",
     "BenchmarkSpec",
     "EvaluationBundle",
