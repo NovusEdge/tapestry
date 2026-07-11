@@ -74,9 +74,9 @@ For the `LICENSE`, we recommend including content like the following:
 ```
 This contribution follows the repository default licenses:
 
-- Code: Apache License, Version 2.0. See ../../LICENSE.Apache-2.0.
-- Documentation: Creative Commons Attribution 4.0 International. See ../../LICENSE.CC-BY-4.0.
-- Data, if added later: CDLA Permissive 2.0. See ../../LICENSE.CDLA-2.0.
+- Code: Apache License, Version 2.0. See [LICENSES/LICENSE.Apache-2.0](LICENSES/LICENSE.Apache-2.0).
+- Documentation: Creative Commons Attribution 4.0 International. See [LICENSES/LICENSE.CC-BY-4.0](LICENSES/LICENSE.CC-BY-4.0).
+- Data, if added later: CDLA Permissive 2.0. See [LICENSES/LICENSE.CDLA-2.0](LICENSES/LICENSE.CDLA-2.0).
 ```
 
 Because having too many licenses can make managing the project difficult, please justify any choices that don't follow our defaults.
@@ -100,9 +100,9 @@ distributed under a suitable "open" license. We use the following guidelines:
 
 | Purpose | License | Website | SPDX License Identifier |
 | :------ | :------ | :------ | :---------------------- |
-| Code and Model Weights | [Apache License, Version 2.0](LICENSE.Apache-2.0) | [link](http://www.apache.org/licenses/LICENSE-2.0) | [link](https://spdx.org/licenses/Apache-2.0) |
-| Documentation and similar materials | [The Creative Commons License, Version 4.0 - `CC BY 4.0`](LICENSE.CC-BY-4.0) | [link](https://chooser-beta.creativecommons.org/) | [link](https://spdx.org/licenses/CC-BY-4.0.html) |
-| Data | [CDLA Permissive 2.0](LICENSE.CDLA-2.0) | [link](https://cdla.dev/permissive-2-0/) | [link](https://spdx.org/licenses/CDLA-Permissive-2.0.html) |
+| Code and Model Weights | [Apache License, Version 2.0](LICENSES/LICENSE.Apache-2.0) | [link](http://www.apache.org/licenses/LICENSE-2.0) | [link](https://spdx.org/licenses/Apache-2.0) |
+| Documentation and similar materials | [The Creative Commons License, Version 4.0 - `CC BY 4.0`](LICENSES/LICENSE.CC-BY-4.0) | [link](https://chooser-beta.creativecommons.org/) | [link](https://spdx.org/licenses/CC-BY-4.0.html) |
+| Data | [CDLA Permissive 2.0](LICENSES/LICENSE.CDLA-2.0) | [link](https://cdla.dev/permissive-2-0/) | [link](https://spdx.org/licenses/CDLA-Permissive-2.0.html) |
 
 The AI Alliance leaves open the possibility of additional terms concerning safe and responsible use for certain elements in special core projects. For example, some model weights may be open for use, except for harmful purposes. Any decision to use any such additional terms for a core project must be made by the AI Alliance Steering Committee and will be clearly identified in the core project's repository.
 
