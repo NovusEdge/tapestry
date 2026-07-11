@@ -1,16 +1,16 @@
 <mxfile host="Electron">
   <diagram name="Page-1" id="5GKT-VihkCmrRgoHBOGI">
-    <mxGraphModel dx="1926" dy="1206" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1101" dy="689" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="syFpzNw0Nt3ccXYTVD9k-30" edge="1" parent="1" source="syFpzNw0Nt3ccXYTVD9k-2" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" target="syFpzNw0Nt3ccXYTVD9k-3">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="syFpzNw0Nt3ccXYTVD9k-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Core Operator Training/RL Processes" vertex="1">
+        <mxCell id="syFpzNw0Nt3ccXYTVD9k-2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Core Node Training/RL Processes" vertex="1">
           <mxGeometry height="80" width="120" x="580" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="syFpzNw0Nt3ccXYTVD9k-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Sovereign Partner Training/RL Processes" vertex="1">
+        <mxCell id="syFpzNw0Nt3ccXYTVD9k-3" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Sovereign Node Training/RL Processes" vertex="1">
           <mxGeometry height="80" width="120" x="200" y="480" as="geometry" />
         </mxCell>
         <mxCell id="syFpzNw0Nt3ccXYTVD9k-4" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;" value="Private&lt;div&gt;Data&lt;/div&gt;" vertex="1">
@@ -91,13 +91,13 @@
             <mxPoint x="360" y="580" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="syFpzNw0Nt3ccXYTVD9k-33" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;fillColor=#f9f7ed;strokeColor=#36393d;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Weights, not data, exchanged when&lt;/span&gt;&lt;div style=&quot;color: rgb(0, 0, 0);&quot;&gt;jointly training models. No exchanges when tuning local, custom models.&lt;/div&gt;" vertex="1">
+        <mxCell id="syFpzNw0Nt3ccXYTVD9k-33" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;fillColor=#f9f7ed;strokeColor=#36393d;" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;Weights, not data, exchanged when&lt;/span&gt;&lt;div style=&quot;color: rgb(0, 0, 0);&quot;&gt;jointly training &quot;global&quot; models. No exchanges when tuning local, custom models.&lt;/div&gt;" vertex="1">
           <mxGeometry height="130" width="130" x="391" y="360" as="geometry" />
         </mxCell>
         <mxCell id="syFpzNw0Nt3ccXYTVD9k-35" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.54;direction=north;size=30;position=0.42;fillColor=#f9f7ed;strokeColor=#36393d;base=25;" value="Collaborate with Core for foundation models. Work in isolation for local custom models" vertex="1">
           <mxGeometry height="90" width="140" x="70" y="480" as="geometry" />
         </mxCell>
-        <mxCell id="syFpzNw0Nt3ccXYTVD9k-36" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.54;direction=south;size=30;position=0.43;fillColor=#f9f7ed;strokeColor=#36393d;base=20;" value="Collaborate with Partners for foundation models." vertex="1">
+        <mxCell id="syFpzNw0Nt3ccXYTVD9k-36" parent="1" style="shape=callout;whiteSpace=wrap;html=1;perimeter=calloutPerimeter;position2=0.54;direction=south;size=30;position=0.43;fillColor=#f9f7ed;strokeColor=#36393d;base=20;" value="Drive collaboration with partners for foundation models." vertex="1">
           <mxGeometry height="80" width="110" x="690" y="480" as="geometry" />
         </mxCell>
       </root>
