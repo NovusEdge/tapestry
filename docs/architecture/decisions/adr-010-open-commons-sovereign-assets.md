@@ -9,7 +9,7 @@
 
 ## Summary
 
-Tapestry is committed both to an open shared commons and to participant sovereignty. These commitments are complementary: openness prevents the shared platform, model, and standards from being captured, while participant control prevents openness from becoming a demand that nations, communities, or organizations surrender sovereign data, knowledge, or commercial assets.
+Tapestry is committed both to an open Shared Commons and to participant sovereignty. These commitments are complementary: openness prevents the shared platform, model, and standards from being captured, while participant control prevents openness from becoming a demand that nations, communities, or organizations surrender sovereign data, knowledge, or commercial assets.
 
 The governing principle is:
 
