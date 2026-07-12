@@ -84,118 +84,42 @@ We don't require models to be the very best at all the common, general-purpose b
 
 The work of [Issue #22: PoC for alignment based on Inglehart-Welzel Cultural Map](https://github.com/The-AI-Alliance/tapestry/issues/22) (part of [TAP-003: Cultural Alignment as the Primary Differentiator](../../architecture/decisions/adr-003-cultural-alignment.md)), is exploring the feasibility of tuning for cultural alignment. We anticipate that some model families or architectures will respond better than others at this form of post-training alignment that is a key capability for Project Tapestry.
  
-## Selection Rubric
+## Selection Notes
 
-The candidate table below records current observations. The rubric in this
-section defines how Tapestry should turn those observations into an initial
-model choice and later re-evaluate that choice as evidence changes.
+The candidate table below records current observations against BMS-R1 through
+BMS-R5 for [Issue #25](https://github.com/The-AI-Alliance/tapestry/issues/25).
+It is not intended to be the full selection policy.
 
-### Hard Gates
+- Defer selection gates, evaluation dimensions, weights, purpose-specific
+  scoring, and tie-breakers to
+  [TAP-009](https://github.com/The-AI-Alliance/tapestry/issues/158).
+- Defer openness, licensing, evidence-disclosure, participant-control, and
+  Shared Commons boundary rules to
+  [TAP-010](https://github.com/The-AI-Alliance/tapestry/issues/160).
+- Use this document as the working evidence inventory for candidate model
+  families, including known uncertainties and follow-up questions.
 
-A model family should not be selected for the initial base unless it passes all
-of these gates for the stated purpose. These gates are scoped to the planned
-experiment or deployment, not to every possible downstream use by every possible
-user.
+For each candidate family, record evidence and uncertainty for:
 
-| Gate | Requirement | Failure condition |
-| :--- | :---------- | :---------------- |
-| G1 | Weights and terms are usable for the stated Tapestry purpose. | License, acceptable-use, distribution, or hosting terms block the planned experiment, sovereign participant use, downstream adaptation, credible exit, or an intended Shared Commons release. |
-| G2 | At least one model size can run in the relevant environment. | The only usable size is too large, closed, or operationally impractical for the stated purpose. |
-| G3 | The family can support the required post-training or evaluation work. | Architecture, tooling, or terms make the planned CPT, SFT, preference tuning, evaluation, or artifact migration impractical. |
-| G4 | The model has enough verifiable evidence to support a documented decision. | The work group cannot obtain sufficient assurance for license, model card, benchmark, provenance, tooling, or safety claims through public documentation, consortium-confidential review, independent verification, contractual assurance, or technical evaluation. |
-| G5 | Known safety, privacy, and sovereignty constraints are acceptable for the stated purpose. | The model's terms, provider dependency, required hosting path, provenance uncertainty, or operational assumptions conflict with Tapestry's sovereignty goals for this use. |
+- BMS-R1: whether weights are available and what usage or redistribution terms
+  apply;
+- BMS-R2: what model sizes are available and whether those sizes fit likely
+  Tapestry environments;
+- BMS-R3: whether the family appears to be under active development;
+- BMS-R4: whether public or internally measured performance appears competitive
+  enough for the relevant experiment;
+- BMS-R5: whether there is evidence, uncertainty, or an experiment plan for
+  cultural-alignment tractability.
 
-For G1, restrictions are disqualifying when they interfere with Tapestry's
-goal for the selected use. A restriction that affects unrelated uses is a
-caveat to record, not automatically a gate failure.
+The issue #25 decision record should stay concise:
 
-For G4, public evidence is preferred when it is compatible with participant
-rights and security constraints. It is not the only valid assurance path:
-participants may have legal, cultural, security, or commercial reasons to keep
-some evidence consortium-confidential or participant-controlled.
-
-### Purpose Profiles and Weighted Criteria
-
-After the hard gates, score each candidate from 0 to 5 for each criterion.
-Weights are intentionally explicit, but they must be derived from the selection
-purpose. Tapestry should not use one universal weighting for all situations.
-National, socio-cultural, industrial, and early experimental sovereignty can
-prioritize different evidence.
-
-Use one of these starting profiles, then adjust by PR or decision record when a
-work group has a better goal-specific rationale:
-
-| Criterion | Early experiment | Socio-cultural adaptation | Industrial deployment | Shared Commons candidate | Evidence to review |
-| :-------- | :--------------: | :-----------------------: | :-------------------: | :----------------------: | :----------------- |
-| Openness and downstream rights | 15% | 15% | 20% | 25% | License text, acceptable-use policy, redistribution terms, derivative-work terms, exit rights, intended Shared Commons obligations. |
-| Operational fit | 20% | 10% | 20% | 10% | Model sizes, dense vs. MoE complexity, quantization availability, hardware needs, inference and fine-tuning support. |
-| Capability baseline | 20% | 15% | 20% | 15% | Public benchmark results, internal smoke tests, degradation after tuning, domain coverage. |
-| Cultural-alignment tractability | 15% | 25% | 10% | 15% | Issue #22 results, rehearsal experiments, language and cultural coverage, sensitivity to catastrophic forgetting. |
-| Active development and ecosystem | 10% | 10% | 10% | 10% | Recent releases, tooling support, community adoption, maintainer roadmap signals. |
-| Evidence and governance assurance | 10% | 15% | 10% | 15% | Model card detail, provenance evidence, filtering and decontamination notes, evaluation artifacts, consortium-confidential review, independent verification, contractual assurance. |
-| Portability to future Tapestry models | 10% | 10% | 10% | 10% | How reusable the tuning, evaluation, and data-preparation work will be when Tapestry trains from scratch. |
-
-Geopolitical and sovereignty fit should be recorded for every profile as a
-cross-cutting risk assessment: jurisdiction, supply-chain concerns, hosting
-assumptions, sanctions exposure, and participant acceptability. Treat it as a
-gate when it blocks the stated purpose, and as a risk/caveat when it does not.
-
-The Shared Commons profile has the strongest openness requirements because
-shared artifacts must remain open and independently usable. Participant-owned
-or participant-controlled assets are different: Tapestry should not require
-participants to disclose, freely license, or publish assets they have not
-contributed to the commons.
-
-### Decision Process
-
-1. State the selection purpose: early experiment, socio-cultural adaptation,
-   industrial deployment, Shared Commons candidate, or another explicit use.
-2. Confirm that each candidate passes the hard gates for that purpose.
-3. Select or adapt a purpose profile and explain any weight changes.
-4. Score each passing candidate against the weighted criteria.
-5. Record the evidence used for each score, including unresolved caveats,
-   uncertainty, and whether evidence is public, consortium-confidential,
-   independently verified, contractual, or technical-test based.
-6. Select the leading model family for the stated purpose and at least one
-   fallback family to reduce dependency and lock-in.
-7. Where purposes diverge, keep purpose-specific leading alternatives rather
-   than forcing one universal primary model family.
-8. Revisit the decision after material changes: new model releases, issue #22
-   results, license changes, infrastructure changes, or failed post-training
-   experiments.
-
-### Tie-Breakers
-
-When two candidates are close, prefer the one that:
-
-- has a dense model that is easier to post-train for early experiments;
-- has clearer derivative-work and redistribution terms;
-- makes fine-tuning and evaluation work more portable to future Tapestry-owned
-  models;
-- has stronger evidence and governance assurance for provenance, filtering,
-  decontamination, and evaluation claims;
-- reduces the number of special cases required in infrastructure and
-  evaluation;
-- better preserves participant choice and credible exit for the stated purpose.
-
-### Required Decision Record
-
-The initial selection should be accompanied by a short decision record with:
-
-- selection purpose and chosen purpose profile;
-- selected leading model family and version for that purpose;
-- fallback model family and version for that purpose;
-- any purpose-specific alternatives that should remain active instead of being
-  collapsed into one universal primary choice;
-- hard-gate pass/fail table;
-- weighted rubric scores;
-- license and usage-policy summary;
-- evidence and governance assurance summary, including which evidence is
-  public, consortium-confidential, independently verified, contractual, or
-  technical-test based;
-- experiment environment assumptions;
-- known limitations, participant-controlled assets that are not part of the
-  Shared Commons, and re-evaluation triggers.
+- candidate family and version considered;
+- evidence or source used for each BMS-R1 through BMS-R5 observation;
+- unresolved uncertainties and who should resolve them;
+- selected family or families for the immediate experiment;
+- fallback family or families to reduce dependency and lock-in;
+- references to the TAP-009 selection method and TAP-010 openness and
+  participant-control boundaries used for the final decision.
 
 ## Candidate Model Families
 
