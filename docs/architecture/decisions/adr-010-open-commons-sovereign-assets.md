@@ -15,7 +15,7 @@ The governing principle is:
 
 > **Open where we share; sovereign where participants retain control.**
 
-Tapestry-created shared artifacts are open and independently usable by default. Participant assets remain participant-controlled unless voluntarily contributed to the shared commons. Participants may keep data and source identities confidential, contribute only governed model-weight updates, license access to their data on terms of their choosing, and keep, license, or commercialize downstream sovereign variants without a contribution-back requirement. Contributions to the Shared Base and claims of Tapestry certification remain subject to proportionate legal, consent, safety, quality, provenance, and interoperability requirements.
+Tapestry-created shared artifacts are open and independently usable by default. Participant assets remain participant-controlled unless voluntarily contributed to the Shared Commons. Participants may keep data and source identities confidential, contribute only governed model-weight updates, license access to their data on terms of their choosing, and keep, license, or commercialize downstream sovereign variants without a contribution-back requirement. Contributions to the Shared Base and claims of Tapestry certification remain subject to proportionate legal, consent, safety, quality, provenance, and interoperability requirements.
 
 ## Context
 
