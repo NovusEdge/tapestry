@@ -1,8 +1,8 @@
 This contribution follows Project Tapestry's default licensing (see the repository root):
 
-  - Code               Apache-2.0            ../../LICENSE.Apache-2.0
-  - Documentation      CC-BY-4.0             ../../LICENSE.CC-BY-4.0
-  - Data / specs       CDLA-Permissive-2.0   ../../LICENSE.CDLA-2.0
+  - Code               Apache-2.0            ../../LICENSES/LICENSE.Apache-2.0
+  - Documentation      CC-BY-4.0             ../../LICENSES/LICENSE.CC-BY-4.0
+  - Data / specs       CDLA-Permissive-2.0   ../../LICENSES/LICENSE.CDLA-2.0
 
 Copyright belongs to the respective contributors. Contributed under the Developer
 Certificate of Origin (DCO); commits are signed off with `git commit -s`.
