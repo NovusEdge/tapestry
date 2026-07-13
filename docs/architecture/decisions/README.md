@@ -84,7 +84,7 @@ The ADR set is broader than today's prototype code. The implemented `src/tapestr
 - [TAP-004](adr-004-training-loop.md): Shared-Base Loop mechanics and coordinator/node responsibilities.
 - [TAP-008](adr-008-data-sovereignty.md): data-locality and update-sharing boundaries.
 
-Useful cross-reference docs:
+Additional supporting documentation:
 
 - [`../../reference/ARCHITECTURE.md`](../../reference/ARCHITECTURE.md) for the consolidated architecture view.
 - [`../../reference/glossary.md`](../../reference/glossary.md) for canonical terms used across ADRs and implementation.
