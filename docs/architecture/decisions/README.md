@@ -56,3 +56,4 @@ Avoid consecutive plain Markdown lines like `**Status:** ...` / `**Date:** ...`;
 | [TAP-008](adr-008-data-sovereignty.md) | Data sovereignty | proposed | 5/5 |
 | [TAP-009](adr-009-goal-derived-base-model-selection.md) | Goal-derived base model selection | proposed | 3/5 |
 | [TAP-010](adr-010-open-commons-sovereign-assets.md) | Open commons and sovereign assets | proposed | 4/5 |
+| [TAP-011](adr-011-central-node-infrastructure.md) | Central node infrastructure | proposed | 4/5 |
