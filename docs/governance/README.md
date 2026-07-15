@@ -6,4 +6,4 @@ Consortium participants are assumed to be **collaborating institutions**, not mu
 
 | Document | Description |
 | :------- | :---------- |
-| `anti-capture-principle.md` | The public anti-capture principle with rationale |
+| [`anti-capture-principle.md`](anti-capture-principle.md) | The public anti-capture principle — no participant's sovereignty may be compromised by another's power, and Tapestry must never become the dependency it was built to replace. See [TAP-010](../architecture/decisions/adr-010-open-commons-sovereign-assets.md) for the two-direction interpretation (capture of the commons, and compelled surrender by participants). |
