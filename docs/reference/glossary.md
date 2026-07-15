@@ -45,7 +45,7 @@ Two roles recur throughout: a **Member** is the participating organization (gove
 Terms with established canonical homes elsewhere in `docs/` (not duplicated here):
 
 - **DG1–DG9** — the nine design goals. See [`4-design-goals.md`](../architecture/4-design-goals.md).
-- **TAP-001 … TAP-008** — the architecture decision records. See the [ADR index](../architecture/decisions/README.md).
+- **TAP-001 … TAP-010** — the architecture decision records. See the [ADR index](../architecture/decisions/README.md).
 - **TVA** — the Tapestry Value Architecture methodology. See [`0-tva-methodology.md`](../architecture/0-tva-methodology.md).
 - **TAPESTRY-GLOBAL** and regional/national/entity model variants — see [`VISION.md`](../strategic-plan/VISION.md).
 - **70/30 architecture principle** — see [`VISION.md`](../strategic-plan/VISION.md).

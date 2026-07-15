@@ -12,4 +12,4 @@ This directory contains the full design chain for Project Tapestry: the TVA meth
 | [`5-architectural-options.md`](5-architectural-options.md) | Phase 5 — option space and decision analysis toward an architectural thesis |
 | [`open-questions.md`](open-questions.md) | Index of all open questions across TVA docs, tagged for workshop / post-workshop / research |
 | [`diagrams/`](diagrams/README.md) | SVG figures for docs; see [`diagrams/README.md`](diagrams/README.md) |
-| [`decisions/`](decisions/) | Architecture Decision Records (ADRs) — 6 proposed |
+| [`decisions/`](decisions/) | Architecture Decision Records (ADRs) — see [index](decisions/README.md) |
