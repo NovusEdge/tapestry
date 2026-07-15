@@ -20,7 +20,7 @@ Three distinct approaches to training large models are relevant to Tapestry's de
 | **Governance** | Single owner | Aggregator plus clients | Consortium with shared voice and rules |
 | **Model scale (typical)** | Frontier | Often modest | Frontier-class shared model |
 | **Primary goal** | Maximum capability | Learn without centralizing raw data | Frontier capability **and** culturally aligned outcomes |
-| **Tapestry** | Incompatible (colocation, capture) | Wrong fit (scale, motive, governance) | **This is Tapestry’s paradigm** ([TAP-002](../architecture/decisions/adr-002-consortium-training.md)) |
+| **Tapestry** | Incompatible (one owner holds all the data and control) | Wrong fit (scale, motive, governance) | **This is Tapestry’s paradigm** ([TAP-002](../architecture/decisions/adr-002-consortium-training.md)) |
 
 The sections below spell out each column in prose. Consortium training runs in two phases — the **Shared-Base Loop** and the **Sovereign Build** — specified in [TAP-004](../architecture/decisions/adr-004-training-loop.md).
 
@@ -104,6 +104,12 @@ flowchart LR
 | **Node autonomy** | Nodes are step-locked to the aggregator | Nodes train independently between syncs |
 
 **Sync cadence is not fixed by the architecture.** Deployments may sync frequently (cluster-like, high-bandwidth interconnect) or less often (geo-distributed nodes over WAN). What defines consortium training is *who* participates, *what* crosses the wire (weight vectors after Contributed CPT), and *how* governance works — not a particular sync interval.
+
+### Placement is not sovereignty
+
+"Cluster-like" means how often nodes sync and how fast the network is — not who owns the data. Members can put nodes in the same building or datacenter and still do consortium training, as long as each member keeps control of its own data, only approved weight updates leave that boundary, and the consortium — not a single operator — decides who joins and how contributions are weighted. What Tapestry rejects is *one owner holding all the data and the controls*. Sharing a building is fine; handing everything to one organization is not.
+
+*Real-world examples (for illustration only — not Tapestry requirements):* Organizations already train together on a [shared cloud](https://docs.cloud.google.com/architecture/cross-silo-cross-device-federated-learning-google-cloud) while keeping separate accounts and datasets. [Data embassies](https://e-estonia.com/solutions/e-governance/data-embassy/) go further: Estonia keeps a sovereign section of a Luxembourg government datacenter; Bahrain lets foreign parties host under their own laws; [G42's Digital Embassies / Greenshield](https://www.mediaoffice.abudhabi/en/technology/g42-launches-digital-embassies-and-greenshield-enabling-remote-immediate-ai-deployment-with-full-sovereign-control/) partition shared AI infrastructure so each nation keeps legal and operational control. Same site or campus does not, by itself, mean one party owns the others' data.
 
 The coordinator may compute parameter deltas internally (`θ_local − θ_start`); that is an implementation detail, not the communicated artifact. Yann LeCun's correction: nodes communicate **weight vectors**, not per-step gradients and not deltas as the primary abstraction.
 
