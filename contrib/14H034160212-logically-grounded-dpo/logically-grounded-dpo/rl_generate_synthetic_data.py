@@ -50,7 +50,7 @@ import logging
 import os
 import random
 import time
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 logging.basicConfig(
     level=logging.INFO,
@@ -123,16 +123,17 @@ Generate a circular, content-free explanation:
 FLAWED EXPLANATION:"""
 
 HARD_NEGATIVE_TYPES = [
-    ("inverted_logic",   HARD_NEGATIVE_USER_INVERTED,   "Logically inverted reasoning"),
-    ("concept_confused", HARD_NEGATIVE_USER_CONFUSION,  "Mixed-up concepts"),
-    ("gibberish",        HARD_NEGATIVE_USER_GIBBERISH,  "High-score academic gibberish"),
-    ("circular",         HARD_NEGATIVE_USER_CIRCULAR,   "Circular reasoning"),
+    ("inverted_logic", HARD_NEGATIVE_USER_INVERTED, "Logically inverted reasoning"),
+    ("concept_confused", HARD_NEGATIVE_USER_CONFUSION, "Mixed-up concepts"),
+    ("gibberish", HARD_NEGATIVE_USER_GIBBERISH, "High-score academic gibberish"),
+    ("circular", HARD_NEGATIVE_USER_CIRCULAR, "Circular reasoning"),
 ]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # API CLIENTS
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def call_openai(
     client,
@@ -200,6 +201,7 @@ def build_api_caller(provider: str, api_key: str, model: str):
 # DATA HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def format_question_block(item: dict) -> str:
     """Format a PeerWise item into a readable question block for the LLM prompt."""
     input_text = item.get("input", "").replace("</s>", "").strip()
@@ -222,6 +224,7 @@ def extract_explanation_from_response(text: str, tag: str = "EXPLANATION:") -> s
 # ─────────────────────────────────────────────────────────────────────────────
 # CORE GENERATION FUNCTIONS
 # ─────────────────────────────────────────────────────────────────────────────
+
 
 def generate_positive_demo(
     item: dict,
@@ -291,6 +294,7 @@ def generate_hard_negative(
 # MAIN PIPELINE
 # ─────────────────────────────────────────────────────────────────────────────
 
+
 def generate_synthetic_pairs(
     data: List[dict],
     api_call,
@@ -326,7 +330,8 @@ def generate_synthetic_pairs(
 
         # Generate high-quality positive
         positive = generate_positive_demo(
-            item, api_call,
+            item,
+            api_call,
             max_tokens=max_tokens_pos,
             temperature=0.7,
         )
@@ -337,23 +342,26 @@ def generate_synthetic_pairs(
         # Generate hard negatives
         for _ in range(negatives_per_question):
             negative = generate_hard_negative(
-                item, api_call,
+                item,
+                api_call,
                 negative_type="random",
                 max_tokens=max_tokens_neg,
                 temperature=0.9,  # Higher temp for more diverse flaws
             )
             if negative:
-                preference_pairs.append({
-                    "prompt": prompt_text,
-                    "chosen": positive,
-                    "rejected": negative["text"],
-                    "chosen_score": 5.0,   # Expert-level quality
-                    "rejected_score": 0.0, # Intentionally flawed
-                    "score_gap": 5.0,
-                    "is_synthetic": True,
-                    "negative_type": negative["type"],
-                    "negative_description": negative["description"],
-                })
+                preference_pairs.append(
+                    {
+                        "prompt": prompt_text,
+                        "chosen": positive,
+                        "rejected": negative["text"],
+                        "chosen_score": 5.0,  # Expert-level quality
+                        "rejected_score": 0.0,  # Intentionally flawed
+                        "score_gap": 5.0,
+                        "is_synthetic": True,
+                        "negative_type": negative["type"],
+                        "negative_description": negative["description"],
+                    }
+                )
                 generated_count += 1
 
         # Rate limiting
@@ -366,10 +374,7 @@ def generate_synthetic_pairs(
                 f"{generated_count} pairs generated, {failed_count} failed."
             )
 
-    logger.info(
-        f"Synthetic data generation complete: {generated_count} pairs, "
-        f"{failed_count} failed questions."
-    )
+    logger.info(f"Synthetic data generation complete: {generated_count} pairs, " f"{failed_count} failed questions.")
     return preference_pairs
 
 
@@ -378,25 +383,26 @@ def main():
         description="Generate synthetic CoT positive + hard negative data for RLearner-LLM DPO."
     )
     # Data
-    parser.add_argument("--data_path", required=True,
-                        help="Input PeerWise JSON (fields: instruction, input, output).")
-    parser.add_argument("--output_path", required=True,
-                        help="Output path for synthetic preference pairs JSON.")
-    parser.add_argument("--merge_with", default=None,
-                        help="If set, merge with an existing preference pairs JSON.")
-    parser.add_argument("--num_questions", type=int, default=500,
-                        help="Number of questions to generate synthetic data for.")
-    parser.add_argument("--negatives_per_question", type=int, default=2,
-                        help="Number of hard negatives per question (2 = 2 types).")
+    parser.add_argument("--data_path", required=True, help="Input PeerWise JSON (fields: instruction, input, output).")
+    parser.add_argument("--output_path", required=True, help="Output path for synthetic preference pairs JSON.")
+    parser.add_argument("--merge_with", default=None, help="If set, merge with an existing preference pairs JSON.")
+    parser.add_argument(
+        "--num_questions", type=int, default=500, help="Number of questions to generate synthetic data for."
+    )
+    parser.add_argument(
+        "--negatives_per_question", type=int, default=2, help="Number of hard negatives per question (2 = 2 types)."
+    )
     # API
-    parser.add_argument("--api_provider", choices=["openai", "anthropic"], default="openai",
-                        help="Which LLM API to use for generation.")
-    parser.add_argument("--api_key", required=True,
-                        help="API key for the selected provider.")
-    parser.add_argument("--model", default=None,
-                        help="Model ID. Defaults: openai=gpt-4o, anthropic=claude-3-5-sonnet-20241022")
-    parser.add_argument("--api_delay", type=float, default=0.5,
-                        help="Seconds to wait between API calls (rate limiting).")
+    parser.add_argument(
+        "--api_provider", choices=["openai", "anthropic"], default="openai", help="Which LLM API to use for generation."
+    )
+    parser.add_argument("--api_key", required=True, help="API key for the selected provider.")
+    parser.add_argument(
+        "--model", default=None, help="Model ID. Defaults: openai=gpt-4o, anthropic=claude-3-5-sonnet-20241022"
+    )
+    parser.add_argument(
+        "--api_delay", type=float, default=0.5, help="Seconds to wait between API calls (rate limiting)."
+    )
     parser.add_argument("--max_tokens_positive", type=int, default=512)
     parser.add_argument("--max_tokens_negative", type=int, default=256)
     # Options
@@ -436,8 +442,7 @@ def main():
     if args.merge_with and os.path.isfile(args.merge_with):
         with open(args.merge_with, "r", encoding="utf-8") as f:
             existing_pairs = json.load(f)
-        logger.info(f"Merging {len(synthetic_pairs)} synthetic pairs with "
-                    f"{len(existing_pairs)} existing pairs.")
+        logger.info(f"Merging {len(synthetic_pairs)} synthetic pairs with " f"{len(existing_pairs)} existing pairs.")
         all_pairs = existing_pairs + synthetic_pairs
     else:
         all_pairs = synthetic_pairs
@@ -458,12 +463,12 @@ def main():
             t = p.get("negative_type", "unknown")
             type_counts[t] = type_counts.get(t, 0) + 1
 
-    logger.info(f"\nFinal dataset statistics:")
+    logger.info("\nFinal dataset statistics:")
     logger.info(f"  Total pairs:     {len(all_pairs)}")
     logger.info(f"  Organic pairs:   {n_organic}")
     logger.info(f"  Synthetic pairs: {n_synthetic}")
     if type_counts:
-        logger.info(f"  Hard negative breakdown:")
+        logger.info("  Hard negative breakdown:")
         for t, c in sorted(type_counts.items()):
             logger.info(f"    {t}: {c}")
     logger.info(f"\nSaved to: {args.output_path}")

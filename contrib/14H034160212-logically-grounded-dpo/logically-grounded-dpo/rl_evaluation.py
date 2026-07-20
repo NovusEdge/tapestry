@@ -33,11 +33,10 @@ import logging
 import os
 import re
 import time
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import torch
-from bert_score import score as bert_score_fn
 from nltk.translate.bleu_score import SmoothingFunction, sentence_bleu
 from peft import PeftModel
 from tqdm import tqdm
@@ -56,18 +55,16 @@ SYSTEM_PROMPT = (
 )
 
 VERIFIER_INSTRUCTION = (
-    "As a question rating verifier expert, can you generate the question rating score "
-    "for the given input?"
+    "As a question rating verifier expert, can you generate the question rating score " "for the given input?"
 )
 
-GENERATOR_INSTRUCTION = (
-    "As an explanation generation expert, can you generate the explanation for the given input?"
-)
+GENERATOR_INSTRUCTION = "As an explanation generation expert, can you generate the explanation for the given input?"
 
 
 # ---------------------------------------------------------------------------
 # Answer-grounded evaluation helpers
 # ---------------------------------------------------------------------------
+
 
 def extract_correct_option_text(input_text: str):
     """
@@ -113,22 +110,23 @@ def answer_coverage_rate(explanation: str, correct_option_text: str) -> float:
 @dataclass
 class ModelConfig:
     """Configuration for a single model to evaluate."""
+
     name: str
     model_path: str
     lora_adapter_path: Optional[str] = None
     is_legacy_llama: bool = False  # True for existing LLaMA-2 SFT models
-    use_kround: bool = False       # True to simulate ILearner K-round iterative refinement
-    k_rounds: int = 5              # Number of refinement rounds (if use_kround=True)
+    use_kround: bool = False  # True to simulate ILearner K-round iterative refinement
+    k_rounds: int = 5  # Number of refinement rounds (if use_kround=True)
 
 
 @dataclass
 class EvalResult:
     model_name: str
     bleu_scores: List[float]
-    bert_scores: List[float]           # vs student explanation (traditional)
-    bert_scores_answer: List[float]    # vs correct option text (answer-anchored, new)
-    acr_scores: List[float]            # Answer Coverage Rate (lexical, new)
-    nli_scores: List[float]            # NLI entailment score (explanation → correct option)
+    bert_scores: List[float]  # vs student explanation (traditional)
+    bert_scores_answer: List[float]  # vs correct option text (answer-anchored, new)
+    acr_scores: List[float]  # Answer Coverage Rate (lexical, new)
+    nli_scores: List[float]  # NLI entailment score (explanation → correct option)
     verifier_scores: List[float]
     inference_times: List[float]
     generated_explanations: List[str]  # saved for qualitative analysis
@@ -185,15 +183,11 @@ def load_nli_model(model_name: str, device: str = "cpu", cache_dir: str = "cache
     logger.info(f"Loading NLI model: {model_name} ...")
     # use_fast=False: older tokenizers lib (0.13.x) can't parse DeBERTa-v3 fast tokenizer
     nli_tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=cache_dir, use_fast=False)
-    nli_model = AutoModelForSequenceClassification.from_pretrained(
-        model_name, cache_dir=cache_dir
-    ).to(device)
+    nli_model = AutoModelForSequenceClassification.from_pretrained(model_name, cache_dir=cache_dir).to(device)
     nli_model.eval()
     # Determine entailment label index from id2label
     id2label = nli_model.config.id2label or {}
-    entailment_idx = next(
-        (k for k, v in id2label.items() if "entail" in v.lower()), 1
-    )
+    entailment_idx = next((k for k, v in id2label.items() if "entail" in v.lower()), 1)
     logger.info(f"  NLI model loaded. id2label={id2label}, entailment_idx={entailment_idx}")
     return nli_model, nli_tokenizer, entailment_idx
 
@@ -215,16 +209,19 @@ def compute_nli_scores(
     """
     scores = []
     for i in range(0, len(explanations), batch_size):
-        batch_exp = explanations[i:i + batch_size]
-        batch_hyp = hypotheses[i:i + batch_size]
+        batch_exp = explanations[i : i + batch_size]
+        batch_hyp = hypotheses[i : i + batch_size]
         enc = nli_tokenizer(
-            batch_exp, batch_hyp,
-            padding=True, truncation=True, max_length=512,
+            batch_exp,
+            batch_hyp,
+            padding=True,
+            truncation=True,
+            max_length=512,
             return_tensors="pt",
         )
         enc = {k: v.to(device) for k, v in enc.items()}
-        logits = nli_model(**enc).logits          # (B, num_labels)
-        probs = torch.softmax(logits, dim=-1)     # (B, num_labels)
+        logits = nli_model(**enc).logits  # (B, num_labels)
+        probs = torch.softmax(logits, dim=-1)  # (B, num_labels)
         entail_probs = probs[:, entailment_idx].cpu().tolist()
         scores.extend(entail_probs)
     return scores
@@ -281,9 +278,7 @@ def build_generator_prompt(
                 f"As a explanation generation expert, can you generate a better explanation "
                 f"for the given input? \n\n{input_text}\n\n Output: "
             )
-        return (
-            f"Instruction: {GENERATOR_INSTRUCTION}\n\nInput: {input_text}\n\n Output: "
-        )
+        return f"Instruction: {GENERATOR_INSTRUCTION}\n\nInput: {input_text}\n\n Output: "
 
     # Modern chat-template format (Qwen3/Llama-3)
     user_content = f"{instruction}\n\n{input_text}" if instruction else input_text
@@ -299,9 +294,7 @@ def build_generator_prompt(
     ]
     if hasattr(tokenizer, "apply_chat_template"):
         try:
-            return tokenizer.apply_chat_template(
-                messages, tokenize=False, add_generation_prompt=True
-            )
+            return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         except Exception:
             pass
     return f"Instruction: {instruction}\n\nInput: {input_text}\n\nOutput: "
@@ -332,7 +325,7 @@ def generate_explanation(
     full_text = tokenizer.decode(out[0], skip_special_tokens=True)
     # Strip the prompt from the decoded text
     if full_text.startswith(prompt):
-        response = full_text[len(prompt):].strip()
+        response = full_text[len(prompt) :].strip()
     else:
         # For chat-template models
         parts = full_text.split("assistant")
@@ -352,11 +345,7 @@ def get_verifier_score(
 ) -> float:
     """Extract numerical score from the Verifier model."""
     merged = f"{question_input} Explanation: {explanation}"
-    fulltext = (
-        f"Instruction: {VERIFIER_INSTRUCTION}\n\n"
-        f"Input: {merged}\n\n"
-        f"Output: "
-    )
+    fulltext = f"Instruction: {VERIFIER_INSTRUCTION}\n\n" f"Input: {merged}\n\n" f"Output: "
     tokens = verifier_tokenizer(fulltext, return_tensors="pt", truncation=True, max_length=1024)
     verifier_device = next(verifier_model.parameters()).device
     tokens = tokens.input_ids.to(verifier_device)
@@ -406,7 +395,7 @@ def evaluate_model(
     smoother = SmoothingFunction().method1
     generated_explanations = []
     ground_truths_for_bert = []
-    correct_option_texts = []   # for answer-anchored BERTScore
+    correct_option_texts = []  # for answer-anchored BERTScore
 
     for item in tqdm(test_data, desc=f"Evaluating {config.name}"):
         instruction = item.get("instruction", GENERATOR_INSTRUCTION).replace("</s>", "").strip()
@@ -427,7 +416,9 @@ def evaluate_model(
             score = 0.0
             for k in range(config.k_rounds):
                 prompt = build_generator_prompt(
-                    instruction, input_text, tokenizer,
+                    instruction,
+                    input_text,
+                    tokenizer,
                     is_legacy=config.is_legacy_llama,
                     prev_score=score if k > 0 else None,
                     prev_explanation=explanation if k > 0 else None,
@@ -438,18 +429,16 @@ def evaluate_model(
                 if not explanation:
                     break
                 # Score this round's explanation to use in next round's prompt
-                score = get_verifier_score(
-                    verifier_model, verifier_tokenizer, input_text, explanation, device=device
-                )
+                score = get_verifier_score(verifier_model, verifier_tokenizer, input_text, explanation, device=device)
         else:
             # 1-shot generation (RL-trained or plain SFT)
             prompt = build_generator_prompt(
-                instruction, input_text, tokenizer,
+                instruction,
+                input_text,
+                tokenizer,
                 is_legacy=config.is_legacy_llama,
             )
-            explanation = generate_explanation(
-                model, tokenizer, prompt, device=device, max_new_tokens=max_new_tokens
-            )
+            explanation = generate_explanation(model, tokenizer, prompt, device=device, max_new_tokens=max_new_tokens)
 
         elapsed = time.time() - start_time
 
@@ -471,9 +460,7 @@ def evaluate_model(
         acr = answer_coverage_rate(explanation, correct_opt_text)
 
         # Compute Verifier Score (final 1-shot score for RL models)
-        v_score = get_verifier_score(
-            verifier_model, verifier_tokenizer, input_text, explanation, device=device
-        )
+        v_score = get_verifier_score(verifier_model, verifier_tokenizer, input_text, explanation, device=device)
 
         result.bleu_scores.append(bleu)
         result.acr_scores.append(acr)
@@ -487,10 +474,7 @@ def evaluate_model(
 
         # Traditional: generated vs student explanation
         logger.info(f"  Computing BERTScore (vs student) for {config.name} ...")
-        _, _, F1 = bert_score_fn(
-            generated_explanations, ground_truths_for_bert,
-            lang="en", verbose=False
-        )
+        _, _, F1 = bert_score_fn(generated_explanations, ground_truths_for_bert, lang="en", verbose=False)
         result.bert_scores = F1.tolist()
 
         # New: generated vs correct option text (answer-anchored, reference-free)
@@ -498,10 +482,7 @@ def evaluate_model(
         if valid_pairs:
             logger.info(f"  Computing BERTScore (vs correct answer) for {config.name} ...")
             gen_valid, ans_valid = zip(*valid_pairs)
-            _, _, F1_ans = bert_score_fn(
-                list(gen_valid), list(ans_valid),
-                lang="en", verbose=False
-            )
+            _, _, F1_ans = bert_score_fn(list(gen_valid), list(ans_valid), lang="en", verbose=False)
             # Fill scores back (use 0.0 for examples without extractable option text)
             idx = 0
             for c in correct_option_texts:
@@ -520,8 +501,10 @@ def evaluate_model(
                 logger.info(f"  Computing NLI entailment scores for {config.name} ...")
                 gen_nli, hyp_nli = zip(*valid_nli)
                 nli_vals = compute_nli_scores(
-                    nli_model, nli_tokenizer,
-                    list(gen_nli), list(hyp_nli),
+                    nli_model,
+                    nli_tokenizer,
+                    list(gen_nli),
+                    list(hyp_nli),
                     entailment_idx=nli_entailment_idx,
                     device=nli_device,
                 )
@@ -544,46 +527,43 @@ def evaluate_model(
 
 def main():
     parser = argparse.ArgumentParser(description="Evaluate RLearner-LLM models.")
-    parser.add_argument("--test_data_path", required=True,
-                        help="Test set JSON file (fields: instruction, input, output/Explanation).")
-    parser.add_argument("--verifier_path", required=True,
-                        help="Path to trained Verifier model.")
-    parser.add_argument("--output_path", default="./rl_eval_results/comparison.json",
-                        help="Output path for evaluation results.")
+    parser.add_argument(
+        "--test_data_path", required=True, help="Test set JSON file (fields: instruction, input, output/Explanation)."
+    )
+    parser.add_argument("--verifier_path", required=True, help="Path to trained Verifier model.")
+    parser.add_argument(
+        "--output_path", default="./rl_eval_results/comparison.json", help="Output path for evaluation results."
+    )
     parser.add_argument("--device", default="cuda:0", help="Device for generator models.")
     parser.add_argument("--verifier_device", default="cuda:1", help="Device for verifier model.")
     parser.add_argument("--cache_dir", default="cache")
     parser.add_argument("--max_new_tokens", type=int, default=512)
-    parser.add_argument("--nli_model", default="cross-encoder/nli-deberta-v3-small",
-                        help="NLI model for entailment scoring (default: cross-encoder/nli-deberta-v3-small).")
-    parser.add_argument("--nli_device", default="cpu",
-                        help="Device for NLI model (cpu or cuda:N). Defaults to cpu.")
-    parser.add_argument("--skip_nli", action="store_true",
-                        help="Skip NLI entailment metric (faster, no download needed).")
+    parser.add_argument(
+        "--nli_model",
+        default="cross-encoder/nli-deberta-v3-small",
+        help="NLI model for entailment scoring (default: cross-encoder/nli-deberta-v3-small).",
+    )
+    parser.add_argument("--nli_device", default="cpu", help="Device for NLI model (cpu or cuda:N). Defaults to cpu.")
+    parser.add_argument(
+        "--skip_nli", action="store_true", help="Skip NLI entailment metric (faster, no download needed)."
+    )
 
     # Model specification arguments
-    parser.add_argument("--sft_model_path", default=None,
-                        help="Path to baseline SFT model (K=1, no RL).")
-    parser.add_argument("--sft_lora_path", default=None,
-                        help="LoRA adapter for SFT baseline (if applicable).")
-    parser.add_argument("--dpo_model_path", default=None,
-                        help="Base model path for DPO-trained model.")
-    parser.add_argument("--dpo_lora_path", default=None,
-                        help="LoRA adapter path from DPO training.")
-    parser.add_argument("--dpo_v2_model_path", default=None,
-                        help="Base model path for DPO-v2 model (improved preference data).")
-    parser.add_argument("--dpo_v2_lora_path", default=None,
-                        help="LoRA adapter path from DPO-v2 training.")
-    parser.add_argument("--ppo_model_path", default=None,
-                        help="Base model path for PPO-trained model.")
-    parser.add_argument("--ppo_lora_path", default=None,
-                        help="LoRA adapter path from PPO training.")
-    parser.add_argument("--ilearner_model_path", default=None,
-                        help="Path to ILearner-LLM model for K-round baseline.")
-    parser.add_argument("--ilearner_k", type=int, default=5,
-                        help="Number of refinement rounds for ILearner baseline.")
-    parser.add_argument("--ilearner_is_legacy", action="store_true",
-                        help="Use legacy alpaca-style prompt for ILearner model.")
+    parser.add_argument("--sft_model_path", default=None, help="Path to baseline SFT model (K=1, no RL).")
+    parser.add_argument("--sft_lora_path", default=None, help="LoRA adapter for SFT baseline (if applicable).")
+    parser.add_argument("--dpo_model_path", default=None, help="Base model path for DPO-trained model.")
+    parser.add_argument("--dpo_lora_path", default=None, help="LoRA adapter path from DPO training.")
+    parser.add_argument(
+        "--dpo_v2_model_path", default=None, help="Base model path for DPO-v2 model (improved preference data)."
+    )
+    parser.add_argument("--dpo_v2_lora_path", default=None, help="LoRA adapter path from DPO-v2 training.")
+    parser.add_argument("--ppo_model_path", default=None, help="Base model path for PPO-trained model.")
+    parser.add_argument("--ppo_lora_path", default=None, help="LoRA adapter path from PPO training.")
+    parser.add_argument("--ilearner_model_path", default=None, help="Path to ILearner-LLM model for K-round baseline.")
+    parser.add_argument("--ilearner_k", type=int, default=5, help="Number of refinement rounds for ILearner baseline.")
+    parser.add_argument(
+        "--ilearner_is_legacy", action="store_true", help="Use legacy alpaca-style prompt for ILearner model."
+    )
     args = parser.parse_args()
 
     os.makedirs(os.path.dirname(args.output_path) or ".", exist_ok=True)
@@ -617,46 +597,56 @@ def main():
     model_configs = []
 
     if args.sft_model_path:
-        model_configs.append(ModelConfig(
-            name="Baseline-SFT (K=1)",
-            model_path=args.sft_model_path,
-            lora_adapter_path=args.sft_lora_path,
-            is_legacy_llama=False,
-            use_kround=False,
-        ))
+        model_configs.append(
+            ModelConfig(
+                name="Baseline-SFT (K=1)",
+                model_path=args.sft_model_path,
+                lora_adapter_path=args.sft_lora_path,
+                is_legacy_llama=False,
+                use_kround=False,
+            )
+        )
 
     if args.dpo_model_path and args.dpo_lora_path:
-        model_configs.append(ModelConfig(
-            name="RL-DPO (K=1)",
-            model_path=args.dpo_model_path,
-            lora_adapter_path=args.dpo_lora_path,
-            use_kround=False,
-        ))
+        model_configs.append(
+            ModelConfig(
+                name="RL-DPO (K=1)",
+                model_path=args.dpo_model_path,
+                lora_adapter_path=args.dpo_lora_path,
+                use_kround=False,
+            )
+        )
 
     if args.dpo_v2_model_path and args.dpo_v2_lora_path:
-        model_configs.append(ModelConfig(
-            name="RL-DPO-v2 (K=1)",
-            model_path=args.dpo_v2_model_path,
-            lora_adapter_path=args.dpo_v2_lora_path,
-            use_kround=False,
-        ))
+        model_configs.append(
+            ModelConfig(
+                name="RL-DPO-v2 (K=1)",
+                model_path=args.dpo_v2_model_path,
+                lora_adapter_path=args.dpo_v2_lora_path,
+                use_kround=False,
+            )
+        )
 
     if args.ppo_model_path and args.ppo_lora_path:
-        model_configs.append(ModelConfig(
-            name="RL-PPO (K=1)",
-            model_path=args.ppo_model_path,
-            lora_adapter_path=args.ppo_lora_path,
-            use_kround=False,
-        ))
+        model_configs.append(
+            ModelConfig(
+                name="RL-PPO (K=1)",
+                model_path=args.ppo_model_path,
+                lora_adapter_path=args.ppo_lora_path,
+                use_kround=False,
+            )
+        )
 
     if args.ilearner_model_path:
-        model_configs.append(ModelConfig(
-            name=f"ILearner-LLM (K={args.ilearner_k})",
-            model_path=args.ilearner_model_path,
-            is_legacy_llama=args.ilearner_is_legacy,
-            use_kround=True,
-            k_rounds=args.ilearner_k,
-        ))
+        model_configs.append(
+            ModelConfig(
+                name=f"ILearner-LLM (K={args.ilearner_k})",
+                model_path=args.ilearner_model_path,
+                is_legacy_llama=args.ilearner_is_legacy,
+                use_kround=True,
+                k_rounds=args.ilearner_k,
+            )
+        )
 
     if not model_configs:
         logger.error("No models specified. Use --sft_model_path, --dpo_model_path, etc.")
@@ -700,9 +690,9 @@ def main():
             logger.info(f"  {k}: {v}")
 
     # ---------- Summary Table ----------
-    logger.info("\n" + "="*100)
+    logger.info("\n" + "=" * 100)
     logger.info("FINAL COMPARISON TABLE")
-    logger.info("="*100)
+    logger.info("=" * 100)
     header = (
         f"{'Model':<28} {'BLEU':>8} {'BERT(Stu)':>10} {'BERT(Ans)':>10} "
         f"{'ACR':>8} {'NLI':>8} {'Verifier':>10} {'Time(s)':>9}"

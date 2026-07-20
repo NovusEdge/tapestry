@@ -46,8 +46,7 @@ SYSTEM_PROMPT = (
 )
 
 VERIFIER_INSTRUCTION = (
-    "As a question rating verifier expert, can you generate the question rating score "
-    "for the given input?"
+    "As a question rating verifier expert, can you generate the question rating score " "for the given input?"
 )
 
 # Hard negative templates for synthetic data augmentation
@@ -91,11 +90,7 @@ class VerifierScorer:
         Returns a float in [0, 5]. Returns -1.0 if parsing fails.
         """
         merged = f"{question_input} Explanation: {explanation}"
-        fulltext = (
-            f"Instruction: {VERIFIER_INSTRUCTION}\n\n"
-            f"Input: {merged}\n\n"
-            f"Output: "
-        )
+        fulltext = f"Instruction: {VERIFIER_INSTRUCTION}\n\n" f"Input: {merged}\n\n" f"Output: "
         tokens = self.tokenizer(fulltext, return_tensors="pt").input_ids.to(self.device)
         generated = self.model.generate(
             tokens,
@@ -131,9 +126,7 @@ class ExplanationGenerator:
         cache_dir: str = "cache",
     ):
         logger.info(f"Loading generator from {model_path} ...")
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            model_path, cache_dir=cache_dir, trust_remote_code=True
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path, cache_dir=cache_dir, trust_remote_code=True)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
@@ -195,7 +188,7 @@ class ExplanationGenerator:
             full_text = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
             # Strip the prompt from the output
             if full_text.startswith(prompt):
-                response = full_text[len(prompt):].strip()
+                response = full_text[len(prompt) :].strip()
             else:
                 # For chat-template models, extract after last assistant turn
                 parts = full_text.split("assistant")
@@ -252,34 +245,43 @@ def add_synthetic_hard_negatives(
 
 def main():
     parser = argparse.ArgumentParser(description="Build DPO preference dataset for RLearner-LLM.")
-    parser.add_argument("--generator_path", required=True,
-                        help="Path to the SFT generator model (local dir or HF model ID).")
-    parser.add_argument("--lora_adapter_path", default=None,
-                        help="Optional LoRA adapter path to load on top of the generator.")
-    parser.add_argument("--verifier_path", required=True,
-                        help="Path to the trained verifier model (e.g., llama_2_13B_merged_all_evaluator).")
-    parser.add_argument("--data_path", required=True,
-                        help="Input PeerWise JSON file (fields: instruction, input, output).")
-    parser.add_argument("--output_path", required=True,
-                        help="Output path for preference JSON dataset.")
-    parser.add_argument("--num_samples", type=int, default=6,
-                        help="Number of explanations to generate per question.")
-    parser.add_argument("--max_new_tokens", type=int, default=512,
-                        help="Max tokens for each generated explanation.")
-    parser.add_argument("--min_score_gap", type=float, default=0.3,
-                        help="Minimum score gap between chosen and rejected. Pairs below this are skipped.")
-    parser.add_argument("--add_hard_negatives", action="store_true",
-                        help="Add synthetic hard negative examples to the dataset.")
-    parser.add_argument("--hard_negative_ratio", type=float, default=0.2,
-                        help="Fraction of pairs to augment with hard negatives.")
-    parser.add_argument("--generator_device", default="cuda:0",
-                        help="Device for generator model.")
-    parser.add_argument("--verifier_device", default="cuda:1",
-                        help="Device for verifier model (separate GPU recommended).")
-    parser.add_argument("--cache_dir", default="cache",
-                        help="Model cache directory.")
-    parser.add_argument("--max_questions", type=int, default=None,
-                        help="Limit processing to N questions (for testing).")
+    parser.add_argument(
+        "--generator_path", required=True, help="Path to the SFT generator model (local dir or HF model ID)."
+    )
+    parser.add_argument(
+        "--lora_adapter_path", default=None, help="Optional LoRA adapter path to load on top of the generator."
+    )
+    parser.add_argument(
+        "--verifier_path",
+        required=True,
+        help="Path to the trained verifier model (e.g., llama_2_13B_merged_all_evaluator).",
+    )
+    parser.add_argument(
+        "--data_path", required=True, help="Input PeerWise JSON file (fields: instruction, input, output)."
+    )
+    parser.add_argument("--output_path", required=True, help="Output path for preference JSON dataset.")
+    parser.add_argument("--num_samples", type=int, default=6, help="Number of explanations to generate per question.")
+    parser.add_argument("--max_new_tokens", type=int, default=512, help="Max tokens for each generated explanation.")
+    parser.add_argument(
+        "--min_score_gap",
+        type=float,
+        default=0.3,
+        help="Minimum score gap between chosen and rejected. Pairs below this are skipped.",
+    )
+    parser.add_argument(
+        "--add_hard_negatives", action="store_true", help="Add synthetic hard negative examples to the dataset."
+    )
+    parser.add_argument(
+        "--hard_negative_ratio", type=float, default=0.2, help="Fraction of pairs to augment with hard negatives."
+    )
+    parser.add_argument("--generator_device", default="cuda:0", help="Device for generator model.")
+    parser.add_argument(
+        "--verifier_device", default="cuda:1", help="Device for verifier model (separate GPU recommended)."
+    )
+    parser.add_argument("--cache_dir", default="cache", help="Model cache directory.")
+    parser.add_argument(
+        "--max_questions", type=int, default=None, help="Limit processing to N questions (for testing)."
+    )
     args = parser.parse_args()
 
     os.makedirs(os.path.dirname(args.output_path) or ".", exist_ok=True)
@@ -359,15 +361,17 @@ def main():
             continue
 
         prompt_text = build_prompt_for_dpo(instruction, input_text)
-        preference_pairs.append({
-            "prompt": prompt_text,
-            "chosen": best_explanation,
-            "rejected": worst_explanation,
-            "chosen_score": best_score,
-            "rejected_score": worst_score,
-            "score_gap": score_gap,
-            "is_synthetic": False,
-        })
+        preference_pairs.append(
+            {
+                "prompt": prompt_text,
+                "chosen": best_explanation,
+                "rejected": worst_explanation,
+                "chosen_score": best_score,
+                "rejected_score": worst_score,
+                "score_gap": score_gap,
+                "is_synthetic": False,
+            }
+        )
 
     logger.info(
         f"Built {len(preference_pairs)} preference pairs. "
@@ -376,9 +380,7 @@ def main():
 
     # Optionally inject synthetic hard negatives
     if args.add_hard_negatives and preference_pairs:
-        preference_pairs = add_synthetic_hard_negatives(
-            preference_pairs, hard_negative_ratio=args.hard_negative_ratio
-        )
+        preference_pairs = add_synthetic_hard_negatives(preference_pairs, hard_negative_ratio=args.hard_negative_ratio)
 
     # Save
     with open(args.output_path, "w", encoding="utf-8") as f:

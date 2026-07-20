@@ -128,10 +128,7 @@ def load_preference_dataset(data_path: str, min_score_gap: float = 0.0) -> Datas
 
         examples.append({"prompt": prompt, "chosen": chosen, "rejected": rejected})
 
-    logger.info(
-        f"Loaded {len(examples)} preference pairs from {data_path} "
-        f"(skipped {skipped} invalid/low-gap)."
-    )
+    logger.info(f"Loaded {len(examples)} preference pairs from {data_path} " f"(skipped {skipped} invalid/low-gap).")
     return Dataset.from_list(examples)
 
 
@@ -145,7 +142,7 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(
         model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
-        padding_side="left",   # DPO prefers left-padding for decoder-only models
+        padding_side="left",  # DPO prefers left-padding for decoder-only models
         trust_remote_code=True,
     )
     if tokenizer.pad_token is None:

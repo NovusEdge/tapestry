@@ -105,9 +105,7 @@ def load_peerwise_data(data_path: str) -> Dataset:
 
 
 def main():
-    parser = transformers.HfArgumentParser(
-        (ModelArguments, DataArguments, LoraArguments, TrainingArguments)
-    )
+    parser = transformers.HfArgumentParser((ModelArguments, DataArguments, LoraArguments, TrainingArguments))
     model_args, data_args, lora_args, training_args = parser.parse_args_into_dataclasses()
 
     # ── Tokenizer ──────────────────────────────────────────────────────────────
