@@ -5,7 +5,7 @@ description = "The Python code for Project Tapestry"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch>=2.12.1",
+    "torch>=2.13.0",
     "numpy>=2.5.1",
 ]
 
@@ -15,8 +15,8 @@ dev = [
     "pytest-cov>=7.1.0",
     "pylint>=4.0.6",
     "black>=26.5.1",
-    "ruff>=0.15.20",
-    "ty>=0.0.56",
+    "ruff>=0.15.21",
+    "ty>=0.0.59",
 ]
 
 [build-system]

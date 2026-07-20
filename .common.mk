@@ -1,4 +1,4 @@
-  # .common.mk
+# .common.mk
 # See comment at the bottom of this file about "-include .custom.mk".
 
 # Definitions of RED, GREEN, etc., and INFO, ERROR, etc. for console output.

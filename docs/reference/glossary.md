@@ -14,7 +14,7 @@ Two roles recur throughout: a **Member** is the participating organization (gove
 
 ## A–Z
 
-**Consortium training** — The paradigm Tapestry uses: a small number of large, trusted, heterogeneous members collaboratively training a shared model, where data sovereignty is a first-order architectural constraint and cultural alignment is the goal. *See [TAP-002](../architecture/decisions/adr-002-consortium-training.md) for the full definition and the comparison with centralized and federated training.* The umbrella over Shared-Base Loop and Sovereign Build.
+**Consortium training** — The paradigm Tapestry uses: a small number of large, trusted, heterogeneous members collaboratively training a shared model, where data sovereignty is a first-order architectural constraint and cultural alignment is the goal. Nodes may be nearby or far apart; what matters is that each member controls its data and that the consortium shares governance — not that the machines sit in different countries. *See [TAP-002](../architecture/decisions/adr-002-consortium-training.md) for the full definition and the comparison with centralized and federated training.* The umbrella over Shared-Base Loop and Sovereign Build.
 
 **Contributed CPT** — Continued pre-training performed *inside* the Shared-Base Loop; its post-training weights are contributed back to the Shared Base. *Contrast* Private CPT. *See [TAP-004](../architecture/decisions/adr-004-training-loop.md).*
 
@@ -26,7 +26,7 @@ Two roles recur throughout: a **Member** is the participating organization (gove
 
 **N+1** — Tapestry's model-outcome structure: one Shared Base (the shared substrate) plus N Sovereign Models (one per member). *See [TAP-005](../architecture/decisions/adr-005-sovereign-pipeline.md).*
 
-**Node** — The compute environment a member operates: where sovereign data physically resides, where Contributed CPT and the Sovereign Build run, and what disconnects in island mode. A member may operate one or more nodes. Compound usages like *sovereign node* (a node operated by a member, with sovereignty guarantees) and *member node* (a member's node) follow from this distinction. *Contrast* Member. *See [TAP-002](../architecture/decisions/adr-002-consortium-training.md) and [TAP-004](../architecture/decisions/adr-004-training-loop.md).*
+**Node** — The compute environment a member operates: where that member's data lives under its control, where Contributed CPT and the Sovereign Build run, and what disconnects in island mode. A member may operate one or more nodes. Nodes can be far apart or in the same building; sovereignty is about who controls the data, not which building the machines are in. Compound usages like *sovereign node* (a node operated by a member, with sovereignty guarantees) and *member node* (a member's node) follow from this distinction. *Contrast* Member. *See [TAP-002](../architecture/decisions/adr-002-consortium-training.md) and [TAP-004](../architecture/decisions/adr-004-training-loop.md).*
 
 **Private CPT** — Continued pre-training performed *inside* a Sovereign Build; stays local and is never contributed. This is how a member adds culturally-grounded knowledge that does not flow back to the consortium. *Contrast* Contributed CPT. *See [TAP-004](../architecture/decisions/adr-004-training-loop.md).*
 
@@ -45,7 +45,7 @@ Two roles recur throughout: a **Member** is the participating organization (gove
 Terms with established canonical homes elsewhere in `docs/` (not duplicated here):
 
 - **DG1–DG9** — the nine design goals. See [`4-design-goals.md`](../architecture/4-design-goals.md).
-- **TAP-001 … TAP-008** — the architecture decision records. See the [ADR index](../architecture/decisions/README.md).
+- **TAP-001 … TAP-010** — the architecture decision records. See the [ADR index](../architecture/decisions/README.md).
 - **TVA** — the Tapestry Value Architecture methodology. See [`0-tva-methodology.md`](../architecture/0-tva-methodology.md).
 - **TAPESTRY-GLOBAL** and regional/national/entity model variants — see [`VISION.md`](../strategic-plan/VISION.md).
 - **70/30 architecture principle** — see [`VISION.md`](../strategic-plan/VISION.md).

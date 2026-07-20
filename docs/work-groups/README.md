@@ -25,15 +25,15 @@ In addition, some running meetings maintain Google docs for notes. All of them c
 
 ```mermaid
 flowchart LR
-    DataGovernance["Data Governance"]
-    BaseTraining["Base Model Training"]
-    SovereignAlignment["Sovereign Alignment"]
-    EvaluationCertification["Evaluation & Certification"]
-    DeploymentAdoption["Deployment & Adoption"]
+    DataGovernance["Data Governance"]:::base
+    BaseTraining["Base Model Training"]:::collective
+    SovereignAlignment["Sovereign Alignment"]:::sovereign
+    EvaluationCertification["Evaluation &\nCertification"]:::output
+    DeploymentAdoption["Deployment &\nAdoption"]:::industrial
 
-    SecurityPrivacy["Security & Privacy"]
-    InfrastructureOperations["Infrastructure & Operations"]
-    GovernanceParticipation["Governance & Participation"]
+    SecurityPrivacy["Security &\nPrivacy"]:::gate
+    InfrastructureOperations["Infrastructure &\nOperations"]:::infra
+    GovernanceParticipation["Governance &\nParticipation"]:::scope
 
     DataGovernance --> BaseTraining
     BaseTraining --> SovereignAlignment
@@ -47,7 +47,18 @@ flowchart LR
     InfrastructureOperations -.-> DeploymentAdoption
     GovernanceParticipation -.-> DataGovernance
     GovernanceParticipation -.-> EvaluationCertification
+
+    classDef base fill:#2c7da0,stroke:#236a8c,color:#fff,stroke-width:2px
+    classDef collective fill:#1b4965,stroke:#13365a,color:#fff,stroke-width:2px
+    classDef sovereign fill:#5e548e,stroke:#4a4170,color:#fff,stroke-width:2px
+    classDef output fill:#2d6a4f,stroke:#1b4332,color:#fff,stroke-width:2px
+    classDef industrial fill:#bc6c25,stroke:#9a5619,color:#fff,stroke-width:2px
+    classDef gate fill:#b23a48,stroke:#8e2e39,color:#fff,stroke-width:2px
+    classDef infra fill:#546e7a,stroke:#37474f,color:#fff,stroke-width:2px
+    classDef scope fill:#287271,stroke:#1e5a59,color:#fff,stroke-width:2px
 ```
+
+*Main pipeline (left to right): data enters, base model improves, sovereign alignment adds community values, evaluation certifies, and the model deploys. Dashed arrows show cross-cutting support from Security & Privacy, Infrastructure & Operations, and Governance & Participation.*
 
 ## Charter template
 
