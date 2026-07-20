@@ -70,7 +70,56 @@ Keep new code aligned with that split. Add tests under the matching `src/tests/t
 - Keep lint/type annotations compatible with `ruff`, `pylint`, and `ty`.
 - Preserve the docs site style in `website/`: Markdown pages, Jekyll front matter, and Just the Docs structure.
 - When editing documentation, keep the audience technical and contributor-focused rather than promotional.
+- When creating or editing Markdown under `docs/`, do not hard-wrap prose paragraphs; use soft wrap and break only for Markdown structure (see `docs/README.md` § Writing conventions).
+- For new inline Mermaid in architecture/reference docs, follow the conventions in `docs/architecture/diagrams/README.md` § Inline Mermaid style (TAP-009 for decision/sovereignty flows; `0-tva-methodology.md` for phased process/status diagrams).
 - Treat governance documents as load-bearing design constraints, not after-the-fact policy notes.
+
+## Plain English (PRs and issues)
+
+Write so a busy reviewer or contributor can understand the point without decoding jargon. Technical precision belongs *after* a clear opening, not instead of one.
+
+- Prefer short sentences and common words when they still say the same thing (“who controls the data” over “control-plane sovereignty boundary”).
+- Define project terms on first use, or link the glossary / ADR — do not assume every reader has the full corpus memorized.
+- Avoid stacking abstractions, acronyms, and file paths in the first screen of text.
+- Comments on issues and PRs should answer in plain language first; optional detail or links can follow.
+
+This applies especially to **issue bodies**, **issue comments**, **PR titles**, and **PR description openings**.
+
+## Pull request descriptions
+
+Write PR titles and bodies for human skimming first. Detail is welcome later; the opening must stand alone in plain English.
+
+**Title.** Outcome-oriented and specific enough to understand without opening the PR (e.g. `Add TAP-009: goal-derived base model selection`, not a file-list or implementation diary).
+
+**Opening (fixed order, plain English).** Put this at the top of the description — before file inventories, commit archaeology, or deep rationale:
+
+1. **Why** — the problem or gap this PR addresses.
+2. **What** — the proposed approach and what reviewers, users, or the project get when it lands (the result, not the mechanism).
+
+A reviewer who reads only the title and these two beats should understand the forest. If those two beats need a glossary to parse, rewrite them.
+
+**How (details after).** Implementation notes, files touched, edge cases, test evidence, and checklist items come next. Density is fine here.
+
+- When a structural overview helps, **precede the detailed how** with one high-level Mermaid diagram in the recommended style (`docs/architecture/diagrams/README.md` § Inline Mermaid style). Use it for flows, phase shifts, or decision structure — not for typo fixes or pure prose polish.
+- At most one diagram in that leading-how position; further diagrams belong deeper in the details if needed.
+- Prefer project language over repo archaeology in the opening (“propose a gate-then-score selection method” rather than “updated `classDef` in README”).
+
+Keep using the repo PR templates under `.github/PULL_REQUEST_TEMPLATE/` for checklists and contribution process; lead their description sections with Why → What as above.
+
+## Issue titles and bodies
+
+Same skimming bar as PRs: a reader should know the ask from the title plus the first short paragraph.
+
+**Title.** Name the outcome or question, not the internal ticket shape (e.g. `Pick base model for the #70 two-node experiment`, not `Task/Feature/Issue follow-up`).
+
+**Body opening.** In plain English, state:
+
+1. **Why this exists** — the gap, risk, or decision needed.
+2. **What success looks like** — a concrete done condition, decision, or artifact.
+
+Then add background, acceptance criteria, links to ADRs/issues, and checklists. Template fields under `.github/ISSUE_TEMPLATE/` still apply; fill them in readable prose, not telegram-style jargon.
+
+**Comments.** Prefer a clear recommendation or question in the first sentences. Long analysis is welcome after that. When comparing options, say what each option *does for the project* before naming tools or stacks.
 
 ## Practical Notes
 

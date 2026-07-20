@@ -5,7 +5,7 @@
 | Status | Proposed |
 | Confidence | High (5/5) |
 | Date | May 7, 2026 |
-| Revised | Jun 19, 2026 — terminology aligned (Shared Base, Contributed CPT); added N+1 two-phase diagram; consolidated as the canonical definition. |
+| Revised | Jun 19, 2026 — terminology aligned (Shared Base, Contributed CPT); added N+1 two-phase diagram; consolidated as the canonical definition. Jul 15, 2026 — clarified that nodes may share a building or fabric; what matters is who controls the data, not where the machines sit. |
 | Deciders | Christopher Nguyen (proposed), workshop participants (to ratify) |
 
 ## Context
@@ -46,7 +46,7 @@ This is distinct from federated learning (designed for millions of small edge cl
 | **Data per node** | All data centralized | Small (one user's or site's data) | Massive (national/institutional corpora) |
 | **Sovereignty motive** | N/A — one owner | Individual / site-level data protection | National/institutional sovereignty + cultural alignment |
 | **What crosses the network** | N/A — internal interconnect | FedSGD: per-step gradients; FedAvg: local model weight vectors after local training | Local model weight vectors after Contributed CPT |
-| **Communication cadence** | Every step; fast interconnect | Varies by method and deployment | Operational choice — frequent (cluster-like) or infrequent (geo-distributed) |
+| **Communication cadence** | Every step; fast interconnect | Varies by method and deployment | Operational choice — frequent (cluster-like) or infrequent (geo-distributed); where the machines sit is not what defines sovereignty (see Rationale) |
 | **Model scale** | Frontier | Typically small to medium | Frontier |
 | **Governance** | Single owner decides all | Aggregator-driven; clients have no architectural voice | Consortium with shared ownership and governance rights |
 | **Each node's outcome** | N/A — one model | Same global model (or personalized variant in PFL) | Sovereign Model: Shared Base + community-specific Sovereign Build |
@@ -58,6 +58,7 @@ Consortium training borrows techniques from the federated learning literature �
 - Tapestry's members are few (dozens) and are **collaborating institutions with governance voice** — not millions of mutually untrusted edge clients. Each member operates large nodes (national GPU clusters). See [Design principles for architecture work](../0-tva-methodology.md#design-principles-for-architecture-work).
 - The sovereignty motive is national/institutional, not individual data protection. The governance model, trust assumptions, and communication patterns all differ.
 - Using "federated" to describe Tapestry borrows the right principle (data stays put) but the wrong connotations (edge devices, FedAvg, cross-silo averaging). "Consortium training" accurately describes the participants, the purpose, and the governance.
+- **Placement is not sovereignty.** "Cluster-like" is about sync speed and network, not ownership. Members may share a building or datacenter and still do consortium training if each keeps control of its own data, only approved weight updates leave that boundary, and the consortium decides membership and weighting. What we reject is one owner holding all the data and the controls — not members sharing a room or a network. Examples are in [`training-approaches.md`](../../reference/training-approaches.md#placement-is-not-sovereignty).
 
 ## Confidence assessment
 
@@ -74,6 +75,7 @@ This is a framing and communication decision as much as a technical one. The ter
 - Requires updating all documentation and communications from "federated" to "consortium" when referring to Tapestry's own approach. (Largely complete as of May 2026.)
 - The term "consortium training" is novel — it doesn't have an established literature. This is a feature (we define what it means) and a risk (no prior art to reference). FedAvg is the closest technical precedent for the default aggregation mechanism; DiLoCo is an optional outer-optimizer variant.
 - References to federated learning techniques (FedAvg, DiLoCo, etc.) remain valid as technical building blocks. The distinction is between the paradigm (consortium) and the techniques it may use.
+- Early experiments may put nodes close together (same cluster or site) without weakening sovereignty rules. Training across distant sites remains important longer term, but it is not required for consortium training to be valid.
 
 ## References
 
