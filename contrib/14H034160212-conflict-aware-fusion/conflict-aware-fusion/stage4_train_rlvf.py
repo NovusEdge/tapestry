@@ -34,14 +34,13 @@ import os
 import sys
 import random
 
-os.environ.setdefault('HF_HOME', os.path.join(os.getcwd(), '.cache/huggingface'))
-os.environ.setdefault('HF_DATASETS_CACHE', os.path.join(os.environ['HF_HOME'], 'datasets'))
-os.environ.setdefault('TRANSFORMERS_CACHE', os.path.join(os.environ['HF_HOME'], 'transformers'))
+os.environ.setdefault("HF_HOME", os.path.join(os.getcwd(), ".cache/huggingface"))
+os.environ.setdefault("HF_DATASETS_CACHE", os.path.join(os.environ["HF_HOME"], "datasets"))
+os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(os.environ["HF_HOME"], "transformers"))
 
 import torch
 import torch.nn.functional as F
 import pandas as pd
-import numpy as np
 from datasets import Dataset
 from transformers import (
     AutoTokenizer,
@@ -74,6 +73,7 @@ STAGE1_DIRS = {
 # Data loading
 # ─────────────────────────────────────────────────────────
 
+
 def oracle_label(facts_str: str, rules_str: str, question: str) -> int:
     """Compute ground-truth label via forward_chain oracle."""
     try:
@@ -102,35 +102,34 @@ def build_mixed_dataset(
 
     v4_ratio: fraction of samples that come from variant4 equivalences.
     """
-    samples = []
-
     # ── Load train.csv (base + v2 + v3 + hard_mixed) ────────────────────────
     df_train = pd.read_csv(train_csv)
     print(f"  train.csv: {len(df_train)} rows, types={df_train['type'].value_counts().to_dict()}")
 
     train_samples = []
-    skipped = 0
     for _, row in df_train.iterrows():
-        facts = str(row['facts'])
-        rules = str(row['rules'])
-        questions = str(row['questions']).split(' | ')
-        answers = str(row['answers']).split(' | ')
+        facts = str(row["facts"])
+        rules = str(row["rules"])
+        questions = str(row["questions"]).split(" | ")
+        answers = str(row["answers"]).split(" | ")
         for q, a in zip(questions, answers):
             if use_oracle:
                 lbl = oracle_label(facts, rules, q)
                 if lbl == -1:
                     # Oracle couldn't verify; use CSV label as fallback
-                    lbl = 1 if a.strip() == 'T' else 0
+                    lbl = 1 if a.strip() == "T" else 0
             else:
-                lbl = 1 if a.strip() == 'T' else 0
+                lbl = 1 if a.strip() == "T" else 0
             text = facts + " " + rules + " " + q
-            enc = tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-            train_samples.append({
-                'input_ids': enc['input_ids'],
-                'attention_mask': enc['attention_mask'],
-                'labels': lbl,
-                'source': 'train',
-            })
+            enc = tokenizer(text, truncation=True, padding="max_length", max_length=max_length)
+            train_samples.append(
+                {
+                    "input_ids": enc["input_ids"],
+                    "attention_mask": enc["attention_mask"],
+                    "labels": lbl,
+                    "source": "train",
+                }
+            )
 
     print(f"  train samples: {len(train_samples)}")
 
@@ -140,24 +139,26 @@ def build_mixed_dataset(
 
     v4_samples = []
     for _, row in df_pairs.iterrows():
-        questions = str(row['questions']).split(' | ')
-        answers = str(row['answers']).split(' | ')
-        base_facts = str(row['base_facts'])
-        base_rules = str(row['base_rules'])
-        equiv_facts = str(row['equiv_facts'])
-        equiv_rules = str(row['equiv_rules'])
+        questions = str(row["questions"]).split(" | ")
+        answers = str(row["answers"]).split(" | ")
+        base_facts = str(row["base_facts"])
+        base_rules = str(row["base_rules"])
+        equiv_facts = str(row["equiv_facts"])
+        equiv_rules = str(row["equiv_rules"])
         for q, a in zip(questions, answers):
-            lbl = 1 if a.strip() == 'T' else 0
+            lbl = 1 if a.strip() == "T" else 0
             # Add both base and equiv as separate samples (same label)
             for f, r in [(base_facts, base_rules), (equiv_facts, equiv_rules)]:
                 text = f + " " + r + " " + q
-                enc = tokenizer(text, truncation=True, padding='max_length', max_length=max_length)
-                v4_samples.append({
-                    'input_ids': enc['input_ids'],
-                    'attention_mask': enc['attention_mask'],
-                    'labels': lbl,
-                    'source': 'v4',
-                })
+                enc = tokenizer(text, truncation=True, padding="max_length", max_length=max_length)
+                v4_samples.append(
+                    {
+                        "input_ids": enc["input_ids"],
+                        "attention_mask": enc["attention_mask"],
+                        "labels": lbl,
+                        "source": "v4",
+                    }
+                )
 
     print(f"  variant4 samples: {len(v4_samples)}")
 
@@ -177,6 +178,7 @@ def build_mixed_dataset(
 # REINFORCE Trainer
 # ─────────────────────────────────────────────────────────
 
+
 class RLVFTrainer(Trainer):
     """
     REINFORCE trainer for binary classifier.
@@ -193,39 +195,36 @@ class RLVFTrainer(Trainer):
     def __init__(self, baseline_momentum: float = 0.99, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.baseline_momentum = baseline_momentum
-        self._baseline = 0.0   # running mean reward baseline
+        self._baseline = 0.0  # running mean reward baseline
         self._step_count = 0
 
     def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
-        labels = inputs['labels']          # (B,) — oracle GT: 0 or 1
-        input_ids = inputs['input_ids']
-        attention_mask = inputs['attention_mask']
+        labels = inputs["labels"]  # (B,) — oracle GT: 0 or 1
+        input_ids = inputs["input_ids"]
+        attention_mask = inputs["attention_mask"]
 
         # Forward pass
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        logits = outputs.logits            # (B, 2)
+        logits = outputs.logits  # (B, 2)
 
         # Sample actions from current policy (stochastic exploration)
         with torch.no_grad():
-            probs = F.softmax(logits.float(), dim=-1)   # (B, 2)
+            probs = F.softmax(logits.float(), dim=-1)  # (B, 2)
             # During training: stochastic sampling for exploration
             actions = torch.multinomial(probs, num_samples=1).squeeze(-1)  # (B,)
 
         # Compute rewards: +1 if correct, -1 if wrong
-        correct = (actions == labels).float()        # (B,) — 1 if correct
-        rewards = correct * 2 - 1                    # +1 or -1
+        correct = (actions == labels).float()  # (B,) — 1 if correct
+        rewards = correct * 2 - 1  # +1 or -1
 
         # Update running baseline (exponential moving average)
         mean_r = rewards.mean().item()
-        self._baseline = (
-            self.baseline_momentum * self._baseline
-            + (1 - self.baseline_momentum) * mean_r
-        )
+        self._baseline = self.baseline_momentum * self._baseline + (1 - self.baseline_momentum) * mean_r
         baseline = torch.tensor(self._baseline, device=rewards.device)
-        advantages = rewards - baseline              # (B,) — variance-reduced
+        advantages = rewards - baseline  # (B,) — variance-reduced
 
         # Log probability of sampled action
-        log_probs_all = F.log_softmax(logits.float(), dim=-1)   # (B, 2)
+        log_probs_all = F.log_softmax(logits.float(), dim=-1)  # (B, 2)
         log_probs = log_probs_all.gather(1, actions.unsqueeze(1)).squeeze(1)  # (B,)
 
         # REINFORCE loss: maximize E[r * log π(a|x)]
@@ -251,11 +250,12 @@ class RLVFTrainer(Trainer):
 # Custom collator
 # ─────────────────────────────────────────────────────────
 
+
 def rlvf_collator(batch):
     return {
-        'input_ids': torch.tensor([x['input_ids'] for x in batch]),
-        'attention_mask': torch.tensor([x['attention_mask'] for x in batch]),
-        'labels': torch.tensor([x['labels'] for x in batch]),
+        "input_ids": torch.tensor([x["input_ids"] for x in batch]),
+        "attention_mask": torch.tensor([x["attention_mask"] for x in batch]),
+        "labels": torch.tensor([x["labels"] for x in batch]),
     }
 
 
@@ -263,19 +263,23 @@ def rlvf_collator(batch):
 # Model loading helpers
 # ─────────────────────────────────────────────────────────
 
+
 def build_lora_config(model_name: str) -> LoraConfig:
     lower = model_name.lower()
-    if 'qwen3' in lower:
+    if "qwen3" in lower:
         # Qwen3 q_norm/k_norm conflict with LoRA on q_proj/k_proj
-        target_modules = ['v_proj', 'o_proj', 'gate_proj', 'up_proj', 'down_proj']
-    elif 'llama' in lower or 'qwen' in lower or 'tinyllama' in lower:
-        target_modules = ['q_proj', 'k_proj', 'v_proj', 'o_proj']
+        target_modules = ["v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+    elif "llama" in lower or "qwen" in lower or "tinyllama" in lower:
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
     else:
-        target_modules = ['query', 'value']
+        target_modules = ["query", "value"]
     return LoraConfig(
-        r=8, lora_alpha=16,
+        r=8,
+        lora_alpha=16,
         target_modules=target_modules,
-        lora_dropout=0.05, bias='none', task_type='SEQ_CLS',
+        lora_dropout=0.05,
+        bias="none",
+        task_type="SEQ_CLS",
     )
 
 
@@ -283,10 +287,11 @@ def build_lora_config(model_name: str) -> LoraConfig:
 # Main training function
 # ─────────────────────────────────────────────────────────
 
+
 def train_rlvf(
-    model_key: str = 'qwen',
-    train_csv: str = 'data/train.csv',
-    pairs_csv: str = 'data/train_lire_pairs.csv',
+    model_key: str = "qwen",
+    train_csv: str = "data/train.csv",
+    pairs_csv: str = "data/train_lire_pairs.csv",
     stage1_dir: str = None,
     output_dir: str = None,
     v4_ratio: float = 0.5,
@@ -300,18 +305,18 @@ def train_rlvf(
     if stage1_dir is None:
         stage1_dir = STAGE1_DIRS[model_key]
     if output_dir is None:
-        output_dir = f'./trained_models/{model_key}_rlvf'
+        output_dir = f"./trained_models/{model_key}_rlvf"
 
-    print('=' * 70)
-    print(f'RLVF Training — {model_key}')
-    print(f'  base model   : {model_name}')
-    print(f'  stage1 dir   : {stage1_dir}')
-    print(f'  train data   : {train_csv}')
-    print(f'  v4 pairs     : {pairs_csv}')
-    print(f'  v4 ratio     : {v4_ratio:.0%}')
-    print(f'  epochs       : {epochs}')
-    print(f'  output       : {output_dir}')
-    print('=' * 70)
+    print("=" * 70)
+    print(f"RLVF Training — {model_key}")
+    print(f"  base model   : {model_name}")
+    print(f"  stage1 dir   : {stage1_dir}")
+    print(f"  train data   : {train_csv}")
+    print(f"  v4 pairs     : {pairs_csv}")
+    print(f"  v4 ratio     : {v4_ratio:.0%}")
+    print(f"  epochs       : {epochs}")
+    print(f"  output       : {output_dir}")
+    print("=" * 70)
 
     # Tokenizer
     tok_dir = stage1_dir if os.path.exists(stage1_dir) else model_name
@@ -322,59 +327,62 @@ def train_rlvf(
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         tokenizer.pad_token_id = tokenizer.eos_token_id
-    print(f'  Loaded tokenizer from: {tok_dir}')
+    print(f"  Loaded tokenizer from: {tok_dir}")
 
     # Dataset
-    print('\nBuilding mixed training dataset...')
+    print("\nBuilding mixed training dataset...")
     dataset = build_mixed_dataset(
-        train_csv, pairs_csv, tokenizer,
-        max_length=max_length, v4_ratio=v4_ratio,
+        train_csv,
+        pairs_csv,
+        tokenizer,
+        max_length=max_length,
+        v4_ratio=v4_ratio,
     )
 
     # Model
-    print('\nLoading model...')
+    print("\nLoading model...")
     base_model = AutoModelForSequenceClassification.from_pretrained(
         model_name,
         num_labels=2,
-        torch_dtype=torch.bfloat16 if (torch.cuda.is_available() and torch.cuda.is_bf16_supported())
-                   else torch.float32,
-        device_map='auto' if torch.cuda.is_available() else None,
+        torch_dtype=torch.bfloat16 if (torch.cuda.is_available() and torch.cuda.is_bf16_supported()) else torch.float32,
+        device_map="auto" if torch.cuda.is_available() else None,
     )
     if tokenizer.pad_token_id is not None:
         base_model.config.pad_token_id = tokenizer.pad_token_id
 
     # Only load stage1 LoRA if its task_type matches SEQ_CLS (avoids CAUSAL_LM conflict)
-    _adapter_cfg = os.path.join(stage1_dir, 'adapter_config.json')
+    _adapter_cfg = os.path.join(stage1_dir, "adapter_config.json")
     _stage1_task = None
     if os.path.exists(_adapter_cfg):
         import json as _json
-        with open(_adapter_cfg) as _f:
-            _stage1_task = _json.load(_f).get('task_type', '')
-    if os.path.exists(stage1_dir) and _stage1_task == 'SEQ_CLS':
-        model = PeftModel.from_pretrained(base_model, stage1_dir, is_trainable=True)
-        print(f'  Loaded stage1 LoRA from: {stage1_dir}')
-    else:
-        if _stage1_task and _stage1_task != 'SEQ_CLS':
-            print(f'  Stage1 task_type={_stage1_task} ≠ SEQ_CLS → applying fresh LoRA')
-        model = get_peft_model(base_model, build_lora_config(model_name))
-        print('  Applied fresh LoRA')
 
-    if hasattr(model, 'print_trainable_parameters'):
+        with open(_adapter_cfg) as _f:
+            _stage1_task = _json.load(_f).get("task_type", "")
+    if os.path.exists(stage1_dir) and _stage1_task == "SEQ_CLS":
+        model = PeftModel.from_pretrained(base_model, stage1_dir, is_trainable=True)
+        print(f"  Loaded stage1 LoRA from: {stage1_dir}")
+    else:
+        if _stage1_task and _stage1_task != "SEQ_CLS":
+            print(f"  Stage1 task_type={_stage1_task} ≠ SEQ_CLS → applying fresh LoRA")
+        model = get_peft_model(base_model, build_lora_config(model_name))
+        print("  Applied fresh LoRA")
+
+    if hasattr(model, "print_trainable_parameters"):
         model.print_trainable_parameters()
 
     # Gradient checkpointing for large models (saves memory at cost of speed)
-    if hasattr(model, 'enable_input_require_grads'):
+    if hasattr(model, "enable_input_require_grads"):
         model.enable_input_require_grads()
-    if hasattr(model, 'gradient_checkpointing_enable'):
+    if hasattr(model, "gradient_checkpointing_enable"):
         model.gradient_checkpointing_enable()
 
     # Estimate total steps
     grad_acc = 8 if batch_size <= 2 else 4
     steps_per_epoch = len(dataset) // (batch_size * grad_acc)
     total_steps = steps_per_epoch * epochs
-    print(f'\n  Dataset size    : {len(dataset)}')
-    print(f'  Steps per epoch : {steps_per_epoch}')
-    print(f'  Total steps     : {total_steps}')
+    print(f"\n  Dataset size    : {len(dataset)}")
+    print(f"  Steps per epoch : {steps_per_epoch}")
+    print(f"  Total steps     : {total_steps}")
 
     # Training args
     args = TrainingArguments(
@@ -382,15 +390,15 @@ def train_rlvf(
         per_device_train_batch_size=batch_size,
         num_train_epochs=epochs,
         learning_rate=learning_rate,
-        save_strategy='epoch',
+        save_strategy="epoch",
         logging_steps=20,
         remove_unused_columns=False,
-        report_to='none',
+        report_to="none",
         fp16=False,
         bf16=torch.cuda.is_available() and torch.cuda.is_bf16_supported(),
         gradient_accumulation_steps=grad_acc,
         warmup_ratio=0.05,
-        lr_scheduler_type='cosine',
+        lr_scheduler_type="cosine",
     )
 
     trainer = RLVFTrainer(
@@ -402,32 +410,33 @@ def train_rlvf(
         processing_class=tokenizer,
     )
 
-    print('\nStarting RLVF training...')
+    print("\nStarting RLVF training...")
     trainer.train()
 
     model.save_pretrained(output_dir)
     tokenizer.save_pretrained(output_dir)
-    print(f'\nRLVF model saved to: {output_dir}')
+    print(f"\nRLVF model saved to: {output_dir}")
 
 
 # ─────────────────────────────────────────────────────────
 # Entry point
 # ─────────────────────────────────────────────────────────
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='RLVF Training')
-    parser.add_argument('--model', type=str, default='qwen', choices=['qwen', 'qwen3', 'llama', 'bert'])
-    parser.add_argument('--train_csv', type=str, default='data/train.csv')
-    parser.add_argument('--pairs_csv', type=str, default='data/train_lire_pairs.csv')
-    parser.add_argument('--stage1_dir', type=str, default=None)
-    parser.add_argument('--output_dir', type=str, default=None)
-    parser.add_argument('--v4_ratio', type=float, default=0.5,
-                        help='Fraction of batch from variant4 equivalences (default: 0.5)')
-    parser.add_argument('--epochs', type=int, default=3)
-    parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--lr', type=float, default=1e-5)
-    parser.add_argument('--max_length', type=int, default=512)
-    parser.add_argument('--baseline_momentum', type=float, default=0.99)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="RLVF Training")
+    parser.add_argument("--model", type=str, default="qwen", choices=["qwen", "qwen3", "llama", "bert"])
+    parser.add_argument("--train_csv", type=str, default="data/train.csv")
+    parser.add_argument("--pairs_csv", type=str, default="data/train_lire_pairs.csv")
+    parser.add_argument("--stage1_dir", type=str, default=None)
+    parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument(
+        "--v4_ratio", type=float, default=0.5, help="Fraction of batch from variant4 equivalences (default: 0.5)"
+    )
+    parser.add_argument("--epochs", type=int, default=3)
+    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--lr", type=float, default=1e-5)
+    parser.add_argument("--max_length", type=int, default=512)
+    parser.add_argument("--baseline_momentum", type=float, default=0.99)
     args = parser.parse_args()
 
     train_rlvf(

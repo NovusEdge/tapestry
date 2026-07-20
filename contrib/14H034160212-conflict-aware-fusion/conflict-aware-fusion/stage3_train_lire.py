@@ -21,11 +21,10 @@ Data: data/train_lire_pairs.csv
 
 import argparse
 import os
-import sys
 
-os.environ.setdefault('HF_HOME', os.path.join(os.getcwd(), '.cache/huggingface'))
-os.environ.setdefault('HF_DATASETS_CACHE', os.path.join(os.environ['HF_HOME'], 'datasets'))
-os.environ.setdefault('TRANSFORMERS_CACHE', os.path.join(os.environ['HF_HOME'], 'transformers'))
+os.environ.setdefault("HF_HOME", os.path.join(os.getcwd(), ".cache/huggingface"))
+os.environ.setdefault("HF_DATASETS_CACHE", os.path.join(os.environ["HF_HOME"], "datasets"))
+os.environ.setdefault("TRANSFORMERS_CACHE", os.path.join(os.environ["HF_HOME"], "transformers"))
 
 import torch
 import torch.nn.functional as F
@@ -81,13 +80,15 @@ def build_lire_dataset(csv_path: str, tokenizer, max_length: int = 512):
             label = 1 if a.strip() == "T" else 0
             b_ids, b_mask = encode_text(base_facts, base_rules, q, tokenizer, max_length)
             e_ids, e_mask = encode_text(equiv_facts, equiv_rules, q, tokenizer, max_length)
-            samples.append({
-                "base_input_ids": b_ids,
-                "base_attention_mask": b_mask,
-                "equiv_input_ids": e_ids,
-                "equiv_attention_mask": e_mask,
-                "labels": label,
-            })
+            samples.append(
+                {
+                    "base_input_ids": b_ids,
+                    "base_attention_mask": b_mask,
+                    "equiv_input_ids": e_ids,
+                    "equiv_attention_mask": e_mask,
+                    "labels": label,
+                }
+            )
 
     print(f"  Total LIRE pair samples: {len(samples)}")
     return Dataset.from_list(samples)
@@ -135,7 +136,7 @@ class LIRETrainer(Trainer):
         l_sft = F.cross_entropy(logits_base, labels)
 
         # Invariance loss: symmetric KL divergence
-        p_base = F.softmax(logits_base, dim=-1)   # (B, 2)
+        p_base = F.softmax(logits_base, dim=-1)  # (B, 2)
         p_equiv = F.softmax(logits_equiv, dim=-1)  # (B, 2)
         # KL(p_base || p_equiv) + KL(p_equiv || p_base)
         kl_fwd = F.kl_div(p_equiv.log(), p_base, reduction="batchmean")
@@ -233,6 +234,7 @@ def train_lire(
     _stage1_task = None
     if os.path.exists(_adapter_cfg):
         import json as _json
+
         with open(_adapter_cfg) as _f:
             _stage1_task = _json.load(_f).get("task_type", "")
     if os.path.exists(stage1_dir) and _stage1_task == "SEQ_CLS":
@@ -243,7 +245,7 @@ def train_lire(
             print(f"  Stage1 task_type={_stage1_task} ≠ SEQ_CLS → applying fresh LoRA")
         lora_config = build_lora_config(model_name)
         model = get_peft_model(base_model, lora_config)
-        print(f"  Applied fresh LoRA")
+        print("  Applied fresh LoRA")
 
     if hasattr(model, "print_trainable_parameters"):
         model.print_trainable_parameters()
@@ -286,8 +288,7 @@ if __name__ == "__main__":
     parser.add_argument("--pairs", type=str, default="data/train_lire_pairs.csv")
     parser.add_argument("--stage1_dir", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
-    parser.add_argument("--lire_lambda", type=float, default=1.0,
-                        help="Weight of invariance loss (default: 1.0)")
+    parser.add_argument("--lire_lambda", type=float, default=1.0, help="Weight of invariance loss (default: 1.0)")
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--lr", type=float, default=2e-5)
