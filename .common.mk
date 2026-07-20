@@ -6,27 +6,40 @@
 include .console-colors.mk
 
 # Some of the following definitions may be overridden in Makefile. Some notes:
-# TESTS_BASE_DIR: By default, it is UNDER ${SRC_DIR}.
-# WHICH_TESTS: By default, it equals ${TESTS_BASE_DIR}, meaning the assumption is
-# the unit-tests target should build all tests found under ${TESTS_BASE_DIR}.
-# WHICH_TESTS can also be used to specify an individual test file or test
-# (see https://docs.pytest.org/en/stable/how-to/usage.html for syntax).
+# SRC_DIR: Root of the source code. This is changed dynamically by the "contrib-%"
+#   target pattern below.
+# WHICH_TESTS: By default, it is empty, meaning that all tests found under
+#   ${SRC_DIR} will be run. WHICH_TESTS can also be used on the command line
+#   to specify a particular directory, test file or test to run. Specify this
+#   value RELATIVE to ${SRC_DIR}! See the pytest docs for the syntax to use:
+#   https://docs.pytest.org/en/stable/how-to/usage.html for syntax
 SRC_DIR                  ?= src
-TESTS_BASE_DIR           ?= ${SRC_DIR}/tests
-WHICH_TESTS              ?= ${TESTS_BASE_DIR}
+WHICH_TESTS              ?=
 CLEAN_DIRS               ?=
 
 CONTRIB_DIR              := contrib
 CONTRIB_DIRS             := $(patsubst %/.,%,$(wildcard ${CONTRIB_DIR}/*/.))
 CONTRIB_TARGETS_MKS      := $(foreach dir,${CONTRIB_DIRS},$(wildcard $(dir)/.targets.mk))
 
-QUALITY_CHECKS           := format ruff pylint type-check unit-tests
+# The quality targets we run as part of "before-pr":
+QUALITY_CHECKS_NO_TESTS  := format ruff pylint type-check
+QUALITY_CHECKS           := ${QUALITY_CHECKS_NO_TESTS} unit-tests
+
+# Commands as variables:
+# Time execution of commands. Prefix the command invocation with "${TIME}":
+TIME                     ?= time
+# Common flags for "uv run" (--active is recommended by some warnings that
+# can be seen during recursive uv invocations, but using it can cause
+# conflicting versions of dependencies to be installed in the top-level
+# environment, if the directories for those invocations have their own
+# "pyproject.toml" files. Therefore, DON'T USE THIS FLAG!):
+UV_RUN                   ?= uv run
 PYLINT_IGNORE_ARGS       := --ignore=.venv --ignore-pattern='.*cache.*'
 # Define PYTEST_*_OPT_ARGS in targets to customize behavior.
 PYTEST_RUN_OPT_ARGS      ?=
 PYTEST_COV_OPT_ARGS      ?=
-PYTEST_RUN_CMD           := uv run --active coverage run -m pytest -v -s ${PYTEST_RUN_OPT_ARGS}
-PYTEST_COV_REPORT_CMD    := uv run --active coverage report -m ${PYTEST_COV_OPT_ARGS}
+PYTEST_RUN_CMD           := ${UV_RUN} coverage run -m pytest -v -s ${PYTEST_RUN_OPT_ARGS}
+PYTEST_COV_REPORT_CMD    := ${UV_RUN} coverage report -m ${PYTEST_COV_OPT_ARGS}
 
 # The environment:
 MAKEFLAGS                ?= --warn-undefined-variables
@@ -37,10 +50,6 @@ REPO_NAME                ?= $(notdir ${LOCAL_REPO_PATH})
 # Used for version tagging release artifacts, temporary directories, etc.
 GIT_HASH                 ?= $(shell git show --pretty="%H" --abbrev-commit |head -1)
 TIMESTAMP                ?= $(shell date +"%Y%m%d-%H%M%S")
-
-# Commands as variables:
-# Time execution of commands. Prefix the command invocation with "${TIME}".
-TIME                     ?= time  # time execution of long processes
 
 # Model "appendix":
 # For cases where model inference is done in local environments, e.g., laptops,
@@ -72,26 +81,40 @@ ${CODE}make all${_END}                # Makes the ${CODE}help${_END} and ${CODE}
 ${CODE}make help${_END}               # Prints this output.
 ${CODE}make print-info${_END}         # Print the current values of some make and environment variables.
 
-${HIGHLIGHT}Working with code:${_END}
+${HIGHLIGHT}Working with the code:${_END}
 
-${CODE}make one-time-setup${_END}     # "One time setup" of dependencies. Requires MacOS or Linux.
+${CODE}make one-time-setup${_END}     # "One time setup" of ${CODE}uv${_END} dependencies (in ${CODE}.venv${_END}).
+${CODE}make setup${_END}              # Alias for ${CODE}one-time-setup${_END}.
+${CODE}make force-one-time-setup${_END} # "Force" the one time setup to run again, by first deleting ${CODE}.venv${_END}.
+${CODE}make force-setup${_END}        # Alias for ${CODE}force-one-time-setup${_END}.
+
 ${CODE}make unit-tests${_END}         # Run the unit test suite.
 ${CODE}make tests${_END}              # Alias for ${CODE}unit-tests${_END}.
 ${CODE}make clean${_END}              # Remove built artifacts, temporary files, etc.
 ${CODE}make format${_END}             # Format the Python code with ${CODE}black${_END}.
+${CODE}make black${_END}              # Alias for ${CODE}format${_END}.
 ${CODE}make lint${_END}               # Lint the Python code by making the ${CODE}ruff${_END} and ${CODE}pylint${_END} targets.
 ${CODE}make ruff${_END}               # Lint the Python code with ${CODE}ruff${_END}.
 ${CODE}make pylint${_END}             # Lint the Python code with ${CODE}pylint${_END}.
 ${CODE}make type-check${_END}         # Type check the Python code with ${CODE}ty${_END}.
 ${CODE}make type-check-watch${_END}   # Type check the Python code with ${CODE}ty${_END} in "watch" mode,
 ${CODE}${_END}                        # so you can fix mistakes and keep it updating.
-${CODE}make before-pr${_END}          # Make ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}type-check${_END}, and ${CODE}unit-tests${_END} for "src" AND
-${CODE}${_END}                        # every "contrib" directory.
-${CODE}${_END}                        # DO THIS BEFORE SUBMITTING A PR!
+
+${CODE}make before-pr${_END}          # Make ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}type-check${_END}, and ${CODE}unit-tests${_END} for ${CODE}src${_END}
+${CODE}${_END}                        # AND every ${CODE}contrib/*${_END} directory. Equivalent to ${CODE}before-pr-top${_END}
+${CODE}${_END}                        # and ${CODE}before-pr-contrib${_END}. ${RED}DO THIS BEFORE SUBMITTING A PR!${_END}
+${CODE}make before-pr-top${_END}      # Make ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}type-check${_END}, and ${CODE}unit-tests${_END} for ${CODE}src${_END} only.
+${CODE}make before-pr-contrib${_END}  # Make ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}type-check${_END}, and ${CODE}unit-tests${_END} for ${CODE}contrib/*${_END}.
+
+${CODE}make before-pr-no-tests${_END} # Everything in ${CODE}before-pr${_END} except ${CODE}unit-tests${_END}.
+${CODE}make before-pr-top-no-tests${_END}
+${CODE}${_END}                        # Like ${CODE}before-pr-top${_END}, but without ${CODE}unit-tests${_END}, for ${CODE}src${_END} only.
+${CODE}make before-pr-contrib-no-tests${_END}
+${CODE}${_END}                        # Like ${CODE}before-pr-contrib${_END}, but without ${CODE}unit-tests${_END}, for ${CODE}contrib/*${_END}.
 
 For contributed code in "contrib", any of the targets ${CODE}help${_END}, ${CODE}format${_END}, ${CODE}lint${_END}, ${CODE}ruff${_END}, ${CODE}pylint${_END},
-${CODE}type-check${_END}, ${CODE}type-check-watch${_END}, and ${CODE}before-pr${_END}, can be invoked by prefixing the targets
-name with ${CODE}contrib-${_END}. This will run the corresponding target in all the contrib/* directories.
+${CODE}type-check${_END}, and ${CODE}type-check-watch${_END} can be invoked by prefixing the targets name with
+${CODE}contrib-${_END}. This will run the corresponding target in all the ${CODE}contrib/*${_END} directories.
 
 ${help-top-level-message}
 endef
@@ -187,18 +210,26 @@ print-info-env::
 	@echo "  ${DARK_GREEN}GIT_HASH:${_END}              ${CODE}${GIT_HASH}${_END}"
 	@echo "  ${DARK_GREEN}PWD:${_END}                   ${CODE}${PWD}${_END} (current Directory)"
 	@echo "  ${DARK_GREEN}SRC_DIR:${_END}               ${CODE}${SRC_DIR}${_END}"
-	@echo "  ${DARK_GREEN}TESTS_BASE_DIR:${_END}        ${CODE}${TESTS_BASE_DIR}${_END}"
 	@echo "  ${DARK_GREEN}WHICH_TESTS:${_END}           ${CODE}${WHICH_TESTS}${_END}"
 	@echo
 
-.PHONY: before-pr do-before-pr do-contrib-before-pr
+.PHONY: before-pr before-pr-top before-pr-contrib print-pwd
+.PHONY: before-pr-no-tests-before-pr-top-no-tests-before-pr-contrib-no-tests
 
-before-pr:: do-before-pr do-contrib-before-pr
-do-before-pr:: ${QUALITY_CHECKS}
-do-contrib-before-pr:: ${QUALITY_CHECKS:%=contrib-%}
+before-pr:: before-pr-top before-pr-contrib
+before-pr-top:: print-pwd ${QUALITY_CHECKS}
+before-pr-contrib:: ${QUALITY_CHECKS:%=contrib-%}
+
+before-pr-no-tests:: before-pr-top-no-tests before-pr-contrib-no-tests
+before-pr-top-no-tests:: print-pwd ${QUALITY_CHECKS_NO_TESTS}
+before-pr-contrib-no-tests:: ${QUALITY_CHECKS_NO_TESTS:%=contrib-%}
+
+print-pwd::
+	$(info ${HIGHLIGHT}In directory: ${CODE}${PWD}${_END})
+	@true
 
 .PHONY: tests unit-tests unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
-.PHONY: format format-prerequisite format-default format-postrequisite
+.PHONY: format format-prerequisite format-default format-postrequisite black
 .PHONY: ruff ruff-prerequisite ruff-default ruff-postrequisite
 .PHONY: pylint pylint-prerequisite pylint-default pylint-postrequisite
 .PHONY: type-check type-check-prerequisite type-check-default type-check-postrequisite
@@ -209,43 +240,41 @@ tests:: unit-tests
 unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
 unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
-	@echo "${INFO_LABEL}Target ${CODE}unit-tests${_END}: Running the unit tests (with coverage): ${CODE}${WHICH_TESTS}${_END}:"
-	@echo "${INFO_LABEL}Running: ${CODE}${PYTEST_RUN_CMD} ${WHICH_TESTS}${_END}:"
-	${PYTEST_RUN_CMD} ${WHICH_TESTS}
-	@echo "${INFO_LABEL}Running: ${CODE}${PYTEST_COV_REPORT_CMD}${_END}:"
-	${PYTEST_COV_REPORT_CMD}
+	@echo "${INFO_LABEL}Target ${CODE}unit-tests${_END}: Running the unit tests (with coverage)."
+	cd ${SRC_DIR} && ${PYTEST_RUN_CMD} ${WHICH_TESTS}
+	cd ${SRC_DIR} && ${PYTEST_COV_REPORT_CMD}
 
 # Convenient short hand for the two linters.
 lint:: ruff pylint
 
-format:: format-prerequisite format-default format-postrequisite
+format black:: format-prerequisite format-default format-postrequisite
 format-prerequisite format-postrequisite::
 format-default:
 	@echo "${INFO_LABEL}Target ${CODE}format${_END}: Running ${CODE}black${_END} on the code in ${CODE}${SRC_DIR}${_END}."
-	uv run black ${SRC_DIR}
+	cd ${SRC_DIR} && ${UV_RUN} black .
 
 ruff:: ruff-prerequisite ruff-default ruff-postrequisite
 ruff-prerequisite ruff-postrequisite::
 ruff-default:
 	@echo "${INFO_LABEL}Target ${CODE}ruff${_END}: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END}."
-	uv run ruff check --fix ${SRC_DIR}
+	cd ${SRC_DIR} && ${UV_RUN} ruff check --fix .
 
 pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
 	@echo "${INFO_LABEL}Target ${CODE}pylint${_END}: Running ${CODE}pylint${_END} on the code in ${CODE}${SRC_DIR}${_END} (configuration in ${CODE}pylintrc.toml${_END})"
-	uv run pylint ${PYLINT_IGNORE_ARGS} ${SRC_DIR}
+	cd ${SRC_DIR} && ${UV_RUN} pylint ${PYLINT_IGNORE_ARGS} .
 
 type-check:: type-check-prerequisite type-check-default type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
 type-check-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END}."
-	uv run ty check ${SRC_DIR}
+	cd ${SRC_DIR} && ${UV_RUN} ty check .
 
 type-check-watch:: type-check-prerequisite type-check-watch-default type-check-postrequisite
 type-check-watch-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check-watch${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
-	uv run ty check --watch ${SRC_DIR}
+	cd ${SRC_DIR} && ${UV_RUN} ty check --watch .
 
 # Provide a concrete recipe for the contrib-help target, so the "contrib-%" target pattern below 
 # doesn't get used, because it does the wrong thing in this special case...
@@ -258,12 +287,21 @@ contrib-help::
 # make contrib-list  # list the contributions root directories.
 # make contrib-ls    # should fail for first contribution, because there isn't an "ls" target!
 contrib-%::
+	$(info ${ignore-warnings-message})
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
-		echo "${INFO_LABEL}For directory ${CODE}$$d${_END}:"; \
+		echo "\n${HIGHLIGHT}For directory ${CODE}$$d${_END}${HIGHLIGHT}, target ${CODE}${@:contrib-%=%}${_END}:${_END}\n"; \
 		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
 	done 2>&1
 
+define ignore-warnings-message
+${BOLD}${INFO}You can ignore the following warnings you might see:
+${BOLD}${INFO}  `VIRTUAL_ENV=.../tapestry/.venv` does not match the project environment path `.venv` ...
+${BOLD}${INFO}  .custom.mk:4: warning: overriding commands for target ...
+${BOLD}${INFO}  .common.mk:265: warning: ignoring old commands for target ...
+endef
+
+# A special contrib target that
 # These are really test targets for testing contrib-%, but they are reasonably useful,
 # e.g., using "make contrib-list" to list all the contrib/* directories.
 # Try "make LIST_FILTER='*.md' contrib-list", for example.
@@ -275,9 +313,13 @@ pwd:
 	@cd ${SRC_DIR} && echo "Currently in directory: ${CODE}$$(pwd)${_END}"
 
 .PHONY: one-time-setup clean-setup uninstall-uv
+.PHONY: force-setup force-one-time-setup rm-venv
 .PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
 
 setup one-time-setup:: install-uv uv-venv install-dev-dependencies
+force-setup force-one-time-setup:: rm-venv setup
+rm-venv::
+	rm -rf .venv
 
 install-%::
 	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
@@ -285,7 +327,9 @@ install-%::
 
 uv-venv:: command-check-uv
 	@test -d .venv && echo "${INFO_LABEL}directory ${CODE}.venv${_END} already exists; not running ${CODE}uv venv${_END}." || uv venv
-	@echo "${TIP_LABEL}run ${CODE}source .venv/bin/activate${_END} if subsequent commands fail!"
+	@echo "${TIP_LABEL}Try running ${CODE}source .venv/bin/activate${_END} if subsequent make commands fail."
+	@echo "${TIP_LABEL}If they ${RED}still${_END} don't work, try ${CODE}make force-setup${_END}, which deletes ${CODE}.venv${_END}"
+	@echo "${TIP_LABEL}and runs ${CODE}setup${_END} again."
 
 install-dev-dependencies::
 	uv pip install -e ".[dev]"

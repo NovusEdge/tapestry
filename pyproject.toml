@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "torch>=2.13.0",
     "numpy>=2.5.1",
+    "pathspec>=1.1.1",
 ]
 
 [project.optional-dependencies]
@@ -42,4 +43,4 @@ target-version = "py312"
 max-line-length = 120
 
 [tool.pylint.main]
-init-hook = "import sys; sys.path.insert(0, 'src')"
+init-hook = "import sys" #; sys.path.insert(0, 'src')"
