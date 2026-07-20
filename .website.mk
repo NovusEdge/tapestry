@@ -1,7 +1,10 @@
-PAGES_URL    := https://the-ai-alliance.github.io/tapestry/
-WEBSITE_DIR  := website
+# .website.mk - Definitions for the GibHub Pages website
+
+PAGES_URL    := https://the-ai-alliance.github.io/${REPO_NAME}/
+WEBSITE_DIR  := docs
 SITE_DIR     := ${WEBSITE_DIR}/_site
-CLEAN_DIRS   += ${SITE_DIR} ${WEBSITE_DIR}/.sass-cache
+CLEAN_WEBSITE_DIRS += ${SITE_DIR} ${WEBSITE_DIR}/.sass-cache
+CLEAN_DIRS   += ${CLEAN_WEBSITE_DIRS}
 
 # Override when running `make view-local` using e.g., `JEKYLL_PORT=8000 make view-local`
 JEKYLL_PORT  ?= 4000
@@ -10,28 +13,51 @@ ifndef WEBSITE_DIR
 $(error ${ERROR}There is no ${WEBSITE_DIR} directory!${_END})
 endif
 
-define help_website_message
-${HIGHLIGHT}Help for the documentation website targets:${_END}
+help:: help-custom-website
+help-custom-website::
+	$(info ${help-custom-website-message})
+
+define help-custom-website-message
+${HIGHLIGHT}Quick help for this project's website-specific targets:${_END}
+
+${CODE}make help-website${_END}       # Help on the website targets.
+
+endef
+
+define help-website-message
+${HIGHLIGHT}Help for the GitHub Pages website targets:${_END}
 
 ${CODE}make view-pages${_END}         # View the published GitHub pages in a browser.
 ${CODE}make view-local${_END}         # View the pages locally (requires Jekyll).
-                        # Makes the targets ${CODE}setup-jekyll${_END} and ${CODE}run-jekyll${_END}.
-                        # Tip: ${CODE}make JEKYLL_PORT=8000 view-local${_END} uses port 8000 instead of 4000!
+${CODE}${_END}                        # Makes the targets ${CODE}setup-jekyll${_END} and ${CODE}run-jekyll${_END}.
+${CODE}${_END}                        # Tip: ${CODE}make JEKYLL_PORT=8000 view-local${_END} uses port 8000 instead of 4000!
 ${CODE}make setup-jekyll${_END}       # Install Jekyll. Make sure Ruby is installed.
-                        # (Only needed for local viewing of the document.)
+${CODE}${_END}                        # (Only needed for local viewing of the document.)
 ${CODE}make run-jekyll${_END}         # Used by ${CODE}view-local${_END}; assumes ${CODE}setup-jekyll${_END} is already "built".
-                        # Tip: Build this target instead of ${CODE}view-local${_END} to avoid repeating ${CODE}setup-jekyll${_END}.
-                        # Tip: ${CODE}make JEKYLL_PORT=8000 run-jekyll${_END} uses port 8000 instead of 4000!
+${CODE}${_END}                        # Tip: Build this target instead of ${CODE}view-local${_END} to avoid repeating ${CODE}setup-jekyll${_END}.
+${CODE}${_END}                        # Tip: ${CODE}make JEKYLL_PORT=8000 run-jekyll${_END} uses port 8000 instead of 4000!
+${CODE}make clean-website${_END}      # DElete the temporary directories ${CODE}CLEAN_WEBSITE_DIRS${_END} = ${CODE}${CLEAN_WEBSITE_DIRS}${_END}.
+
 endef
 
-print-info::
+.PHONY: print-info-website
+print-info:: print-info-website
+print-info-website::
+	@echo "${HIGHLIGHT}For the GitHub Pages website:${_END}"
 	@echo
-	@echo "${DARK_GREEN}GitHub Pages URL:${_END}   ${CODE}${PAGES_URL}${_END}"
-	@echo "${DARK_GREEN}Website files:${_END}      ${CODE}${WEBSITE_DIR}${_END}"
-	@echo "${DARK_GREEN}JEKYLL_PORT:${_END}        ${CODE}${JEKYLL_PORT}${_END} (when viewing locally: ${CODE}http://localhost:${JEKYLL_PORT}${_END})"
+	@echo "  ${DARK_GREEN}GitHub Pages URL:${_END}   ${CODE}${PAGES_URL}${_END}"
+	@echo "  ${DARK_GREEN}Website files:${_END}      ${CODE}${WEBSITE_DIR}${_END}"
+	@echo "  ${DARK_GREEN}SITE_DIR:${_END}           ${CODE}${SITE_DIR}${_END}"
+	@echo "  ${DARK_GREEN}JEKYLL_PORT:${_END}        ${CODE}${JEKYLL_PORT}${_END} (when viewing locally: ${CODE}http://localhost:${JEKYLL_PORT}${_END})"
 
-.PHONY: view-pages view-local
+.PHONY: all-docs clean-website view-pages view-local
+.PHONY: view-pages view-local setup-jekyll run-jekyll run-jekyll-message
 .PHONY: setup-jekyll run-jekyll
+
+all-docs:: clean-website view-local
+
+clean-website::
+	rm -rf ${CLEAN_WEBSITE_DIRS}
 
 view-pages::
 	@python -m webbrowser "${PAGES_URL}" || \
@@ -40,7 +66,7 @@ view-pages::
 view-local:: setup-jekyll run-jekyll
 
 # Passing --baseurl '' allows us to use `localhost:4000` rather than require
-# `localhost:4000/The-AI-Alliance/tapestry` when running locally.
+# `localhost:4000/The-AI-Alliance/${REPO_NAME}` when running locally.
 
 run-jekyll: clean
 	@echo
@@ -78,9 +104,9 @@ bundle-command-check:
 jekyll-error:
 	$(error "${ERROR}Failed to run Jekyll.${_END} Try running 'make setup-jekyll'.")
 ruby-missing-error:
-	$(error "${ERROR}'ruby' is required.${_END} ${ruby_installation_message}")
+	$(error "${ERROR}'ruby' is required.${_END} ${ruby-installation-message}")
 gem-missing-error:
-	$(error "${ERROR}Ruby's 'gem' is required.${_END} ${ruby_installation_message}")
+	$(error "${ERROR}Ruby's 'gem' is required.${_END} ${ruby-installation-message}")
 gem-error:
 	$(error ${gem-error-message})
 bundle-error:
@@ -110,15 +136,12 @@ endef
 
 define bundle-error-message
 
-ERROR: Did the bundle command fail with a message like this?
-ERROR: 	 "/usr/local/opt/ruby/bin/bundle:25:in `load': cannot load such file -- /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z/exe/bundle (LoadError)"
-ERROR: Check that the /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z directory actually exists.
-ERROR: If not, try running the clean-jekyll command first:
-ERROR:   make clean-jekyll setup-jekyll
-ERROR: Answer "y" (yes) to the prompts and ignore any warnings that you can't uninstall a "default" gem.
+${ERROR_LABEL}Did the bundle command fail with a message like this?
+${ERROR_LABEL}	 "/usr/local/opt/ruby/bin/bundle:25:in `load': cannot load such file -- /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z/exe/bundle (LoadError)"
+${ERROR_LABEL}Check that the /usr/local/lib/ruby/gems/3.1.0/gems/bundler-X.Y.Z directory actually exists.
 
 endef
 
-define ruby_installation_message
-See ruby-lang.org for installation instructions.
+define ruby-installation-message
+See ${CODE}ruby-lang.org${_END} for installation instructions.
 endef

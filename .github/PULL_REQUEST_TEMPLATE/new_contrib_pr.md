@@ -65,7 +65,7 @@ Include an example of how to use the new function or feature:
 PRs with code require the command `make before-pr` to pass. This command runs the following nested `make` command for _each_ contribution, so you should specifically ensure that it runs successfully for your contribution, where `<my_github_user_name>-<feature_name>` is your contribution's name:
 
 ```makefile
-make SRC_DIR=contrib/<my_github_user_name>-<feature_name> --include-dir=contrib/<my_github_user_name>-<feature_name> format ruff pylint type-check tests
+make SRC_DIR=contrib/<my_github_user_name>-<feature_name> --include-dir=contrib/<my_github_user_name>-<feature_name> format ruff pylint type-check unit-tests
 ```
 
 See the details in [`contrib/README.md`](https://github.com/The-AI-Alliance/tapestry/blob/develop/contrib/README.md#the-project-wide-make-processes), which also tells you how to disable any of these checks as necessary.

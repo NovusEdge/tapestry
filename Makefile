@@ -1,7 +1,7 @@
 include .common.mk
 include .website.mk
 
-define help_top_level_message
+define help-top-level-message
 For additional help:
 
 ${CODE}make help-targets${_END}       # Print help on custom targets, e.g., demonstration commands, etc. (including "contribs").
