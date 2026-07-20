@@ -30,6 +30,7 @@ Describe key aspects of automated and/or manual testing of executable code that 
 * Unit tests added or modified
 * Integration tests performed
 * Any other relevant testing or validation (including manual testing)
+* The command `make before-pr` completes successfully
 
 ### Example Usage
 
@@ -53,15 +54,18 @@ For code changes:
 - [ ] I have followed the existing code styles and conventions.
 - [ ] I have removed all API keys and other sensitive information.
 - [ ] I have updated any related documentation.
+- [ ] I have confirmed that the command `make before-pr` completes successfully.
 
 For documentation changes, including `docs`:
 
 - [ ] I have followed the existing documentation styles and conventions.
 - [ ] I have included helpful diagrams, screenshots, tables, etc.
 
-Currently the content in `website` for the Tapestry technical "microsite" ([the-ai-alliance.github.io/tapestry/](https://the-ai-alliance.github.io/tapestry/)) just points back to the repo's `docs` locations. Eventually, mature content will be copied or migrated from `docs` to this site for easier reading, searching, etc. **Hence, you probably don't need to propose any changes to `website`.**
+### The Tapestry _Microsite_
+
+The content in `website` is for the Tapestry technical _microsite_ ([the-ai-alliance.github.io/tapestry/](https://the-ai-alliance.github.io/tapestry/)). Currently it just links back to the repo's `docs` locations. Eventually, mature content will be copied or migrated from `docs` to this site for easier reading, searching, etc. **Hence, you probably don't need to propose any changes to the `website` directory.**
 
 However, **if** you are proposing `website` changes:
 
 - [ ] I have verified the microsite `make view-local` runs without errors and the changes render as expected.
-- [ ] I have checked that external links (i.e., those going to different domains) have `target="..."` specifications by running `./check-external-links.sh` and fixing any flagged URLs. (This tool doesn't add missing links itself nor does it verify that the links found are valid.)
+- [ ] I have checked that external links (i.e., those going to different domains) have `target="..."` specifications by running `./check-external-links.sh` and fixing any flagged URLs. (This tool doesn't fix missing `target="..."` links itself nor does it verify that the links found are not 404s!)
