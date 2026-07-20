@@ -124,6 +124,7 @@ define help_targets_message
 endef
 
 .PHONY: all help help-general print-info clean
+.PHONY: help-command-no-message help-command-not-installed
 all:: help print-info
 
 clean::
@@ -323,7 +324,7 @@ rm-venv::
 
 install-%::
 	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
-		echo "${INFO_LABEL}command ${CODE}$$cmd${_END} is already installed." || ${MAKE} help-command-$$cmd
+		echo "${INFO_LABEL}command ${CODE}$$cmd${_END} is already installed." || ${MAKE} help-command-not-installed help-command-$$cmd
 
 uv-venv:: command-check-uv
 	@test -d .venv && echo "${INFO_LABEL}directory ${CODE}.venv${_END} already exists; not running ${CODE}uv venv${_END}." || uv venv
