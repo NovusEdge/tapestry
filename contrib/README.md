@@ -8,6 +8,8 @@ Think of `contrib/` as the front porch. Promising contributions may later be pro
 
 | Contribution | Contributor(s) | Status | What it is |
 | :----------- | :------------- | :----- | :--------- |
+| [`14H034160212-conflict-aware-fusion`](14H034160212-conflict-aware-fusion/README.md) | 14H034160212 | Candidate | LIRE + RLVF post-training stages that teach a base model to halt on logically inconsistent premises instead of deducing through them |
+| [`14H034160212-logically-grounded-dpo`](14H034160212-logically-grounded-dpo/README.md) | 14H034160212 | Candidate | Verifier-based DPO/PPO preference pipeline replacing reference-text similarity with an NLI-entailment reward for checkable explanations |
 | [`jneums-consortium-experiment`](jneums-consortium-experiment/README.md) | jneums | Speculative | Deterministic measurement layer around the consortium-training proof of concept |
 | [`jneums-cultural-cpt-validation`](jneums-cultural-cpt-validation/README.md) | jneums | Speculative | Runnable harness for EXP-001: does culturally grounded continued pretraining shift alignment beyond language exposure? |
 | [`jneums-flower-wan-spike`](jneums-flower-wan-spike/README.md) | jneums | Speculative | De-risk spike for #70: 2B-parameter weight round-trip through a Flower SuperLink over a real WAN |
