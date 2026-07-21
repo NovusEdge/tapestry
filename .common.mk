@@ -8,13 +8,13 @@ include .console-colors.mk
 # Some of the following definitions may be overridden in Makefile. Some notes:
 # SRC_DIR: Root of the source code. This is changed dynamically by the "contrib-%"
 #   target pattern below.
-# WHICH_TESTS: By default, it is empty, meaning that all tests found under
-#   ${SRC_DIR} will be run. WHICH_TESTS can also be used on the command line
-#   to specify a particular directory, test file or test to run. Specify this
-#   value RELATIVE to ${SRC_DIR}! See the pytest docs for the syntax to use:
-#   https://docs.pytest.org/en/stable/how-to/usage.html for syntax
+# WHICH_TESTS: By default, it is ".", meaning that all tests found under the
+#   current directory will be run. WHICH_TESTS can also be used on the command
+#   line to specify a particular directory, test file or test to run. Specify
+#   this value RELATIVE to ${SRC_DIR}! See the pytest docs for the syntax to use:
+#   https://docs.pytest.org/en/stable/how-to/usage.html
 SRC_DIR                  ?= src
-WHICH_TESTS              ?=
+WHICH_TESTS              ?= .
 CLEAN_DIRS               ?=
 
 CONTRIB_DIR              := contrib
@@ -318,9 +318,10 @@ pwd:
 .PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
 
 setup one-time-setup:: install-uv uv-venv install-dev-dependencies
-force-setup force-one-time-setup:: rm-venv setup
+force-setup force-one-time-setup:: rm-venv contrib-rm-venv setup
 rm-venv::
 	rm -rf .venv
+	rm -f uv.lock
 
 install-%::
 	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
