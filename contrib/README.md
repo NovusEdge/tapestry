@@ -116,7 +116,7 @@ make SRC_DIR=contrib/johndoe-foo --include-dir=contrib/johndoe-foo format ruff p
 
 The `SRC_DIR=...` definition points to the contribution's directory so the quality targets run from there. The `--include-dir=...` argument is used to tell `make` to search in the same directory for include files, in our case, the customization file `.custom.mk`.
 
-The `do-contrib-before-pr` target mentioned above also uses this command, running it once for each contribution. Similarly, the `contrib-x` targets also use this command, with the `x` target being one of the list of all the quality targets: `format ruff pylint type-check tests`.
+The `do-contrib-before-pr` target mentioned above also uses this command, running it once for each contribution. Similarly, the `contrib-x` targets also use this command, with the `x` target being one of the list of all the quality targets: `format ruff pylint type-check unit-tests`.
 
 > [!TIP]
 > Problems found while type checking often take the most time to fix, use this command to continuously and automatically re-run the type checker as you fix issues and save the files:

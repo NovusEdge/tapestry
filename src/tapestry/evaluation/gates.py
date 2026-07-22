@@ -160,8 +160,7 @@ class GateDecision:
         return tuple(
             finding
             for finding in self.findings
-            if finding.status
-            in {GateStatus.FAIL, GateStatus.INVALID, GateStatus.MISSING}
+            if finding.status in {GateStatus.FAIL, GateStatus.INVALID, GateStatus.MISSING}
         )
 
 
@@ -231,10 +230,7 @@ class EvaluationGate:
                 )
             )
 
-        blocking = any(
-            finding.status in {GateStatus.FAIL, GateStatus.MISSING}
-            for finding in findings
-        )
+        blocking = any(finding.status in {GateStatus.FAIL, GateStatus.MISSING} for finding in findings)
         return GateDecision(passed=not blocking, findings=tuple(findings))
 
     def decide_bundle(self, bundle: EvaluationBundle) -> GateDecision:
@@ -245,10 +241,7 @@ class EvaluationGate:
                 GateFinding(
                     benchmark_id=BUNDLE_FINDING_ID,
                     status=GateStatus.INVALID,
-                    message=(
-                        f"unsupported evaluation schema {bundle.schema_version}; "
-                        f"expected {SCHEMA_VERSION}"
-                    ),
+                    message=(f"unsupported evaluation schema {bundle.schema_version}; " f"expected {SCHEMA_VERSION}"),
                 )
             )
         if bundle.config_hash != self.config_hash:
@@ -282,19 +275,14 @@ def benchmark_config_hash(specs: Iterable[BenchmarkSpec]) -> str:
         }
         for spec in sorted(specs, key=lambda item: item.benchmark_id)
     ]
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 
 
 def _score_message(spec: BenchmarkSpec, score: float, passed: bool) -> str:
     direction = ">=" if spec.higher_is_better else "<="
     outcome = "meets" if passed else "misses"
-    return (
-        f"{spec.benchmark_id} {outcome} threshold: "
-        f"{score:g} {direction} {spec.threshold:g}"
-    )
+    return f"{spec.benchmark_id} {outcome} threshold: " f"{score:g} {direction} {spec.threshold:g}"
 
 
 def _require_text(name: str, value: str) -> None:
