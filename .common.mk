@@ -45,7 +45,7 @@ PYTEST_COV_OPT_ARGS      ?=
 PYTEST_RUN_CMD           := ${UV_RUN} coverage run -m pytest -v -s ${PYTEST_RUN_OPT_ARGS}
 PYTEST_COV_REPORT_CMD    := ${UV_RUN} coverage report -m ${PYTEST_COV_OPT_ARGS}
 
-ifeq (${GITHUB_CI},"")
+ifeq (${GITHUB_CI},)
 	BLACK_OPT_ARGS :=
 else
 	# In CI, only check if reformatting would happen. exit code 1
