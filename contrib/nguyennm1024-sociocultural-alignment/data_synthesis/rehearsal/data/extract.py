@@ -18,6 +18,7 @@ Output layout: `<rehearsal_root>/questions/_pool/<category>/<source>.jsonl`.
 One file per source means reruns are scoped — no merging needed at write
 time, the assembly step joins them later.
 """
+
 from __future__ import annotations
 
 import re
@@ -33,7 +34,6 @@ from ..format import (
     make_question_id,
 )
 from .sources import SOURCES_BY_NAME, HFSource
-
 
 # ---------------------------------------------------------------------------
 # Output path resolution
@@ -102,8 +102,10 @@ def _make_provenance(src: HFSource, row_idx: int) -> Provenance:
 # Loading helper — match `decontam._load_hf`
 # ---------------------------------------------------------------------------
 
+
 def _load_hf_split(src: HFSource):
     from datasets import load_dataset
+
     kwargs: dict[str, Any] = {"split": src.hf_split}
     if src.hf_config:
         kwargs["name"] = src.hf_config
@@ -375,13 +377,17 @@ def _extract_math(src: HFSource) -> Iterator[QuestionRecord]:
     global_i = 0
     for cfg in iter_configs:
         try:
-            ds = load_dataset(src.hf_path, cfg, split=src.hf_split) if cfg \
+            ds = (
+                load_dataset(src.hf_path, cfg, split=src.hf_split)
+                if cfg
                 else load_dataset(src.hf_path, split=src.hf_split)
+            )
         except Exception:
-            ds = (load_dataset(src.hf_path, cfg, split=src.hf_split,
-                               trust_remote_code=True) if cfg
-                  else load_dataset(src.hf_path, split=src.hf_split,
-                                    trust_remote_code=True))
+            ds = (
+                load_dataset(src.hf_path, cfg, split=src.hf_split, trust_remote_code=True)
+                if cfg
+                else load_dataset(src.hf_path, split=src.hf_split, trust_remote_code=True)
+            )
         for row in ds:
             global_i += 1
             level_raw = (row.get("level") or "").strip()
@@ -409,8 +415,7 @@ def _extract_math(src: HFSource) -> Iterator[QuestionRecord]:
                 },
                 "provenance": {
                     "source_dataset": src.hf_path,
-                    "source_record_id": f"{cfg}:{src.hf_split}:{global_i}" if cfg
-                                        else f"{src.hf_split}:{global_i}",
+                    "source_record_id": f"{cfg}:{src.hf_split}:{global_i}" if cfg else f"{src.hf_split}:{global_i}",
                 },
             }
 
@@ -452,9 +457,7 @@ def _extract_asdiv(src: HFSource) -> Iterator[QuestionRecord]:
         question = (row.get("question") or "").strip()
         result = row.get("result") or ""
         result_float = row.get("result_float")
-        gold = str(result).strip() or (
-            str(result_float).rstrip("0").rstrip(".") if result_float is not None else ""
-        )
+        gold = str(result).strip() or (str(result_float).rstrip("0").rstrip(".") if result_float is not None else "")
         if not question or not gold:
             continue
         unit = row.get("result_unit") or ""
@@ -478,9 +481,9 @@ def _extract_asdiv(src: HFSource) -> Iterator[QuestionRecord]:
 # --- Instruction family (no gold; Kimi's response is authoritative) ---
 
 
-def _yield_instruction(src: HFSource, category: str, prompt_field: str | list[str],
-                      response_field: str | list[str] | None = None
-                      ) -> Iterator[QuestionRecord]:
+def _yield_instruction(
+    src: HFSource, category: str, prompt_field: str | list[str], response_field: str | list[str] | None = None
+) -> Iterator[QuestionRecord]:
     """Generic single-turn instruction extractor.
 
     `prompt_field` / `response_field`: the row key, or a list of candidates
@@ -489,9 +492,7 @@ def _yield_instruction(src: HFSource, category: str, prompt_field: str | list[st
     ds = _load_hf_split(src)
     prompt_keys = [prompt_field] if isinstance(prompt_field, str) else prompt_field
     response_keys = (
-        [response_field] if isinstance(response_field, str)
-        else response_field if response_field is not None
-        else []
+        [response_field] if isinstance(response_field, str) else response_field if response_field is not None else []
     )
     for i, row in enumerate(ds):
         prompt = ""
@@ -524,9 +525,9 @@ def _yield_instruction(src: HFSource, category: str, prompt_field: str | list[st
 
 
 def _extract_ifeval_train(src: HFSource) -> Iterator[QuestionRecord]:
-    yield from _yield_instruction(src, "ifeval_shaped",
-                                  prompt_field=["prompt", "instruction"],
-                                  response_field=["response", "completion"])
+    yield from _yield_instruction(
+        src, "ifeval_shaped", prompt_field=["prompt", "instruction"], response_field=["response", "completion"]
+    )
 
 
 def _extract_norobots(src: HFSource) -> Iterator[QuestionRecord]:
@@ -615,8 +616,7 @@ def _extract_openhermes(src: HFSource) -> Iterator[QuestionRecord]:
             "origin": "public",
             "question": user.strip(),
             "gold_answer": None,
-            "metadata": {"format": "instruction",
-                        "reference_response": asst.strip()},
+            "metadata": {"format": "instruction", "reference_response": asst.strip()},
             "provenance": _make_provenance(src, i),
         }
 
@@ -652,15 +652,15 @@ def _extract_oasst_top(src: HFSource) -> Iterator[QuestionRecord]:
 
 
 def _extract_codealpaca(src: HFSource) -> Iterator[QuestionRecord]:
-    yield from _yield_instruction(src, "code",
-                                  prompt_field=["instruction", "prompt"],
-                                  response_field=["output", "response"])
+    yield from _yield_instruction(
+        src, "code", prompt_field=["instruction", "prompt"], response_field=["output", "response"]
+    )
 
 
 def _extract_magicoder(src: HFSource) -> Iterator[QuestionRecord]:
-    yield from _yield_instruction(src, "code",
-                                  prompt_field=["instruction", "problem"],
-                                  response_field=["response", "solution"])
+    yield from _yield_instruction(
+        src, "code", prompt_field=["instruction", "problem"], response_field=["response", "solution"]
+    )
 
 
 # --- Tool calling ---
@@ -715,8 +715,7 @@ def _extract_glaive_fc(src: HFSource) -> Iterator[QuestionRecord]:
             "origin": "public",
             "question": q_text,
             "gold_answer": None,
-            "metadata": {"format": "tool_call",
-                        "reference_chat": chat},
+            "metadata": {"format": "tool_call", "reference_chat": chat},
             "provenance": _make_provenance(src, i),
         }
 
@@ -826,6 +825,7 @@ EXTRACTORS: dict[str, Extractor] = {
 # Driver
 # ---------------------------------------------------------------------------
 
+
 def extract_one(
     source_name: str,
     *,
@@ -840,8 +840,7 @@ def extract_one(
     extractor = EXTRACTORS.get(source_name)
     if extractor is None:
         raise NotImplementedError(
-            f"no extractor registered for {source_name} "
-            f"(origin={src.origin}; see extract.py registry)"
+            f"no extractor registered for {source_name} " f"(origin={src.origin}; see extract.py registry)"
         )
     out = out_path or pool_path(_category_for(src), source_name)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -857,8 +856,7 @@ def extract_one(
         count += 1
         if limit is not None and count >= limit:
             break
-    print(f"[extract] {source_name}: wrote {count} records to {out} ({time.time()-t0:.1f}s)",
-          file=log, flush=True)
+    print(f"[extract] {source_name}: wrote {count} records to {out} ({time.time()-t0:.1f}s)", file=log, flush=True)
     return count
 
 
@@ -866,6 +864,7 @@ def _category_for(src: HFSource) -> str:
     """Look up a source's target category via spec.py (each source belongs to
     exactly one category)."""
     from ..spec import get_source
+
     s = get_source(src.name)
     if s is None:
         raise RuntimeError(f"source {src.name} not in spec")
@@ -882,6 +881,7 @@ def extract_all(
     """Drive extract_one across every registered extractor that matches the
     filters. Returns {source_name: row_count}."""
     from ..spec import iter_sources
+
     results: dict[str, int] = {}
     for spec_src in iter_sources():
         if source_filter and spec_src.name != source_filter:

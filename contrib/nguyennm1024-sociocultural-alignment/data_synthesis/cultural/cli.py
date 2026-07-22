@@ -7,6 +7,7 @@ Usage (from data_synthesis/):
     python -m cultural.cli questions.txt > out.jsonl
     python -m cultural.cli - --no-gloss < questions.txt > out.jsonl
 """
+
 import argparse
 import json
 import sys

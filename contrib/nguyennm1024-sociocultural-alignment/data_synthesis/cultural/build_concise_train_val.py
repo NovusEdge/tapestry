@@ -17,12 +17,12 @@ Matching key: question text (unique per record). For each cleaned record:
     but with `<THINK>{cleaned_reasoning}</THINK>\n{answer}` as the assistant
     content (vs the original verbose reasoning)
 """
+
 from __future__ import annotations
 
 import json
 import sys
 from pathlib import Path
-
 
 CLEAN = Path("data_synthesis/cultural/_out/cleaned_v3_all.jsonl")
 EXISTING_TRAIN = Path("training_data/cultural_train.jsonl")

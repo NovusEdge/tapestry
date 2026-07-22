@@ -8,6 +8,7 @@ Wraps the shared `core/` primitives with:
 
 Mirror this layout in `rehearsal/` for capability-preservation data.
 """
+
 from .personas import GLOSS_NATIVE_TERMS_INSTRUCTION, PERSONAS, get_persona
 from .prompts import QUESTION_GEN_PROMPT
 

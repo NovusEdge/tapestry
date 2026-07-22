@@ -9,6 +9,7 @@ Output records carry provenance (topic_id, scenario_id, batch_id, gen_index)
 so downstream stages can group, balance, or trace back. Empty / unparseable
 LLM responses yield one error record so silent data loss can't happen.
 """
+
 from __future__ import annotations
 
 import re
@@ -19,7 +20,6 @@ from typing import Any, Callable
 import openai
 
 from .client import DEFAULT_MODEL, make_client
-
 
 _LEAD_NUMBER = re.compile(r"^[\(\[]?\d+[\.\)\]:]\s*")
 _LEAD_BULLET = re.compile(r"^[-*•—–]\s*")

@@ -8,6 +8,7 @@ Layout (parallel to combined_v0.2):
     MANIFEST.md
     README.md
 """
+
 from __future__ import annotations
 
 import random
@@ -55,9 +56,7 @@ def main() -> int:
 
     # 1. cultural.jsonl = concise train + val, merged and shuffled
     out_cultural = OUT_DIR / "cultural.jsonl"
-    n_cultural = merge_and_shuffle(
-        [SRC_CULTURAL_TRAIN, SRC_CULTURAL_VAL], out_cultural, seed=42
-    )
+    n_cultural = merge_and_shuffle([SRC_CULTURAL_TRAIN, SRC_CULTURAL_VAL], out_cultural, seed=42)
     print(f"[combine] cultural.jsonl:    {n_cultural:>6,} records (train+val, shuffled seed=42)", file=sys.stderr)
 
     # 2. rehearsal.jsonl = direct copy of v0.3.5 rehearsal_all

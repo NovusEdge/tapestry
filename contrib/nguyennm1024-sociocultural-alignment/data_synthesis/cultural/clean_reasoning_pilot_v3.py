@@ -13,6 +13,7 @@ Usage:
     python3 -m data_synthesis.cultural.clean_reasoning_pilot_v3 \
         [--n 20] [--min-chars 1000] [--max-chars 8000] [--seed 0]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,7 +27,6 @@ from pathlib import Path
 import openai
 
 from data_synthesis.core.client import make_deepseek_client
-
 
 ROOT = Path(__file__).resolve().parent
 RECORDS_PATH = Path("runs/cultural/records.jsonl")
@@ -118,7 +118,7 @@ def call_rewriter(client: openai.Client, prompt: str, max_retries: int = 2) -> s
             return text or None
         except Exception as e:
             if attempt < max_retries:
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
             print(f"[warn] rewriter call failed: {e}", file=sys.stderr)
             return None
@@ -161,9 +161,15 @@ def main() -> int:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    print(f"[pilot-v3] sampling {args.n} records (reasoning in [{args.min_chars}, {args.max_chars}] chars)", file=sys.stderr)
+    print(
+        f"[pilot-v3] sampling {args.n} records (reasoning in [{args.min_chars}, {args.max_chars}] chars)",
+        file=sys.stderr,
+    )
     samples = sample_records(RECORDS_PATH, args.n, args.min_chars, args.max_chars, args.seed)
-    print(f"[pilot-v3] sampled {len(samples)} records across {len({s.get('topic_id') for s in samples})} topics", file=sys.stderr)
+    print(
+        f"[pilot-v3] sampled {len(samples)} records across {len({s.get('topic_id') for s in samples})} topics",
+        file=sys.stderr,
+    )
 
     client = make_deepseek_client()
     rows: list[dict] = []
@@ -182,7 +188,8 @@ def main() -> int:
                 f"[{i:>2}/{len(samples)}] {rec.get('topic_id','?')[:30]:<30} "
                 f"orig={len(reasoning):>5} → clean={len(cleaned) if cleaned else 0:>4}  "
                 f"{elapsed:>5.1f}s  {'OK' if ok else 'FAIL'}",
-                file=sys.stderr, flush=True,
+                file=sys.stderr,
+                flush=True,
             )
 
             row = {

@@ -19,20 +19,20 @@ points at `argilla/ifeval-like-data`, NOT `google/IFEval` (whose 541 prompts
 ARE the eval set). The original `google/IFEval` is wired only into
 DECONTAM_TESTSETS.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Literal
-
 
 Origin = Literal["public", "augmented", "generated", "programmatic"]
 
 
 @dataclass(frozen=True)
 class HFSource:
-    name: str                       # matches the spec source name
+    name: str  # matches the spec source name
     origin: Origin
-    hf_path: str | None             # None for pure-generated / programmatic
+    hf_path: str | None  # None for pure-generated / programmatic
     hf_config: str | None = None
     hf_split: str = "train"
     # Free-form filter directives, interpreted by extract.py per category.
@@ -73,7 +73,6 @@ SOURCES: list[HFSource] = [
         origin="generated",
         hf_path=None,
     ),
-
     # mmlu_shaped ----------------------------------------------------------
     HFSource(
         name="MMLU_auxiliary_training",
@@ -95,7 +94,6 @@ SOURCES: list[HFSource] = [
         hf_split="validation",
         notes="MMLU-Pro has no train split; sample from validation (harder skew).",
     ),
-
     # gsm8k_shaped_math ----------------------------------------------------
     HFSource(
         name="GSM8K_train",
@@ -125,9 +123,8 @@ SOURCES: list[HFSource] = [
         hf_path="MU-NLPC/Calc-asdiv_a",
         hf_split="test",
         notes="MU-NLPC/Calc-asdiv_a only exposes a `test` split (~1218 items). "
-              "Despite the name, it's the canonical ASDiv corpus we use as training seed.",
+        "Despite the name, it's the canonical ASDiv corpus we use as training seed.",
     ),
-
     # math_shaped ----------------------------------------------------------
     HFSource(
         name="MATH_train_levels_1_2",
@@ -136,7 +133,7 @@ SOURCES: list[HFSource] = [
         hf_split="train",
         filter={"levels": [1, 2], "iter_all_configs": True},
         notes="Original hendrycks/competition_math is a loading script (deprecated by HF). "
-              "EleutherAI mirror exposes the same 7,500 train items across 7 subject configs.",
+        "EleutherAI mirror exposes the same 7,500 train items across 7 subject configs.",
     ),
     HFSource(
         name="MATH_train_level_3",
@@ -152,7 +149,6 @@ SOURCES: list[HFSource] = [
         hf_split="train",
         filter={"levels": [4, 5], "iter_all_configs": True},
     ),
-
     # hellaswag_shaped -----------------------------------------------------
     HFSource(
         name="HellaSwag_train",
@@ -171,7 +167,7 @@ SOURCES: list[HFSource] = [
         hf_path="baber/piqa",
         hf_split="train",
         notes="ybisk/piqa is a deprecated loading script; baber/piqa is a parquet mirror "
-              "with the same schema (goal, sol1, sol2, label).",
+        "with the same schema (goal, sol1, sol2, label).",
     ),
     HFSource(
         name="SIQA_train",
@@ -179,7 +175,7 @@ SOURCES: list[HFSource] = [
         hf_path="lighteval/siqa",
         hf_split="train",
         notes="allenai/social_i_qa is a deprecated loading script; lighteval/siqa is a "
-              "parquet mirror (context, question, answerA/B/C, label).",
+        "parquet mirror (context, question, answerA/B/C, label).",
     ),
     HFSource(
         name="Story_Cloze_train",
@@ -189,7 +185,6 @@ SOURCES: list[HFSource] = [
         hf_split="train",
         notes="License-restricted; verify access. Train is the ROCStories pool.",
     ),
-
     # bfcl_shaped_tool_calling --------------------------------------------
     HFSource(
         name="xLAM",
@@ -197,8 +192,8 @@ SOURCES: list[HFSource] = [
         hf_path="Salesforce/xlam-function-calling-60k",
         hf_split="train",
         notes="GATED — requires HF login + dataset access approval from Salesforce. "
-              "Visit https://huggingface.co/datasets/Salesforce/xlam-function-calling-60k and "
-              "run `huggingface-cli login` with a token that has access.",
+        "Visit https://huggingface.co/datasets/Salesforce/xlam-function-calling-60k and "
+        "run `huggingface-cli login` with a token that has access.",
     ),
     HFSource(
         name="Glaive_Function_Calling_v2",
@@ -226,7 +221,6 @@ SOURCES: list[HFSource] = [
         hf_split="train",
         filter={"state_tracking": True},
     ),
-
     # arc_challenge_shaped -------------------------------------------------
     HFSource(
         name="ARC_Challenge_train",
@@ -254,7 +248,6 @@ SOURCES: list[HFSource] = [
         origin="generated",
         hf_path=None,
     ),
-
     # gpqa_hard_reasoning --------------------------------------------------
     HFSource(
         name="Generated_gpqa_style_science",
@@ -266,7 +259,6 @@ SOURCES: list[HFSource] = [
         origin="generated",
         hf_path=None,
     ),
-
     # long_context --------------------------------------------------------
     HFSource(
         name="NarrativeQA",
@@ -300,7 +292,6 @@ SOURCES: list[HFSource] = [
         hf_path=None,
         notes="Built in questions/nih.py from a filler corpus + needle templates.",
     ),
-
     # general_instruction_breadth -----------------------------------------
     HFSource(
         name="Tulu_3_SFT_high_quality",
@@ -323,7 +314,6 @@ SOURCES: list[HFSource] = [
         hf_split="train",
         filter={"single_turn": True, "top_rated": True},
     ),
-
     # code ----------------------------------------------------------------
     HFSource(
         name="CodeAlpaca",
@@ -337,7 +327,6 @@ SOURCES: list[HFSource] = [
         hf_path="ise-uiuc/Magicoder-Evol-Instruct-110K",
         hf_split="train",
     ),
-
     # openrewrite_shaped --------------------------------------------------
     HFSource(
         name="Generated_from_diverse_texts",
@@ -345,7 +334,6 @@ SOURCES: list[HFSource] = [
         hf_path=None,
         notes="Source texts drawn from public corpora at generation time; no single HF seed.",
     ),
-
     # conversation_regularization -----------------------------------------
     HFSource(
         name="OASST_multi_turn_non_cultural",
@@ -383,9 +371,10 @@ SOURCES_BY_NAME: dict[str, HFSource] = {s.name: s for s in SOURCES}
 # Decontamination test sets — downloaded for indexing, NEVER used as training
 # ---------------------------------------------------------------------------
 
+
 @dataclass(frozen=True)
 class DecontamTestset:
-    name: str                 # short label
+    name: str  # short label
     hf_path: str
     hf_config: str | None = None
     hf_split: str = "test"
@@ -393,14 +382,22 @@ class DecontamTestset:
 
 
 DECONTAM_TESTSETS: list[DecontamTestset] = [
-    DecontamTestset("IFEval", "google/IFEval", hf_split="train",
-                    notes="HF labels it 'train' but these 541 prompts ARE the eval set."),
+    DecontamTestset(
+        "IFEval",
+        "google/IFEval",
+        hf_split="train",
+        notes="HF labels it 'train' but these 541 prompts ARE the eval set.",
+    ),
     DecontamTestset("MMLU_test", "cais/mmlu", hf_config="all", hf_split="test"),
     DecontamTestset("MMLU_Pro_test", "TIGER-Lab/MMLU-Pro", hf_split="test"),
     DecontamTestset("GSM8K_test", "openai/gsm8k", hf_config="main", hf_split="test"),
     DecontamTestset("MATH_test", "hendrycks/competition_math", hf_split="test"),
-    DecontamTestset("HellaSwag_validation", "Rowan/hellaswag", hf_split="validation",
-                    notes="Test set labels are hidden; validation is the public surrogate."),
+    DecontamTestset(
+        "HellaSwag_validation",
+        "Rowan/hellaswag",
+        hf_split="validation",
+        notes="Test set labels are hidden; validation is the public surrogate.",
+    ),
     DecontamTestset("ARC_Challenge_test", "allenai/ai2_arc", hf_config="ARC-Challenge"),
     DecontamTestset("ARC_Easy_test", "allenai/ai2_arc", hf_config="ARC-Easy"),
     DecontamTestset("OpenBookQA_test", "allenai/openbookqa", hf_config="main"),
@@ -408,16 +405,20 @@ DECONTAM_TESTSETS: list[DecontamTestset] = [
     DecontamTestset("SIQA_validation", "allenai/social_i_qa", hf_split="validation"),
     DecontamTestset("StoryCloze_test", "LSDSem/story_cloze", hf_config="2016"),
     DecontamTestset("GPQA_test", "Idavidrein/gpqa"),
-    DecontamTestset("BFCL_test", "gorilla-llm/Berkeley-Function-Calling-Leaderboard",
-                    notes="All subsets including v3 multi-turn."),
+    DecontamTestset(
+        "BFCL_test", "gorilla-llm/Berkeley-Function-Calling-Leaderboard", notes="All subsets including v3 multi-turn."
+    ),
     DecontamTestset("NarrativeQA_test", "deepmind/narrativeqa"),
     DecontamTestset("QASPER_test", "allenai/qasper"),
-    DecontamTestset("HotpotQA_dev", "hotpotqa/hotpot_qa", hf_config="distractor",
-                    hf_split="validation"),
+    DecontamTestset("HotpotQA_dev", "hotpotqa/hotpot_qa", hf_config="distractor", hf_split="validation"),
     DecontamTestset("HumanEval", "openai/openai_humaneval", hf_split="test"),
     DecontamTestset("MBPP", "google-research-datasets/mbpp", hf_split="test"),
-    DecontamTestset("InfiniteBench", "xinrongzhang2022/InfiniteBench", hf_split="train",
-                    notes="Single split; treat all of it as decontam target."),
+    DecontamTestset(
+        "InfiniteBench",
+        "xinrongzhang2022/InfiniteBench",
+        hf_split="train",
+        notes="Single split; treat all of it as decontam target.",
+    ),
 ]
 
 

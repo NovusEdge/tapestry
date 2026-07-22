@@ -20,6 +20,7 @@ Usage:
     python3 -u -m data_synthesis.cultural.clean_reasoning_all \
         [--workers 10] [--limit N] [--out path] [--src path]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,7 +35,6 @@ import openai
 
 from data_synthesis.core.client import make_deepseek_client
 from data_synthesis.cultural.clean_reasoning_pilot_v3 import REWRITER_PROMPT
-
 
 REWRITER_MODEL = "deepseek-v4-pro"
 
@@ -106,22 +106,24 @@ def call_rewriter(
             return None, "failed"
         except openai.APIStatusError as e:
             body = getattr(e, "body", None)
-            msg = (str(body.get("message", "")).lower() if isinstance(body, dict) else "")
+            msg = str(body.get("message", "")).lower() if isinstance(body, dict) else ""
             err_type = body.get("type") if isinstance(body, dict) else ""
-            if (err_type == "exceeded_current_quota_error"
+            if (
+                err_type == "exceeded_current_quota_error"
                 or "insufficient balance" in msg
                 or "suspended" in msg
-                or getattr(e, "status_code", None) == 402):
+                or getattr(e, "status_code", None) == 402
+            ):
                 QUOTA_EXHAUSTED.set()
                 print(f"[clean-all] QUOTA EXHAUSTED — {body}", file=sys.stderr, flush=True)
                 return None, "quota_exhausted"
             if attempt < max_retries:
-                time.sleep(min(2 ** attempt, 30))
+                time.sleep(min(2**attempt, 30))
                 continue
             return None, "failed"
         except Exception:
             if attempt < max_retries:
-                time.sleep(min(2 ** attempt, 30))
+                time.sleep(min(2**attempt, 30))
                 continue
             return None, "failed"
     return None, "failed"
@@ -168,7 +170,8 @@ def process_one(client: openai.Client, rec: dict, out_path: Path) -> dict | None
             f"[{n_total:>5}] {rec.get('topic_id','?')[:28]:<28} "
             f"clean={len(cleaned) if cleaned else 0:>4}  "
             f"{elapsed:>5.1f}s  {status}  (ok={n_done}, fail={n_fail})",
-            file=sys.stderr, flush=True,
+            file=sys.stderr,
+            flush=True,
         )
     return out
 
