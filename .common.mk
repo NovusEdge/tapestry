@@ -296,10 +296,10 @@ contrib-%::
 	done 2>&1
 
 define ignore-warnings-message
-${BOLD}${INFO}You can ignore the following warnings you might see:
-${BOLD}${INFO}  `VIRTUAL_ENV=.../tapestry/.venv` does not match the project environment path `.venv` ...
-${BOLD}${INFO}  .custom.mk:4: warning: overriding commands for target ...
-${BOLD}${INFO}  .common.mk:265: warning: ignoring old commands for target ...
+${NOTE}You can ignore the following warnings you might see:${_END}
+${NOTE}  .custom.mk:N: warning: overriding commands for target ...${_END}
+${NOTE}  .common.mk:N: warning: ignoring old commands for target ...${_END}
+${NOTE}  `VIRTUAL_ENV=.../.venv` does not match the project environment path `.venv` ...${_END}
 endef
 
 # A special contrib target that

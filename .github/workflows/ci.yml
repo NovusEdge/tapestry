@@ -12,6 +12,7 @@ on:
       - "src/**"
       - "contrib/**"
       - "examples/**"
+      - "**/pyproject.toml"
 
 jobs:
   quality:
