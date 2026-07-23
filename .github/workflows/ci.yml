@@ -12,6 +12,7 @@ on:
       - "src/**"
       - "contrib/**"
       - "examples/**"
+      - "**/pyproject.toml"
 
 jobs:
   quality:
@@ -35,12 +36,12 @@ jobs:
           version: "latest"
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
       - name: Cache uv download cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/uv
           key: uv-${{ runner.os }}-${{ hashFiles('pyproject.toml') }}
@@ -48,7 +49,7 @@ jobs:
             uv-${{ runner.os }}-
 
       - name: Cache virtualenv
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: .venv
           key: venv-${{ runner.os }}-py3.12-${{ hashFiles('pyproject.toml') }}
@@ -65,4 +66,4 @@ jobs:
         run: uv pip install -e ".[dev]"
 
       - name: Run before-pr checks
-        run: make before-pr
+        run: make GITHUB_CI='true' before-pr

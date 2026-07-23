@@ -8,6 +8,8 @@ Think of `contrib/` as the front porch. Promising contributions may later be pro
 
 | Contribution | Contributor(s) | Status | What it is |
 | :----------- | :------------- | :----- | :--------- |
+| [`14H034160212-conflict-aware-fusion`](14H034160212-conflict-aware-fusion/README.md) | 14H034160212 | Candidate | LIRE + RLVF post-training stages that teach a base model to halt on logically inconsistent premises instead of deducing through them |
+| [`14H034160212-logically-grounded-dpo`](14H034160212-logically-grounded-dpo/README.md) | 14H034160212 | Candidate | Verifier-based DPO/PPO preference pipeline replacing reference-text similarity with an NLI-entailment reward for checkable explanations |
 | [`jneums-consortium-experiment`](jneums-consortium-experiment/README.md) | jneums | Speculative | Deterministic measurement layer around the consortium-training proof of concept |
 | [`jneums-cultural-cpt-validation`](jneums-cultural-cpt-validation/README.md) | jneums | Speculative | Runnable harness for EXP-001: does culturally grounded continued pretraining shift alignment beyond language exposure? |
 | [`jneums-flower-wan-spike`](jneums-flower-wan-spike/README.md) | jneums | Speculative | De-risk spike for #70: 2B-parameter weight round-trip through a Flower SuperLink over a real WAN |
@@ -114,7 +116,7 @@ make SRC_DIR=contrib/johndoe-foo --include-dir=contrib/johndoe-foo format ruff p
 
 The `SRC_DIR=...` definition points to the contribution's directory so the quality targets run from there. The `--include-dir=...` argument is used to tell `make` to search in the same directory for include files, in our case, the customization file `.custom.mk`.
 
-The `do-contrib-before-pr` target mentioned above also uses this command, running it once for each contribution. Similarly, the `contrib-x` targets also use this command, with the `x` target being one of the list of all the quality targets: `format ruff pylint type-check tests`.
+The `do-contrib-before-pr` target mentioned above also uses this command, running it once for each contribution. Similarly, the `contrib-x` targets also use this command, with the `x` target being one of the list of all the quality targets: `format ruff pylint type-check unit-tests`.
 
 > [!TIP]
 > Problems found while type checking often take the most time to fix, use this command to continuously and automatically re-run the type checker as you fix issues and save the files:

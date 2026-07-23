@@ -187,7 +187,7 @@ the master `make` process works and the customizations you might need to "global
 
 ### Before You Submit a PR...
 
-Before submitting a PR, please make these "quality" targets: `format`, `lint` (which makes `ruff` and `pylint`), `type-check`, and `tests`. This needs to be done in both the _production_ `src` tree and all the `contrib` contributions. Use the convenient make target `before-pr`, which handles all of them for you:
+Before submitting a PR, please make these "quality" targets: `format`, `lint` (which makes `ruff` and `pylint`), `type-check`, and `unit-tests`. This needs to be done in both the _production_ `src` tree and all the `contrib` contributions. Use the convenient make target `before-pr`, which handles all of them for you:
 
 ```shell
 make before-pr
