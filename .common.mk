@@ -229,7 +229,7 @@ print-info-env::
 	@echo
 
 .PHONY: before-pr before-pr-top before-pr-contrib print-pwd
-.PHONY: before-pr-no-tests-before-pr-top-no-tests-before-pr-contrib-no-tests
+.PHONY: before-pr-no-tests before-pr-top-no-tests before-pr-contrib-no-tests
 
 before-pr:: before-pr-top before-pr-contrib
 before-pr-top:: print-pwd ${QUALITY_CHECKS}
