@@ -12,13 +12,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from consortium_experiment import (  # noqa: E402
+from consortium_experiment import (
     ConsortiumExperimentRunner,
     ExperimentConfig,
     NodeSpec,
     PolicySpec,
 )
-from tapestry.training.consortium import ContributionWeighting  # noqa: E402
+
+from tapestry.training.consortium import ContributionWeighting
 
 DOMAIN_CORPORA: dict[str, list[str]] = {
     "vietnam": [

@@ -8,13 +8,13 @@ from collections.abc import Sequence
 import torch
 from torch import nn
 
-from .node import SovereignTrainingNode
-from .policy import ContributionPolicy
 from .messages import (
     ConsortiumRoundResult,
     ModelState,
     SovereignModelArtifact,
 )
+from .node import SovereignTrainingNode
+from .policy import ContributionPolicy
 
 
 class ConsortiumCoordinator:
@@ -76,7 +76,7 @@ class ConsortiumCoordinator:
         sample_state = next(iter(local_states_by_node.values()))
         next_state: ModelState = {}
         for name, _base_tensor in sample_state.items():
-            averaged = torch.zeros_like(sample_state[name])
+            averaged = torch.zeros_like(_base_tensor)
             for node_id, weight in weights.items():
                 averaged = averaged + local_states_by_node[node_id][name] * weight
             next_state[name] = averaged
