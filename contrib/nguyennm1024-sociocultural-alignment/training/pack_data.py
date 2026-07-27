@@ -12,6 +12,7 @@ already-windowed `prepared/*.jsonl` (so nothing exceeds the block).
 
 Output: datasets saved with save_to_disk to prepared/packed/{train,val_*}.
 """
+
 import argparse, json, os
 from datasets import Dataset
 from transformers import AutoTokenizer
@@ -29,8 +30,12 @@ def tokenize_all(tok, rows, chunk=1000):
     convs = [r["messages"] for r in rows]
     for i in range(0, len(convs), chunk):
         enc = tok.apply_chat_template(
-            convs[i:i + chunk], tokenize=True, return_assistant_tokens_mask=True,
-            return_dict=True, add_generation_prompt=False)
+            convs[i : i + chunk],
+            tokenize=True,
+            return_assistant_tokens_mask=True,
+            return_dict=True,
+            add_generation_prompt=False,
+        )
         ids_all.extend(enc["input_ids"])
         mask_all.extend(enc["assistant_masks"])
     return ids_all, mask_all
@@ -48,8 +53,10 @@ def pack(ids_all, mask_all, block, pad_id):
             padn = block - len(ci)
             ci += [pad_id] * padn
             cl += [-100] * padn
-            cp += list(range(padn))          # pad tail = its own dummy sequence
-        blocks_i.append(ci); blocks_l.append(cl); blocks_p.append(cp)
+            cp += list(range(padn))  # pad tail = its own dummy sequence
+        blocks_i.append(ci)
+        blocks_l.append(cl)
+        blocks_p.append(cp)
         ci, cl, cp = [], [], []
 
     for ids, mask in zip(ids_all, mask_all):
@@ -58,7 +65,9 @@ def pack(ids_all, mask_all, block, pad_id):
         if len(ci) + len(ids) > block:
             flush()
         labels = [t if m else -100 for t, m in zip(ids, mask)]
-        ci += ids; cl += labels; cp += list(range(len(ids)))
+        ci += ids
+        cl += labels
+        cp += list(range(len(ids)))
     flush()
     return {"input_ids": blocks_i, "labels": blocks_l, "position_ids": blocks_p}
 
@@ -81,7 +90,8 @@ def main():
     for name in ["train", "val_cultural", "val_rehearsal"]:
         path = os.path.join(args.data, f"{name}.jsonl")
         if not os.path.exists(path):
-            print(f"[{name:14s}] (no file, skip)", flush=True); continue
+            print(f"[{name:14s}] (no file, skip)", flush=True)
+            continue
         rows = load_jsonl(path)
         ids_all, mask_all = tokenize_all(tok, rows)
         cols = pack(ids_all, mask_all, args.block, pad_id)
@@ -89,9 +99,11 @@ def main():
         ds.save_to_disk(os.path.join(args.out, name))
         tok_total = sum(len(x) for x in ids_all)
         trained = sum(sum(1 for v in l if v != -100) for l in cols["labels"])
-        print(f"[{name:14s}] rows={len(rows):6d} blocks={len(ds):5d} "
-              f"tokens={tok_total/1e6:.1f}M trained_frac={trained/(len(ds)*args.block):.2f}",
-              flush=True)
+        print(
+            f"[{name:14s}] rows={len(rows):6d} blocks={len(ds):5d} "
+            f"tokens={tok_total/1e6:.1f}M trained_frac={trained/(len(ds)*args.block):.2f}",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

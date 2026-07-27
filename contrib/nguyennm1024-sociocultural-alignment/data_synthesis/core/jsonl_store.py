@@ -4,6 +4,7 @@ Used by the resumable pipeline runners. JSONL is the source of truth for
 pipeline state — readers tolerate a truncated final line (from a crash
 mid-write) by skipping it.
 """
+
 from __future__ import annotations
 
 import json

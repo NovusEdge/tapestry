@@ -19,6 +19,7 @@ Outputs (to --out):
   val_cultural.jsonl   cultural_val
   val_rehearsal.jsonl  rehearsal_val
 """
+
 import argparse, json, os, random
 from transformers import AutoTokenizer
 
@@ -37,8 +38,7 @@ def load_jsonl(p):
 
 
 def norm_messages(row):
-    return [dict(m) for m in row["messages"]
-            if not (m["role"] == "system" and not (m["content"] or "").strip())]
+    return [dict(m) for m in row["messages"] if not (m["role"] == "system" and not (m["content"] or "").strip())]
 
 
 def char_pretrim(content, cutoff):
@@ -106,8 +106,9 @@ def main():
     ap.add_argument("--model", default="meta-llama/Llama-3.2-3B-Instruct")
     ap.add_argument("--cutoff", type=int, default=16384)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--rehearsal_only", action="store_true",
-                    help="train on rehearsal_train only (ablation: no cultural data)")
+    ap.add_argument(
+        "--rehearsal_only", action="store_true", help="train on rehearsal_train only (ablation: no cultural data)"
+    )
     args = ap.parse_args()
 
     os.makedirs(args.out, exist_ok=True)
@@ -115,8 +116,9 @@ def main():
     tok.chat_template = CHAT_TEMPLATE
 
     spec = {
-        "train": (["rehearsal_train.jsonl"] if args.rehearsal_only
-                  else ["cultural_train.jsonl", "rehearsal_train.jsonl"]),
+        "train": (
+            ["rehearsal_train.jsonl"] if args.rehearsal_only else ["cultural_train.jsonl", "rehearsal_train.jsonl"]
+        ),
         "val_rehearsal": ["rehearsal_val.jsonl"],
     }
     if not args.rehearsal_only:
@@ -132,8 +134,10 @@ def main():
         with open(path, "w") as fh:
             for r in out:
                 fh.write(json.dumps(r, ensure_ascii=False) + "\n")
-        print(f"[{name:14s}] in={len(rows):6d} kept={len(out):6d} "
-              f"windowed={n_win:4d} dropped={n_drop:4d} -> {path}", flush=True)
+        print(
+            f"[{name:14s}] in={len(rows):6d} kept={len(out):6d} " f"windowed={n_win:4d} dropped={n_drop:4d} -> {path}",
+            flush=True,
+        )
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ Usage:
     python3 -u -m data_synthesis.cultural.clean_reasoning_retry \
         [--workers 10] [--max-passes 5] [--out path]
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,7 +36,6 @@ import openai
 
 from data_synthesis.core.client import make_deepseek_client
 from data_synthesis.cultural.clean_reasoning_pilot_v3 import REWRITER_PROMPT
-
 
 REWRITER_MODEL = "deepseek-v4-pro"
 
@@ -66,9 +66,7 @@ def load_dedup(path: Path) -> dict[str, dict]:
 
 def atomic_write(path: Path, records_by_key: dict[str, dict]) -> None:
     """Rewrite the file atomically: temp file, then rename."""
-    fd, tmp_path = tempfile.mkstemp(
-        prefix=path.stem + ".", suffix=".tmp", dir=path.parent
-    )
+    fd, tmp_path = tempfile.mkstemp(prefix=path.stem + ".", suffix=".tmp", dir=path.parent)
     try:
         with os.fdopen(fd, "w") as f:
             for rec in records_by_key.values():
@@ -97,27 +95,29 @@ def call_rewriter(client: openai.Client, prompt: str, max_retries: int = 4) -> t
             if text:
                 return text, "ok"
             if attempt < max_retries:
-                time.sleep(min(2 ** attempt, 30))
+                time.sleep(min(2**attempt, 30))
                 continue
             return None, "failed"
         except openai.APIStatusError as e:
             body = getattr(e, "body", None)
-            msg = (str(body.get("message", "")).lower() if isinstance(body, dict) else "")
+            msg = str(body.get("message", "")).lower() if isinstance(body, dict) else ""
             err_type = body.get("type") if isinstance(body, dict) else ""
-            if (err_type == "exceeded_current_quota_error"
+            if (
+                err_type == "exceeded_current_quota_error"
                 or "insufficient balance" in msg
                 or "suspended" in msg
-                or getattr(e, "status_code", None) == 402):
+                or getattr(e, "status_code", None) == 402
+            ):
                 QUOTA_EXHAUSTED.set()
                 print(f"[retry] QUOTA EXHAUSTED — {body}", file=sys.stderr, flush=True)
                 return None, "quota_exhausted"
             if attempt < max_retries:
-                time.sleep(min(2 ** attempt, 30))
+                time.sleep(min(2**attempt, 30))
                 continue
             return None, "failed"
         except Exception:
             if attempt < max_retries:
-                time.sleep(min(2 ** attempt, 30))
+                time.sleep(min(2**attempt, 30))
                 continue
             return None, "failed"
     return None, "failed"
@@ -170,9 +170,9 @@ def run_pass(client: openai.Client, records_by_key: dict[str, dict], workers: in
                 still_failed += 1
             if i % 20 == 0 or i == len(failed):
                 print(
-                    f"[retry]   progress {i:>4}/{len(failed)}  "
-                    f"recovered={recovered}  still_failed={still_failed}",
-                    file=sys.stderr, flush=True,
+                    f"[retry]   progress {i:>4}/{len(failed)}  " f"recovered={recovered}  still_failed={still_failed}",
+                    file=sys.stderr,
+                    flush=True,
                 )
             if QUOTA_EXHAUSTED.is_set():
                 for f in futures:
@@ -185,8 +185,9 @@ def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--workers", type=int, default=10)
     p.add_argument("--max-passes", type=int, default=5, help="cap number of retry passes")
-    p.add_argument("--pause-between-passes", type=float, default=30.0,
-                   help="seconds to wait between passes (lets API recover)")
+    p.add_argument(
+        "--pause-between-passes", type=float, default=30.0, help="seconds to wait between passes (lets API recover)"
+    )
     p.add_argument("--out", type=Path, default=DEFAULT_PATH, help="JSONL file to retry in place")
     args = p.parse_args()
 

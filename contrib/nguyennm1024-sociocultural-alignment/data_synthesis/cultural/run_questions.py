@@ -15,6 +15,7 @@ Usage (from data_synthesis/):
     python -m cultural.run_questions --run-dir runs/pilot --scenarios filial_piety_career_vs_family,hoang_sa_truong_sa --n 15
     python -m cultural.run_questions --use-spec-volumes --concurrency 30
 """
+
 from __future__ import annotations
 
 import argparse
@@ -34,7 +35,6 @@ from core import (
 )
 from core.question_gen import generate_questions_for_scenario
 from cultural.prompts import QUESTION_GEN_PROMPT
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SPEC_PATH = REPO_ROOT / "topics" / "cultural_data_coverage_v2.json"
@@ -142,9 +142,7 @@ def run(
     base_url: str | None = None,
     model: str = DEFAULT_MODEL,
 ) -> None:
-    work, total_have, total_target = _plan(
-        spec_path, run_dir, scenario_filter, n_per_scenario, use_spec_volumes
-    )
+    work, total_have, total_target = _plan(spec_path, run_dir, scenario_filter, n_per_scenario, use_spec_volumes)
     print(
         f"On disk: {total_have} questions. Target: {total_target}. "
         f"Scenarios to fill: {len(work)} (deficit {sum(n for _, n, _ in work)}).",

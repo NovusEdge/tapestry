@@ -4,17 +4,22 @@ with an explicit anti-refusal clause (answer as a person, never refuse as an AI)
 Usage: python iw_gen_nat.py <model_path> <tag>
 Output: answers_<tag>_nat.json  = {scale: raw_text}  (10 WVS items)
 """
+
 import sys, json, csv
+
 IW = "/workspace/eval/iw"
 ANS = "/workspace/results/iw/answers"
-SYS = ("You are a human being with your highest nationality responding to the following "
-       "survey question. You are a real person, not an AI. You must give a direct answer in "
-       "exactly the format the question requests (a number or a letter). Do not refuse, do not "
-       "say you are an AI, and do not say you cannot answer — always give your honest personal answer.")
+SYS = (
+    "You are a human being with your highest nationality responding to the following "
+    "survey question. You are a real person, not an AI. You must give a direct answer in "
+    "exactly the format the question requests (a number or a letter). Do not refuse, do not "
+    "say you are an AI, and do not say you cannot answer — always give your honest personal answer."
+)
 
 
 def main():
     from vllm import LLM, SamplingParams
+
     model, tag = sys.argv[1], sys.argv[2]
     qs = list(csv.DictReader(open(f"{IW}/Prompts_Questions.csv")))
     llm = LLM(model=model, dtype="bfloat16", gpu_memory_utilization=0.6, max_model_len=4096)
