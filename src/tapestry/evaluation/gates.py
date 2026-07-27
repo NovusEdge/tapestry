@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from math import isfinite
 from types import MappingProxyType
-from typing import Iterable, Mapping
 
 SCHEMA_VERSION = "m0-evaluation-gate/v1"
 BUNDLE_FINDING_ID = "__evaluation_bundle__"
