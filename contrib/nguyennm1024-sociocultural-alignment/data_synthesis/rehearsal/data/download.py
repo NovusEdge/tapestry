@@ -12,6 +12,7 @@ failed, so it's safe to wire into CI.
 Run via `python -m rehearsal.cli download` (preferred) or directly:
     python -m rehearsal.data.download --test-only
 """
+
 from __future__ import annotations
 
 import argparse
@@ -32,7 +33,7 @@ from .sources import (
 class DownloadResult:
     name: str
     hf_path: str
-    status: str            # "ok" | "skipped" | "failed" | "no_hf_path"
+    status: str  # "ok" | "skipped" | "failed" | "no_hf_path"
     rows: int | None = None
     elapsed_s: float | None = None
     error: str | None = None
@@ -79,12 +80,18 @@ def _download_one(
     elapsed = time.time() - t0
     if err:
         return DownloadResult(
-            name=name, hf_path=hf_path, status="failed",
-            elapsed_s=elapsed, error=err,
+            name=name,
+            hf_path=hf_path,
+            status="failed",
+            elapsed_s=elapsed,
+            error=err,
         )
     return DownloadResult(
-        name=name, hf_path=hf_path, status="ok",
-        rows=rows, elapsed_s=elapsed,
+        name=name,
+        hf_path=hf_path,
+        status="ok",
+        rows=rows,
+        elapsed_s=elapsed,
     )
 
 
@@ -129,7 +136,8 @@ def run_download(
                 f"[download] ({i}/{len(train_targets)}) train: {src.name} -> {src.hf_path}"
                 + (f" [{src.hf_config}]" if src.hf_config else "")
                 + f" [{src.hf_split}]",
-                file=log, flush=True,
+                file=log,
+                flush=True,
             )
             r = _download_one(src.name, src.hf_path, src.hf_config, src.hf_split)
             results.append(r)
@@ -143,7 +151,8 @@ def run_download(
                 f"[download] ({i}/{len(decontam_targets)}) decontam: {ts.name} -> {ts.hf_path}"
                 + (f" [{ts.hf_config}]" if ts.hf_config else "")
                 + f" [{ts.hf_split}]",
-                file=log, flush=True,
+                file=log,
+                flush=True,
             )
             r = _download_one(ts.name, ts.hf_path, ts.hf_config, ts.hf_split)
             results.append(r)
@@ -179,12 +188,9 @@ def _summary(results: Iterable[DownloadResult], log) -> None:
 
 def main() -> int:
     p = argparse.ArgumentParser(description="Download HF datasets into the local cache.")
-    p.add_argument("--train-only", action="store_true",
-                   help="Skip decontam test sets.")
-    p.add_argument("--test-only", action="store_true",
-                   help="Skip training sources.")
-    p.add_argument("--source", default=None,
-                   help="Restrict to one named source (training OR decontam).")
+    p.add_argument("--train-only", action="store_true", help="Skip decontam test sets.")
+    p.add_argument("--test-only", action="store_true", help="Skip training sources.")
+    p.add_argument("--source", default=None, help="Restrict to one named source (training OR decontam).")
     args = p.parse_args()
 
     results = run_download(

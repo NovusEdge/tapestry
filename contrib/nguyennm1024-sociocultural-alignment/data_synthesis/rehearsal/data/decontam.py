@@ -16,6 +16,7 @@ in v1 — add only if the pilot shows leakage past exact+13-gram.
 Persistence: index is pickled under `~/.cache/rehearsal_decontam/index.pkl`
 so subsequent runs don't rebuild from scratch.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -28,7 +29,6 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from .sources import DECONTAM_TESTSETS, DecontamTestset
-
 
 # ---------------------------------------------------------------------------
 # Text normalization + n-gram extraction
@@ -55,9 +55,7 @@ def ngram_hash(words: tuple[str, ...]) -> int:
     """Stable 8-byte hash for a tuple of words. Stable across runs (unlike
     Python's hash())."""
     joined = " ".join(words).encode("utf-8")
-    return int.from_bytes(
-        hashlib.blake2b(joined, digest_size=8).digest(), "big", signed=False
-    )
+    return int.from_bytes(hashlib.blake2b(joined, digest_size=8).digest(), "big", signed=False)
 
 
 def iter_ngrams(text: str, n: int = 13) -> Iterable[int]:
@@ -222,8 +220,8 @@ NGRAM_N = 13
 class DecontamIndex:
     """Serializable union of exact + n-gram sets across all testsets."""
 
-    exact: set[str] = field(default_factory=set)       # sha1 of normalized text
-    ngrams: set[int] = field(default_factory=set)      # 13-gram blake2b hashes
+    exact: set[str] = field(default_factory=set)  # sha1 of normalized text
+    ngrams: set[int] = field(default_factory=set)  # 13-gram blake2b hashes
     per_testset_counts: dict[str, int] = field(default_factory=dict)
 
     def add_text(self, text: str) -> None:
@@ -244,8 +242,10 @@ class DecontamIndex:
 # Build + load
 # ---------------------------------------------------------------------------
 
+
 def _load_hf(testset: DecontamTestset):
     from datasets import load_dataset
+
     kwargs = {"split": testset.hf_split}
     if testset.hf_config:
         kwargs["name"] = testset.hf_config
@@ -268,18 +268,14 @@ def build_index(
     `only`: optional list of DecontamTestset names to index (otherwise all).
     """
     idx = DecontamIndex()
-    targets = DECONTAM_TESTSETS if only is None else [
-        t for t in DECONTAM_TESTSETS if t.name in only
-    ]
+    targets = DECONTAM_TESTSETS if only is None else [t for t in DECONTAM_TESTSETS if t.name in only]
     for i, ts in enumerate(targets, 1):
         if ts.name not in EXTRACTORS:
-            print(f"[decontam] ({i}/{len(targets)}) {ts.name}: no extractor, skipping",
-                  file=log, flush=True)
+            print(f"[decontam] ({i}/{len(targets)}) {ts.name}: no extractor, skipping", file=log, flush=True)
             continue
         extractor = EXTRACTORS[ts.name]
         t0 = time.time()
-        print(f"[decontam] ({i}/{len(targets)}) {ts.name}: loading {ts.hf_path}...",
-              file=log, flush=True)
+        print(f"[decontam] ({i}/{len(targets)}) {ts.name}: loading {ts.hf_path}...", file=log, flush=True)
         try:
             ds = _load_hf(ts)
         except Exception as e:
@@ -294,16 +290,18 @@ def build_index(
                     idx.add_text(txt)
                     n_texts += 1
         idx.per_testset_counts[ts.name] = n_rows
-        print(f"    {n_rows} rows, {n_texts} texts indexed, {time.time() - t0:.1f}s "
-              f"(total exact={len(idx.exact)} ngrams={len(idx.ngrams)})",
-              file=log, flush=True)
+        print(
+            f"    {n_rows} rows, {n_texts} texts indexed, {time.time() - t0:.1f}s "
+            f"(total exact={len(idx.exact)} ngrams={len(idx.ngrams)})",
+            file=log,
+            flush=True,
+        )
 
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "wb") as f:
         pickle.dump(idx, f, protocol=pickle.HIGHEST_PROTOCOL)
-    print(f"[decontam] wrote index to {out} "
-          f"(exact={len(idx.exact)}, ngrams={len(idx.ngrams)})", file=log)
+    print(f"[decontam] wrote index to {out} " f"(exact={len(idx.exact)}, ngrams={len(idx.ngrams)})", file=log)
     return idx
 
 
@@ -311,8 +309,7 @@ def load_index(path: Path | str = DEFAULT_INDEX_PATH) -> DecontamIndex:
     p = Path(path)
     if not p.exists():
         raise FileNotFoundError(
-            f"decontam index not found at {p}. "
-            "Build it first: `python -m rehearsal.cli decontam-build`"
+            f"decontam index not found at {p}. " "Build it first: `python -m rehearsal.cli decontam-build`"
         )
     with open(p, "rb") as f:
         return pickle.load(f)
@@ -322,11 +319,12 @@ def load_index(path: Path | str = DEFAULT_INDEX_PATH) -> DecontamIndex:
 # Public API
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ContaminationResult:
     contaminated: bool
-    reason: str | None = None      # "exact" | "ngram" | None
-    overlap_count: int = 0         # number of 13-grams matched (for ngram reason)
+    reason: str | None = None  # "exact" | "ngram" | None
+    overlap_count: int = 0  # number of 13-grams matched (for ngram reason)
 
 
 class Contaminator:
