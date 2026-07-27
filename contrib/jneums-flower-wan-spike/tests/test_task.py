@@ -28,7 +28,7 @@ class TaskTest(unittest.TestCase):
                 self.subTest(name=name, value=value),
                 self.assertRaisesRegex(ValueError, f"{name} must be positive"),
             ):
-                    validate_positive_int(name, value)
+                validate_positive_int(name, value)
 
 
 if __name__ == "__main__":
