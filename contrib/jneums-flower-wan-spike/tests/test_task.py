@@ -24,8 +24,10 @@ class TaskTest(unittest.TestCase):
         ]
 
         for name, value in cases:
-            with self.subTest(name=name, value=value):
-                with self.assertRaisesRegex(ValueError, f"{name} must be positive"):
+            with (
+                self.subTest(name=name, value=value),
+                self.assertRaisesRegex(ValueError, f"{name} must be positive"),
+            ):
                     validate_positive_int(name, value)
 
 
