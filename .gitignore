@@ -179,3 +179,6 @@ runs/
 # notes (env specifics, in-progress run state), so it stays local. FINDINGS.md is the
 # tracked durable record; SPEC.md/data/README.md carry the public contract.
 /contrib/jneums-cultural-cpt-validation/HANDOFF.md
+
+# AI artifacts
+docs/superpowers/
