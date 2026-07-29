@@ -1,27 +1,30 @@
 name: Spec coherence (Quint)
 
+# Validates the canonical top-level `spec/` directory via the top-level make
+# targets. While `spec/` is empty (the pilot is staged in
+# contrib/luzanikita-formal-spec/), the make targets no-op and this job is a
+# green skip. It activates automatically once specs land under `spec/`.
+
 on:
   push:
     branches:
       - develop
     paths:
-      - "contrib/luzanikita-formal-spec/**"
+      - "spec/**"
+      - ".formal-spec.mk"
       - ".github/workflows/spec.yml"
   pull_request:
     branches:
       - develop
     paths:
-      - "contrib/luzanikita-formal-spec/**"
+      - "spec/**"
+      - ".formal-spec.mk"
       - ".github/workflows/spec.yml"
 
 jobs:
   quint:
-    name: typecheck · run · test
+    name: install · verify
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: contrib/luzanikita-formal-spec
 
     steps:
       - name: Checkout
@@ -31,20 +34,9 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: "22"
-          cache: "npm"
-          cache-dependency-path: contrib/luzanikita-formal-spec/package-lock.json
 
-      - name: Install pinned Quint CLI
-        run: npm ci
+      - name: Install the pinned Quint toolchain (skips if spec/ is empty)
+        run: make formal-spec-install
 
-      - name: quint typecheck (every module)
-        run: npm run typecheck
-
-      - name: quint run — compliant protocol satisfies all invariants
-        run: npm run run:compliant
-
-      - name: quint run — leaky variant must VIOLATE no_raw_data_crosses
-        run: npm run run:leaky:expect-violation
-
-      - name: quint test — deterministic scenarios
-        run: npm run test
+      - name: Verify formal specs — typecheck, invariants, tests (skips if spec/ is empty)
+        run: make formal-spec-verify
