@@ -328,15 +328,20 @@ contrib-help::
 # Show which contributions have make customization files, .custom.mk and
 # .targets.mk, etc.
 .PHONY: contrib-audit
-contrib-audit:
-	@echo "\n${HIGHLIGHT}Which contrib/* have .custom.mk and .target.mk files?${_END}"
+contrib-audit::
+	@echo "\n${HIGHLIGHT} Which contrib/* have the required or optional files? ${_END}"
+	@printf "  %-45s  ${CODE}README.md      LICENSE      .custom.mk   .targets.mk${_END}  \n" ""
+	@printf "  %-45s  ${BLUE}(required)  (recommended)  (recommended) (optional)${_END}\n" ""
 	@no="${RED}NO ${_END}"; yes="${GREEN}yes${_END}"; \
 	for d in ${CONTRIB_DIRS}; do \
-	  targets="$$no"; custom="$$no"; \
-	  [ -f $$d/.targets.mk ] && targets="$$yes"; \
+	  readme="$$no"; license="$$no"; targets="$$no"; custom="$$no"; \
+	  [ -f $$d/README.md ]   && readme="$$yes"; \
+	  [ -f $$d/LICENSE ]     && license="$$yes"; \
 	  [ -f $$d/.custom.mk  ] && custom="$$yes"; \
-	  printf "  %-50s  .targets.mk = %-3s  .custom.mk = %s\n" "$$d:" "$$targets" "$$custom"; \
+	  [ -f $$d/.targets.mk ] && targets="$$yes"; \
+		printf "  ${CODE}%-45s${_END}     %-3s           %-3s            %-3s          %-3s\n" "$$d:" "$$readme" "$$license" "$$custom" "$$targets"; \
 	done
+	@echo
 
 # The next recipe contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
 # although the construction of ${CONTRIB_DIRS} should prevent this from happening.

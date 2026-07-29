@@ -18,6 +18,7 @@ help-custom-website::
 	$(info ${help-custom-website-message})
 
 define help-custom-website-message
+
 ${HIGHLIGHT}Quick help for this project's website-specific targets:${_END}
 
 ${CODE}make help-website${_END}       # Help on the website targets.

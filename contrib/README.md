@@ -50,7 +50,8 @@ contrib/
     ├── .custom.mk     # Customize project-wide make targets, like "tests" (optional)
     ├── .targets.mk    # Add project-wide make targets for the contribution (optional)
     ├── Makefile       # Standalone make processes; not connected to the main make processes (optional)
-    └── ...            # code, notes, diagrams, data pointers, etc.
+    ├── src/...        # code and tests
+    └── docs/...       # Other notes, diagrams, data pointers, etc.
 ```
 
 ## The Project-wide Make Processes
