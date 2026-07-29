@@ -61,3 +61,43 @@ npx quint test consortium/compliant_test.qnt --main compliantTest
 ```
 
 `npm run spec:check` runs the typecheck + compliant-invariant steps CI uses.
+
+## Reading a violation (and what to do about it)
+
+A `quint run`/`quint verify` failure prints a **counterexample**: the shortest
+sequence of states (`[State 0] … [State N]`) that reaches an invariant breach.
+Read it back-to-front — the **last state** is the breach; the diff from the
+previous state is the **action that caused it**. Example from `leaky.qnt`:
+
+```
+[State 0]  wire: Set()                                   # start: nothing transmitted
+[State 1]  wire: Set(RawData({ node: 2, token: 201 }))   # node 2 put RAW data on the wire
+[violation] Invariant violated   (no_raw_data_crosses)
+```
+
+Interpretation: a `RawData` item appeared on the `wire`, so `no_raw_data_crosses`
+(INV-1) fails — node 2 leaked raw sample `201`. Re-run with the printed
+`--seed=…` to reproduce the exact trace; add `--verbosity=3` to see which action
+fired.
+
+A violation is **not automatically a code bug** — it forces an explicit choice
+among three actionable outcomes:
+
+1. **Fix the system.** The design/implementation genuinely allows the bad
+   behavior → change the protocol/code so the offending action can't happen
+   (e.g., nodes only ever emit `CptWeights`, never `RawData`). This is the case
+   the `leaky` variant demonstrates by construction — its Byzantine
+   `leakyGossipRawData` action is the defect the invariant is meant to catch.
+2. **Fix the property.** The invariant is stronger/wrong than intended and
+   forbids something legitimate → correct or weaken it in `shared.qnt` (and say
+   why in the commit).
+3. **Add a missing assumption/constraint.** The model permits a state the real
+   system actually prevents (an action that can't occur in practice) → encode
+   that guard/precondition in the spec — **and** confirm the real system
+   enforces it, otherwise outcome 1 applies.
+
+Every counterexample therefore ends in a recorded decision about either our
+**code** or our **stated constraints/assumptions**. A clean `compliant.qnt` run
+is the same statement in the positive — no sequence of modeled actions reaches
+the breach (remembering that `quint run` samples rather than proves; `quint
+verify` upgrades a clean result to a bounded proof).
