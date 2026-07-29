@@ -32,34 +32,48 @@ QUALITY_CHECKS           := ${QUALITY_CHECKS_NO_TESTS} unit-tests
 # Commands as variables:
 # Time execution of commands. Prefix the command invocation with "${TIME}":
 TIME                     ?= time
+
 # Common flags for "uv run" (--active is recommended by some warnings that
 # can be seen during recursive uv invocations, but using it can cause
 # conflicting versions of dependencies to be installed in the top-level
 # environment, if the directories for those invocations have their own
 # "pyproject.toml" files. Therefore, DON'T USE THIS FLAG!):
 UV_RUN                   ?= uv run
-PYLINT_IGNORE_ARGS       := --ignore=.venv --ignore-pattern='.*cache.*'
-# Define PYTEST_*_OPT_ARGS in targets to customize behavior.
+
+# Common flags for various tools:
+# *_OPT_ARGS:  Empty by default; define on invocation to customize behavior.
+# *_ARGS:      Standard arguments you shouldn't override on the command line.
+#              (Pytest uses different variables; see below.)
+PYLINT_OPT_ARGS          ?=
+RUFF_OPT_ARGS            ?=
+TY_OPT_ARGS              ?=
+BLACK_OPT_ARGS           ?=
+
+PYLINT_ARGS              := --recursive=y --ignore=.venv --ignore-pattern='.*cache.*'
+TY_ARGS                  := check
+# Some of the *_ARGS have different settings for CI...
+ifeq (${GITHUB_CI},)
+	# No CI, i.e., run manually by the developer.
+	BLACK_ARGS             :=
+	RUFF_ARGS              := check --fix
+else
+	# In CI, only have black check if reformatting would happen,
+	# not do any reformatting. It exits with code 1, if it would
+	# make changes, causing the PR to fail.
+	# Similarly, for ruff, only check, don't attempt to fix problems.
+	BLACK_ARGS             := --check
+	RUFF_ARGS              := check
+endif
+
+# Pytest-specific definitions. Note we still provide the "*_OPT_ARGS" hooks.
 PYTEST_RUN_OPT_ARGS      ?=
 PYTEST_COV_OPT_ARGS      ?=
 PYTEST_RUN_CMD           := ${UV_RUN} coverage run -m pytest -v -s ${PYTEST_RUN_OPT_ARGS}
 PYTEST_COV_REPORT_CMD    := ${UV_RUN} coverage report -m ${PYTEST_COV_OPT_ARGS}
 
-# Define *_OPT_ARGS on the CLI to pass additional arguments to the corresponding target recipes.
-RUFF_OPT_ARGS            ?=
-PYLINT_OPT_ARGS          ?=
-TY_OPT_ARGS              ?=
-
-ifeq (${GITHUB_CI},)
-	BLACK_OPT_ARGS         ?=
-else
-	# In CI, only check if reformatting would happen. exit code 1
-	# is returned if so, causing the PR to fail.
-	BLACK_OPT_ARGS          = --check
-endif
 
 # The environment:
-MAKEFLAGS                ?= --warn-undefined-variables
+MAKEFLAGS                 = --warn-undefined-variables
 UNAME                    ?= $(shell uname)
 ARCHITECTURE             ?= $(shell uname -m)
 LOCAL_REPO_PATH          ?= $(shell git rev-parse --show-toplevel)
@@ -135,11 +149,13 @@ For contributed code in "contrib", any of the targets ${CODE}help${_END}, ${CODE
 ${CODE}type-check${_END}, and ${CODE}type-check-watch${_END} can be invoked by prefixing the targets name with
 ${CODE}contrib-${_END}. This will run the corresponding target in all the ${CODE}contrib/*${_END} directories.
 
+${CODE}make contrib-audit${_END}      # Show which contributions have make customization files, etc.
+
 ${help-top-level-message}
 endef
 
 define help_targets_message
-  ${NOTE}No custom targets defined.${_END}
+  ${NOTE}No custom targets defined in ${CODE}${SRC_DIR}${_END}.${_END}
 endef
 
 .PHONY: all help help-general print-info clean
@@ -272,42 +288,55 @@ format black:: format-prerequisite format-default format-postrequisite
 format-prerequisite format-postrequisite::
 format-default:
 	@echo "${INFO_LABEL}Target ${CODE}format${_END}: Running ${CODE}black${_END} on the code in ${CODE}${SRC_DIR}${_END}."
-	cd ${SRC_DIR} && ${UV_RUN} black ${BLACK_OPT_ARGS} .
+	cd ${SRC_DIR} && ${UV_RUN} black ${BLACK_ARGS} ${BLACK_OPT_ARGS} .
 
 ruff:: ruff-prerequisite ruff-default ruff-postrequisite
 ruff-prerequisite ruff-postrequisite::
 ruff-default:
 	@echo "${INFO_LABEL}Target ${CODE}ruff${_END}: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END}."
-	cd ${SRC_DIR} && ${UV_RUN} ruff check --fix ${RUFF_OPT_ARGS} .
-
+	cd ${SRC_DIR} && ${UV_RUN} ruff ${RUFF_ARGS} ${RUFF_OPT_ARGS} .
 ruff-watch:: ruff-prerequisite ruff-watch-default ruff-postrequisite
 ruff-watch-default:
 	@echo "${INFO_LABEL}Target ${CODE}ruff${_END}: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
-	cd ${SRC_DIR} && ${UV_RUN} ruff check --fix --watch ${RUFF_OPT_ARGS} .
+	cd ${SRC_DIR} && ${UV_RUN} ruff ${RUFF_ARGS} --watch ${RUFF_OPT_ARGS} .
 
 pylint:: pylint-prerequisite pylint-default pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
 	@echo "${INFO_LABEL}Target ${CODE}pylint${_END}: Running ${CODE}pylint${_END} on the code in ${CODE}${SRC_DIR}${_END} (configuration in ${CODE}pylintrc.toml${_END})"
-	cd ${SRC_DIR} && ${UV_RUN} pylint ${PYLINT_IGNORE_ARGS} ${PYLINT_OPT_ARGS} .
+	cd ${SRC_DIR} && ${UV_RUN} pylint ${PYLINT_ARGS} ${PYLINT_OPT_ARGS} .
 
 type-check:: ty
 ty:: type-check-prerequisite type-check-default type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
 type-check-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END}."
-	cd ${SRC_DIR} && ${UV_RUN} ty check ${TY_OPT_ARGS} .
+	cd ${SRC_DIR} && ${UV_RUN} ty ${TY_ARGS} ${TY_OPT_ARGS} .
 
 type-check-watch:: ty-watch
 ty-watch:: type-check-prerequisite type-check-watch-default type-check-postrequisite
 type-check-watch-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check-watch${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
-	cd ${SRC_DIR} && ${UV_RUN} ty check --watch ${TY_OPT_ARGS} .
+	cd ${SRC_DIR} && ${UV_RUN} ty ${TY_ARGS} --watch ${TY_OPT_ARGS} .
 
 # Provide a concrete recipe for the contrib-help target, so the "contrib-%" target pattern below 
 # doesn't get used, because it does the wrong thing in this special case...
+.PHONY: contrib-help
 contrib-help:: 
 	@${MAKE} help-targets
+
+# Show which contributions have make customization files, .custom.mk and
+# .targets.mk, etc.
+.PHONY: contrib-audit
+contrib-audit:
+	@echo "\n${HIGHLIGHT}Which contrib/* have .custom.mk and .target.mk files?${_END}"
+	@no="${RED}NO ${_END}"; yes="${GREEN}yes${_END}"; \
+	for d in ${CONTRIB_DIRS}; do \
+	  targets="$$no"; custom="$$no"; \
+	  [ -f $$d/.targets.mk ] && targets="$$yes"; \
+	  [ -f $$d/.custom.mk  ] && custom="$$yes"; \
+	  printf "  %-50s  .targets.mk = %-3s  .custom.mk = %s\n" "$$d:" "$$targets" "$$custom"; \
+	done
 
 # The next recipe contains logic to skip any item in ${CONTRIB_DIRS} that is not a directory,
 # although the construction of ${CONTRIB_DIRS} should prevent this from happening.

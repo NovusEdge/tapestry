@@ -103,8 +103,8 @@ Before discussing customization options, let's describe how you can build these 
 First, to run the checks for _all_ the contributions, start in the _top-level directory_ and run either of the following commands:
 
 ```shell
-make do-contrib-before-pr  # run all of the checks for all contrib/*
-make contrib-pylint        # run just `pylint` for all contrib/*
+make before-pr-contrib  # Run all of the checks for all contrib/*
+make contrib-pylint     # Run just `pylint` for all contrib/*
 ```
 
 (Substitute `pylint` with any of the other quality checks mentioned above, as desired.)
