@@ -46,6 +46,8 @@ contrib/luzanikita-formal-spec/
   LICENSE                 # Apache-2.0 / CC-BY-4.0 / CDLA-2.0 (repo defaults)
 ```
 
+**CI integration:** `.github/workflows/spec.yml` runs `make formal-spec-verify SPEC_DIR=contrib/luzanikita-formal-spec` to validate the pilot. Local and CI share this entry point via `.formal-spec.mk` (see top-level `Makefile`).
+
 ## The INV-1 pilot (`consortium/`)
 
 Formalizes `ARCHITECTURE.md` INV-1 ("no raw data crosses node boundaries —
@@ -56,6 +58,16 @@ ADR-002/004/005/006/008.
 
 ## Running it
 
+**Recommended: use the top-level make targets** (aligned with CI):
+```bash
+# Install the pinned Quint toolchain
+make formal-spec-install SPEC_DIR=contrib/luzanikita-formal-spec
+
+# Typecheck + run invariants + tests (what CI uses)
+make formal-spec-verify SPEC_DIR=contrib/luzanikita-formal-spec
+```
+
+**Or run manually** (same as what make does — installs Quint and runs `npm run spec:check`):
 ```bash
 cd contrib/luzanikita-formal-spec
 npm install
@@ -74,8 +86,6 @@ npx quint run --invariant=no_raw_data_crosses consortium/leaky.qnt
 # Deterministic scenario tests
 npx quint test consortium/compliant_test.qnt --main compliantTest
 ```
-
-`npm run spec:check` runs the typecheck + compliant-invariant steps CI uses.
 
 ## Reading a violation (and what to do about it)
 
