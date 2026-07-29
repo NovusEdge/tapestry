@@ -5,13 +5,13 @@ on:
     branches:
       - develop
     paths:
-      - "spec/**"
+      - "contrib/luzanikita-formal-spec/**"
       - ".github/workflows/spec.yml"
   pull_request:
     branches:
       - develop
     paths:
-      - "spec/**"
+      - "contrib/luzanikita-formal-spec/**"
       - ".github/workflows/spec.yml"
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: spec
+        working-directory: contrib/luzanikita-formal-spec
 
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: "22"
           cache: "npm"
-          cache-dependency-path: spec/package-lock.json
+          cache-dependency-path: contrib/luzanikita-formal-spec/package-lock.json
 
       - name: Install pinned Quint CLI
         run: npm ci

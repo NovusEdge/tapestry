@@ -1,8 +1,22 @@
-# Tapestry formal specs (Quint)
+# Tapestry formal specs (Quint) — `luzanikita-formal-spec`
 
 Executable, machine-checkable models of Tapestry's load-bearing invariants
 (see `docs/reference/ARCHITECTURE.md#design-goals-and-invariants`), sitting
 between prose decisions (`docs/`) and implementation (`src/`).
+
+**Motivation.** `ARCHITECTURE.md` says every design doc and PR "should be
+checked against these invariants," but nothing enforces it. This contribution
+formalizes the headline invariant (INV-1) as an executable Quint model so the
+check becomes mechanical, and demonstrates the counterexample-driven workflow.
+
+**Status.** Proof-of-concept pilot, staged here under `contrib/` per
+[`CONTRIBUTING.md`](../../CONTRIBUTING.md). It accompanies the formal-specification
+**proposal in issue #203**, which proposes promoting this to a top-level `spec/`
+directory with a repo-wide coherence CI gate if the practice is adopted. Until
+then it lives and runs entirely inside this directory.
+
+**How to try it.** See [Running it](#running-it) below — `npm ci` then
+`npm run spec:check` from this directory.
 
 ## Quint in ~6 concepts
 
@@ -22,13 +36,14 @@ that CI here does not have.
 ## Layout
 
 ```
-spec/
+contrib/luzanikita-formal-spec/
   consortium/
     shared.qnt          # types, state, "compliant" protocol actions, invariants
     compliant.qnt        # instantiates shared + a step — the honest protocol
     compliant_test.qnt   # deterministic quint-test scenarios
     leaky.qnt             # instantiates shared + adversarial actions — violates INV-1
   package.json            # pins the Quint CLI version for CI/local parity
+  LICENSE                 # Apache-2.0 / CC-BY-4.0 / CDLA-2.0 (repo defaults)
 ```
 
 ## The INV-1 pilot (`consortium/`)
@@ -42,7 +57,7 @@ ADR-002/004/005/006/008.
 ## Running it
 
 ```bash
-cd spec
+cd contrib/luzanikita-formal-spec
 npm install
 
 # Type-check every module
@@ -101,3 +116,11 @@ Every counterexample therefore ends in a recorded decision about either our
 is the same statement in the positive — no sequence of modeled actions reaches
 the breach (remembering that `quint run` samples rather than proves; `quint
 verify` upgrades a clean result to a bounded proof).
+
+## License
+
+This contribution follows the repository default licenses (see [`LICENSE`](LICENSE)):
+
+- Code: Apache License, Version 2.0.
+- Documentation: Creative Commons Attribution 4.0 International.
+- Data, if added later: CDLA Permissive 2.0.
