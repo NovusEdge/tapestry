@@ -1,0 +1,16 @@
+{
+  "name": "tapestry-spec",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quint formal specifications for Tapestry's load-bearing invariants (INV-1 pilot: spec/consortium).",
+  "scripts": {
+    "typecheck": "quint typecheck consortium/shared.qnt && quint typecheck consortium/compliant.qnt && quint typecheck consortium/compliant_test.qnt && quint typecheck consortium/leaky.qnt",
+    "run:compliant": "quint run --invariant=no_raw_data_crosses --verbosity=1 consortium/compliant.qnt && quint run --invariant=only_cpt_feeds_base --verbosity=1 consortium/compliant.qnt && quint run --invariant=weights_portable --verbosity=1 consortium/compliant.qnt",
+    "run:leaky:expect-violation": "! quint run --invariant=no_raw_data_crosses --verbosity=1 consortium/leaky.qnt",
+    "test": "quint test consortium/compliant_test.qnt --main compliantTest",
+    "spec:check": "npm run typecheck && npm run run:compliant && npm run test"
+  },
+  "devDependencies": {
+    "@informalsystems/quint": "0.32.0"
+  }
+}

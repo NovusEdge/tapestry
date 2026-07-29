@@ -1,0 +1,50 @@
+name: Spec coherence (Quint)
+
+on:
+  push:
+    branches:
+      - develop
+    paths:
+      - "spec/**"
+      - ".github/workflows/spec.yml"
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - "spec/**"
+      - ".github/workflows/spec.yml"
+
+jobs:
+  quint:
+    name: typecheck · run · test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: spec
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: spec/package-lock.json
+
+      - name: Install pinned Quint CLI
+        run: npm ci
+
+      - name: quint typecheck (every module)
+        run: npm run typecheck
+
+      - name: quint run — compliant protocol satisfies all invariants
+        run: npm run run:compliant
+
+      - name: quint run — leaky variant must VIOLATE no_raw_data_crosses
+        run: npm run run:leaky:expect-violation
+
+      - name: quint test — deterministic scenarios
+        run: npm run test
