@@ -3,33 +3,29 @@
 Status: draft requirements.
 
 This note supports issue
-[#27](https://github.com/The-AI-Alliance/tapestry/issues/27) by defining the
-minimum infrastructure requirements for managing datasets used in Tapestry
-training, tuning, alignment, and evaluation work. It focuses on what the
-infrastructure must make possible before the project chooses specific tools.
+[#27](https://github.com/The-AI-Alliance/tapestry/issues/27) by defining the minimum infrastructure requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what the infrastructure must make possible before the project chooses specific tools.
 
-The core requirement is simple: Tapestry needs to know what data exists, who can
-use it, where it may reside, what processing has happened to it, and what
-evidence can be shared without violating participant sovereignty.
+The core requirement is simple: Tapestry needs to know what data exists, who can use it, where it may reside, what processing has happened to it, and what evidence can be shared without violating participant sovereignty.
 
 ## Scope
 
 In scope:
 
-- dataset inventory and discovery;
-- provenance, lineage, licensing, consent, and allowed-use metadata;
-- governance controls for open, restricted, local-only, and participant-private
-  datasets;
-- preparation-state tracking from raw data through training-ready artifacts;
-- audit evidence for evaluation, certification, and release gates;
-- interoperability with participant-operated infrastructure.
+- Dataset inventory and discovery
+- Provenance, lineage, licensing, consent, and allowed-use metadata
+- Access controls for user access
+- Cost effective storage, but with acceptable performance
+- Governance controls for open, restricted, local-only, and participant-private datasets
+- Preparation-state tracking from raw data through training-ready artifacts and use
+- Audit evidence for evaluation, certification, and release gates
+- Interoperability with participant-operated infrastructure
 
 Out of scope:
 
-- selecting a production data catalog, storage backend, or policy engine;
-- implementing training infrastructure;
-- defining model-update privacy guarantees;
-- deciding contribution credit or benefit-sharing policy.
+- Selecting a production data catalog, storage backend, or policy engine
+- Implementing training infrastructure
+- Defining model-update privacy guarantees
+- Deciding contribution credit or benefit-sharing policy
 
 ## Requirement Summary
 
@@ -48,8 +44,10 @@ Out of scope:
 
 ## Core Data Model
 
-Every managed dataset or derived artifact should have a record with at least the
-following fields:
+Every managed dataset or derived artifact should have a record with at least the following fields.
+
+> [!NOTE]
+> We will probably standardize on the Croissant metadata format and tooling, so the following will be adapted accordingly.
 
 | Field | Description |
 | :---- | :---------- |
@@ -89,68 +87,54 @@ whether a dataset can be used for shared-base training.
 
 Data-management infrastructure should track processing state across the pipeline:
 
-1. Raw acquisition and source review.
-2. Extraction and normalization.
-3. Language identification and domain tagging.
-4. Quality filtering and deduplication.
-5. PII, safety, contamination, and policy screening.
-6. Conversion to training, tuning, preference, or evaluation formats.
-7. Snapshotting, hashing, and approval for a specific use.
+1. Raw acquisition and source review
+2. Extraction and normalization
+3. Language identification and domain tagging
+4. Quality filtering and deduplication
+5. PII, safety, contamination, and policy screening
+6. Conversion to training, tuning, preference, or evaluation formats
+7. Snapshotting, hashing, and approval for a specific use
+8. Secure, audited storage
 
-Each step should record the tool version, configuration, input snapshot, output
-snapshot, operator or job identity, and known caveats. This supports both
-reproducibility and rollback when a dataset must be withdrawn or corrected.
+Each step should record the tool version, configuration, input snapshot, output snapshot, operator or job identity, and known caveats. This supports both reproducibility and rollback when a dataset must be withdrawn or corrected.
 
 ## Tooling Considerations
 
-Issue #27 mentions Open Dataspaces as a possible source of ideas. The useful
-patterns for Tapestry are:
+Issues [#27](https://github.com/The-AI-Alliance/tapestry/issues/27) and [#195](https://github.com/The-AI-Alliance/tapestry/issues/195) mention [Open Data Spaces (ODS)](https://www.ipa.go.jp/en/digital/opendataspaces/) as a possible source of ideas and possibly a system we adopt. The useful patterns for Tapestry are:
 
-- separate data, identity, transaction, semantic, and onboarding layers;
-- interoperable SDKs and APIs rather than a single mandatory backend;
-- explicit handling of data products and participant boundaries;
-- metadata-first discovery before raw-data movement.
+- Separate data, identity, transaction, semantic, and onboarding layers
+- Interoperable SDKs and APIs rather than a single mandatory backend
+- Explicit handling of data products and participant boundaries
+- Metadata-first discovery before raw-data movement
 
-Tapestry does not need to commit to that implementation to adopt the patterns.
-Any selected tooling should satisfy the requirements above and work with
-participant-operated storage, catalogs, and policy systems.
+Tapestry does not need to commit to the ODS implementation to adopt the patterns. Any selected tooling should satisfy the requirements above and work with participant-operated storage, catalogs, and policy systems.
 
 ## Interfaces With Other Work Groups
 
-- **Security & Privacy:** consumes residency, visibility, and sensitivity
-  metadata to define privacy tiers and leakage controls.
-- **Infrastructure & Operations:** provides storage, compute, identity,
-  networking, secrets, and observability needed by the data workflows.
-- **Base Model Training:** consumes approved data snapshots, manifests, and
-  data-mix constraints.
-- **Sovereign Alignment:** consumes culturally grounded corpora, instruction
-  data, and preference records with provenance and reviewer caveats.
-- **Evaluation & Certification:** consumes dataset cards, hashes, review
-  evidence, release-gate inputs, and visibility-tiered reports.
-- **Governance & Participation:** defines stewardship, approval authority,
-  contribution credit, and dispute handling.
+- **Security & Privacy:** consumes residency, visibility, and sensitivity metadata to define privacy tiers and leakage controls.
+- **Infrastructure & Operations:** provides storage, compute, identity, networking, secrets, and observability needed by the data workflows.
+- **Base Model Training:** consumes approved data snapshots, manifests, and data-mix constraints.
+- **Sovereign Alignment:** consumes culturally grounded corpora, instruction data, and preference records with provenance and reviewer caveats.
+- **Evaluation & Certification:** consumes dataset cards, hashes, review evidence, release-gate inputs, and visibility-tiered reports.
+- **Governance & Participation:** defines stewardship, approval authority, contribution credit, and dispute handling.
 
 ## MVP Recommendation
 
 For the first implementation pass, prefer a lightweight workflow:
 
-1. Define the minimum dataset record schema.
-2. Store public examples and templates in the repository.
-3. Allow participant-private details to remain outside the repository.
-4. Use manifests, hashes, and attestations for local-only datasets.
-5. Export structured evidence that evaluation and release-gate checks can read.
+1. Define the minimum dataset record schema
+2. Store public examples and templates in the repository
+3. Allow participant-private details to remain outside the repository
+4. Use manifests, hashes, and attestations for local-only datasets
+5. Export structured evidence that evaluation and release-gate checks can read
 
-This path lets Tapestry start governing data before adopting a full data catalog
-or distributed data platform.
+This path lets Tapestry start governing data before adopting a full data catalog or distributed data platform.
 
 ## Open Decisions
 
-- Which fields are mandatory before a dataset can be used for each pipeline
-  stage?
+- Which fields are mandatory before a dataset can be used for each pipeline stage?
 - What visibility tier should be required for certification evidence?
 - Which policy checks are hard blockers versus reviewer warnings?
-- How should local-only participants prove processing quality without exposing
-  raw examples?
+- How should local-only participants prove processing quality without exposing raw examples?
 - What schema should become the machine-readable companion to dataset cards?
-- Which existing catalog or dataspace tools should be evaluated for the first
-  prototype?
+- Which existing catalog or dataspace tools should be evaluated for the first prototype?
