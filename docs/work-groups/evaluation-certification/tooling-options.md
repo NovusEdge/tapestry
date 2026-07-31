@@ -1,5 +1,12 @@
 # Policy and Evaluation Tooling Options
 
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Draft           |
+| Confidence  | Med. High (4/5) |
+| Created     | June 27, 2026   |
+| Last Update | July 31, 2026   |
+
 This note is a first-pass catalog for selecting tools that can implement
 Tapestry evaluation, evidence, and policy checks. It supports the Evaluation &
 Certification work group and issue

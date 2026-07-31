@@ -1,48 +1,44 @@
 # DocLang Evaluation
 
-Status: initial investigation.
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Preliminary     |
+| Confidence  | Medium (3/5)    |
+| Created     | June 27, 2026   |
+| Last Update | July 31, 2026   |
 
-This note supports issue
-[#67](https://github.com/The-AI-Alliance/tapestry/issues/67) by evaluating
-[DocLang](https://doclang.ai/) as a possible document format standard for
-Tapestry data preparation and training workflows.
+> [!NOTE]
+> This note supports the [Data Management Requirements](data-management-requirements.md) and [issue #67](https://github.com/The-AI-Alliance/tapestry/issues/67).
 
-DocLang is the open document-format specification being evaluated here.
-Docling is one converter/toolkit that can import and export DocLang; piloting
-DocLang should not imply that Tapestry requires Docling.
+[DocLang](https://doclang.ai/) is an open document format specification. [Issue #67](https://github.com/The-AI-Alliance/tapestry/issues/67) asks if we should use it as the preferred document format standard for Tapestry data preparation, storage, and workflows.
+
+DocLang came out of the [Docling](https://www.docling.ai/) project, a document parsing and conversion toolkit, which can import and export DocLang, among other formats. Whether or not we use DocLing is an independent decision.
+
+We begin with our summary recommendation, then provide background information.
 
 ## Summary Recommendation
 
-Do not adopt DocLang as the required Tapestry document format yet. It is
-promising enough to pilot for document-heavy corpora, but the current format is
-still pre-1.0 and should be treated as an experimental interchange option until
-the project validates conversion quality, governance metadata, media handling,
-tooling maturity, and cost of adoption.
+We researched DocLang, but didn't prototype use of it.
 
-Recommended near-term position:
+Our recommendation is to postpone a decision on adopting DocLang as the required Tapestry document format. It is promising enough to pilot for document-heavy corpora, but the current format is still pre-1.0 and should be treated as an experimental interchange option until the project validates conversion quality, governance metadata, media handling,
+tooling maturity, and cost of adoption. Also, Tapestry requirements for data processing and storage are still being developed, which would affect the choice of formats and tools.
 
-- use DocLang in a small pilot for PDF, HTML, scanned, and table-heavy
-  documents;
-- keep JSONL or Parquet as the prepared training-data interchange format for
-  near-term pipeline work;
-- require converters to preserve Tapestry provenance, rights, residency, and
-  allowed-use metadata;
-- revisit standardization after the pilot produces quality, cost, and tooling
-  evidence.
+### Recommended Near-term Actions
 
-## What DocLang Is
+- Use DocLang in a small pilot for PDF, HTML, scanned, and table-heavy
+  documents.
+- Keep JSONL or Parquet as the prepared training-data interchange format for near-term pipeline work.
+- Require converters to preserve Tapestry provenance, rights, residency, and allowed-use metadata.
+- Revisit standardization after the pilot produces quality, cost, and tooling evidence.
 
-DocLang is an XML-based document markup format designed for model consumption.
-The official specification describes version 0.7 and focuses on representing
-document structure, semantics, geometry, formatting, and complex document
-components such as tables, charts, formulas, code, forms, pictures, audio
-transcripts, and video segments.
+## What Is DocLang?
+
+DocLang is an XML-based document markup format designed for model consumption. The official specification describes version 0.7 and focuses on representing document structure, semantics, geometry, formatting, and complex document components such as tables, charts, formulas, code, forms, pictures, audio transcripts, and video segments.
 
 The format is intentionally more structured than plain Markdown and more
-token-conscious than general HTML. It also includes governance and compliance
-metadata concepts that are relevant to Tapestry data-governance requirements.
+token-conscious than general HTML. It also includes governance and compliance metadata concepts that are relevant to Tapestry data-governance requirements.
 
-## Evaluation Against Issue Questions
+## Evaluation Against Questions in Issue #67
 
 | Question | Initial answer | Notes |
 | :------- | :------------- | :---- |
@@ -54,25 +50,22 @@ metadata concepts that are relevant to Tapestry data-governance requirements.
 
 ## Potential Fit For Tapestry
 
-DocLang is most relevant for:
+DocLang is most relevant for the following:
 
-- converting PDF, HTML, scanned, form-heavy, table-heavy, and layout-sensitive
-  corpora into a consistent intermediate representation;
-- retaining page geometry and document structure for review and extraction
-  audits;
-- preparing corpora where tables, formulas, code blocks, captions, images, and
-  forms should not collapse into plain text;
-- carrying machine-readable governance metadata alongside document content;
-- supporting reproducible extraction before later conversion into prepared
+- Converting PDF, HTML, scanned, form-heavy, table-heavy, and layout-sensitive corpora into a consistent intermediate representation.
+- Retaining page geometry and document structure for review and extraction
+  audits.
+- Preparing corpora where tables, formulas, code blocks, captions, images, and forms should not collapse into plain text.
+- Carrying machine-readable governance metadata alongside document content.
+- Supporting reproducible extraction before later conversion into prepared
   training records.
 
-DocLang is less necessary for:
+DocLang is less useful for following:
 
-- already-clean text corpora;
-- instruction or preference records that are already structured;
-- datasets where the source document layout has no training or audit value;
-- final tokenized training artifacts, where the model pipeline needs compact
-  tensors or packed records rather than document markup.
+- Already-clean text corpora.
+- Instruction or preference records that are already structured.
+- Datasets where the source document layout has no training or audit value.
+- Final tokenized training artifacts, where the model pipeline needs compact tensors or packed records rather than document markup.
 
 ## Adoption Risks
 
@@ -87,42 +80,30 @@ DocLang is less necessary for:
 
 ## Pilot Plan
 
-1. Choose a small corpus with varied source formats: PDF, HTML, scanned pages,
-   tables, formulas, images, forms, audio, and video.
-2. Convert the corpus into DocLang and into the current baseline extraction
-   format.
-3. Compare content fidelity, table fidelity, metadata preservation, token cost,
-   converter runtime, and review effort.
-4. Map Tapestry dataset-card fields into DocLang metadata or a companion
-   manifest.
-5. Convert DocLang outputs into prepared JSONL or Parquet records for a small
-   training or evaluation task.
-6. Decide whether to standardize a Tapestry DocLang profile, continue piloting,
-   or reject the format for now.
+1. Choose a small corpus with varied source formats: PDF, HTML, scanned pages, tables, formulas, images, forms, audio, and video.
+2. Convert the corpus into DocLang and into the current baseline extraction format.
+3. Compare content fidelity, table fidelity, metadata preservation, token cost, converter runtime, and review effort.
+4. Map Tapestry dataset-card fields into DocLang metadata or a companion manifest.
+5. Convert DocLang outputs into prepared JSONL or Parquet records for a small training or evaluation task.
+6. Decide whether to standardize a Tapestry DocLang profile, continue piloting, or reject the format for now.
 
 ## Minimum Acceptance Criteria
 
 Before Tapestry adopts DocLang beyond pilot use, it should demonstrate:
 
-- stable-enough versioning for committed corpora or a clear migration plan;
-- reliable conversion from the document types participants expect to contribute;
-- preservation of Tapestry provenance, license, residency, allowed-use, and
-  visibility metadata;
-- measurable improvement over current extraction for at least one important
-  corpus type;
-- a reversible or auditable path from source document to prepared training
-  record;
-- compatibility with participant-private and local-only workflows;
-- clear handling for images, charts, audio, video, and companion media
+- A stable-enough versioning of committed corpora or a clear migration plan.
+- Reliable conversion from the document types participants expect to contribute.
+- Preservation of Tapestry-mandated provenance, license, residency, allowed-use, and visibility metadata.
+- Measurable improvement over current extraction for at least one important corpus type.
+- A reversible or auditable path from source document to prepared training record.
+- Compatibility with participant-private and local-only workflows.
+- Clear handling for images, charts, audio, video, and companion media
   artifacts.
 
 ## Open Decisions
 
 - Should Tapestry define a DocLang profile with a restricted subset of elements?
-- Should governance metadata live inside DocLang, in a companion manifest, or
-  both?
-- Which converter or converters should be used for pilots, and how do we avoid
-  making Docling a required dependency unless later evidence supports that?
+- Should governance metadata live inside DocLang, in a companion manifest, or both?
+- Which converter or converters should be used for pilots, and how do we avoid making Docling a required dependency unless later evidence supports that choice?
 - What corpus should be used for the first conversion benchmark?
-- How should non-document media be linked to source, provenance, and prepared
-  training artifacts?
+- How should non-document media be linked to source, provenance, and prepared training artifacts?

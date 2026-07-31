@@ -1,5 +1,12 @@
 # PyTorch Alternatives — A Comparison
 
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Proposed        |
+| Confidence  | Med. High (4/5) |
+| Created     | July 08, 2026   |
+| Last Update | July 31, 2026   |
+
 This is an analysis of PyTorch and alternatives for LLM _training_ (not inference). It was prepared by [Dean Wampler](mailto:dwampler@thealliance.ai), July 8, 2026, using [IBM Bob](https://bob.ibm.com/), supplemented by additional web searches. (The underlying LLMs used by Bob are not revealed to the user.)
 
 The session used two prompts with the responses captured below (lightly edited). The document ends with a postscript written by Dean.

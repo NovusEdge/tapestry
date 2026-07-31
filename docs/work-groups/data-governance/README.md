@@ -2,7 +2,16 @@
 
 ## Purpose
 
-Define how sovereign data can participate in Tapestry without surrendering control. This group owns data sourcing, licensing, stewardship, residency constraints, provenance, contribution rights, and data-quality expectations for national, cultural, industrial, and institutional participants.
+This work group defines how sovereign data can participate in Tapestry without surrendering control. It owns requirements for data sourcing, licensing, stewardship, residency constraints, provenance, contribution rights, and data-quality expectations for national, cultural, industrial, and institutional participants.
+
+For our purposes, _data_ also includes artifacts like model weights and deliverables, and it includes metadata associated with datasets, models, and deliverables.
+
+[Data Governance Requirements](data-governance-requirements.md) explores the details.
+
+> [!TODO]
+> When considering how to implement governance requirements, _derived requirements_ emerge that focus on architecture, design, and implementation details. _We consider these requirements the responsibility of the [Infrastructure & Operations](../infrastructure-operations/) work group._
+>
+> However, at this time, the data governance work group directory contains [Data Management Requirements](data-management-requirements.md), which includes many of these derived requirements, so it is easier to explore them together. We plan to eventually move the data management requirements to Infrastructure & Operations.
 
 ## Why it exists
 
@@ -16,26 +25,28 @@ This work group traces to [Phase 2 pain points](../../architecture/2-pain-points
 - Data-quality criteria for culturally grounded continued pretraining and domain specialization.
 - Interfaces for audit evidence and certification.
 
-Out of scope: implementing training infrastructure, defining model-update privacy guarantees, or deciding governance rights for non-data contributions.
+## Out of scope
+
+- The architecture, design, and implementation decisions to meet the data governance requirements. (However, see [Data Management Requirements](data-management-requirements.md))
+- Defining model-update privacy guarantees.
+- Deciding governance rights for non-data contributions.
+
 
 ## Initial questions
 
-- What metadata must accompany every dataset or corpus before it can be used?
 - How should Tapestry distinguish open data, sovereign data, community-held data, and private institutional data?
-- What contribution rights or benefit-sharing claims attach to data, and how are they recorded?
+- What contribution rights or benefit-sharing claims attach to data.
+- What additional metadata must accompany every dataset?
 - What minimum provenance evidence is needed for certification?
 
 ## Early deliverables
 
-- A data-tier taxonomy for Tapestry participants.
-- [Data management infrastructure requirements](data-management-infrastructure.md).
-- A minimum dataset card / provenance record template.
-- A list of blocked-data scenarios where raw data must never leave the participant.
-- Requirements handed to Security & Privacy and Infrastructure & Operations.
-
-## Related evaluations
-
-- [DocLang evaluation](doclang-evaluation.md).
+- [Data governance requirements](data-governance-requirements.md), including coverage of:
+    - A data-tier taxonomy for Tapestry participants.
+	- A list of blocked-data scenarios where raw data must never leave a sovereign boundary (including through model memorization!).
+- Derived [data management requirements](data-management-requirements.md).
+	- A minimum dataset card template.
+	- Requirements handed to [Security & Privacy](../security-privacy/) and [Infrastructure & Operations](../infrastructure-operations/).
 
 ## Interfaces
 
@@ -44,3 +55,5 @@ Out of scope: implementing training infrastructure, defining model-update privac
 - **Sovereign Alignment:** culturally grounded corpora and preference data.
 - **Evaluation & Certification:** audit evidence for data sovereignty claims.
 - **Governance & Participation:** contribution credit and benefit-sharing rules.
+- **Infrastructure & Operations:** how these requirements are implemented.
+

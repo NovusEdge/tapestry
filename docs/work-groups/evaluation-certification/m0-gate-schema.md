@@ -1,5 +1,12 @@
 # M0 Evaluation Gate Schema
 
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Proposal        |
+| Confidence  | Medium (3/5)    |
+| Created     | July 04, 2026   |
+| Last Update | July 31, 2026   |
+
 Issue [#119](https://github.com/The-AI-Alliance/tapestry/issues/119) calls
 for a minimally sufficient M0 evaluation framework before Tapestry commits to
 a full benchmark stack. The first production artifact is the tool-neutral gate
