@@ -3,10 +3,9 @@ include .website.mk
 include .formal-spec.mk
 
 define help-top-level-message
-For additional help:
+${HIGHLIGHT}For additional help:${_END}
 
 ${CODE}make help-targets${_END}       # Print help on custom targets, e.g., demonstration commands, etc. (including "contribs").
-${CODE}make help-website${_END}       # Print help for the documentation website.
 endef
 
 define help_top_level_targets_message
