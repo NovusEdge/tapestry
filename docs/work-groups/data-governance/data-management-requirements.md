@@ -5,7 +5,7 @@
 | Status      | Draft           |
 | Confidence  | Medium (3/5)    |
 | Created     | June 27, 2026   |
-| Last Update | July 31, 2026   |
+| Last Update | August 03, 2026 |
 
 > [!NOTE]
 > The requirements in this document are _derived_ in part from the [Data Governance Requirements](data-governance-requirements.md), because they bridge those high-level requirements to the architecture, design, and implementation details needed to meet them. (This document also covers other data-related requirements.) Some terms are defined in that document.
@@ -33,6 +33,7 @@ This document supports issue [#27](https://github.com/The-AI-Alliance/tapestry/i
 
 ## Requirements (Draft)
 
+> [!NOTE]
 > * "DM" - Data Management
 > * "DG" - Data Governance
 > * "Parents" - Parent requirements, if any, from which this requirement is a derivative. From [Data Governance Requirements](data-governance-requirements.md) unless otherwise noted.
