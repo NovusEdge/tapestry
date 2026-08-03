@@ -8,29 +8,14 @@ For our purposes, _data_ also includes artifacts like model weights and delivera
 
 [Data Governance Requirements](data-governance-requirements.md) explores the details.
 
-> [!TODO]
-> When considering how to implement governance requirements, _derived requirements_ emerge that focus on architecture, design, and implementation details. _We consider these requirements the responsibility of the [Infrastructure & Operations](../infrastructure-operations/) work group._
+> [!NOTE]
+> When considering how to implement governance requirements, _derived requirements_ for data management emerge that focus on architecture, design, and implementation details. _We consider these requirements the responsibility of the [Infrastructure & Operations](../infrastructure-operations/) work group._
 >
-> However, at this time, the data governance work group directory contains [Data Management Requirements](data-management-requirements.md), which includes many of these derived requirements, so it is easier to explore them together. We plan to eventually move the data management requirements to Infrastructure & Operations.
+> However, at this time, the data governance work group directory contains [Data Management Requirements](data-management-requirements.md), which include many of these derived requirements, so it is easier to explore them together. Our plan is to eventually move the data management requirements to Infrastructure & Operations (feedback welcome on this idea).
 
 ## Why it exists
 
 This work group traces to [Phase 2 pain points](../../architecture/2-pain-points.md) around data residency, cultural extraction, locked corpora, and enterprise compliance walls. It is also a prerequisite for the core-plus-sovereign architecture in [TAP-001](../../architecture/decisions/adr-001-core-plus-sovereign.md) and the consortium training model in [TAP-002](../../architecture/decisions/adr-002-consortium-training.md).
-
-## Scope
-
-- Data contribution models: open, restricted, local-only, and participant-private.
-- Dataset provenance, consent, attribution, licensing, and usage constraints.
-- Residency and sovereignty requirements that downstream training and evaluation must respect.
-- Data-quality criteria for culturally grounded continued pretraining and domain specialization.
-- Interfaces for audit evidence and certification.
-
-## Out of scope
-
-- The architecture, design, and implementation decisions to meet the data governance requirements. (However, see [Data Management Requirements](data-management-requirements.md))
-- Defining model-update privacy guarantees.
-- Deciding governance rights for non-data contributions.
-
 
 ## Initial questions
 

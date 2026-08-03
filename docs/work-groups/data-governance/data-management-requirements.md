@@ -14,9 +14,9 @@
 
 This document supports issue [#27](https://github.com/The-AI-Alliance/tapestry/issues/27) by defining the first iteration ("V0.1") of the data governance requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what the infrastructure must make possible before the project chooses specific tools.
 
-## Scope
+## Scope of This Document
 
-In scope:
+### In Scope
 
 - Specification and selection of data catalog, storage, and other capabilities.
 - Enforcement of dataset usage categories.
@@ -26,12 +26,12 @@ In scope:
 - Auditing of all aspects of dataset usage and life cycle tracking.
 - Characteristics of cost-effective storage, but with acceptable performance.
 
-Out of scope:
+### Out of Scope
 
 - Training infrastructure.
 - Other infrastructure agnostic to data management details.
 
-## Draft Requirements
+## Requirements (Draft)
 
 > * "DM" - Data Management
 > * "DG" - Data Governance

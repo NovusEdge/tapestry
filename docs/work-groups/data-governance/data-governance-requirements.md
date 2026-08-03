@@ -7,33 +7,34 @@
 | Created     | June 27, 2026   |
 | Last Update | July 31, 2026   |
 
-This note supports issue [#211](https://github.com/The-AI-Alliance/tapestry/issues/211) by defining the first iteration ("V0.1") of the data governance requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what Tapestry must do to enable the use of datasets with various constraints on permissible use.
+This document supports issue [#211](https://github.com/The-AI-Alliance/tapestry/issues/211) by defining the first iteration ("V0.1") of the data governance requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what Tapestry must do to enable the use of datasets with various constraints on permissible use.
 
 The core requirement is simple: Tapestry needs to know what data exists, who can use it, where it may reside, what processing has happened to it, and what evidence can be shared without violating participant sovereignty.
 
-From these governance requirements, [Data Management Requirements](data-management-requirements.md) can be derived that guide architecture, design, and implementation choices.
+From these governance requirements, [Data Management Requirements](data-management-requirements.md) are being derived that guide architecture, design, and implementation choices.
 
-## Scope
+## Scope of This Document
 
-In scope:
+### In scope:
 
-- Definitions of dataset usage categories, including provenance, lineage, licensing, consent, and allowed-use metadata.
+- Definitions of dataset contribution/usage categories, including  metadata such as provenance, lineage, licensing, consent, and allowed-usage constraints.
+- Residency and sovereignty requirements that downstream training and evaluation must respect.
+- Data-quality criteria for culturally grounded continued pretraining and domain specialization.
 - Access controls for user access.
 - Cost and performance constraints.
-- Tracking of dataset life cycles, from discovery, preparation, transformation through pre- and post-training use.
-- Audit evidence for evaluation, certification, and release gates.
+- Tracking of dataset life cycles, from discovery, preparation, transformation through pre- and post-training use, providing audit evidence for evaluation, certification, and release gates.
 - Interoperability with participant-operated infrastructure.
 
-Out of scope:
+### Out of Scope
 
-- Selecting a production data catalog, storage backend, or policy engine
-- Implementing training infrastructure
-- Defining model-update privacy guarantees
+- The architecture, design, and implementation decisions to meet the data governance requirements.
+- Defining model-update privacy guarantees.
+- Deciding governance rights for non-data contributions.
 - Deciding contribution credit or benefit-sharing policy
 
 See [Data Management Requirements](data-management-requirements.md) for these topics.
 
-## Definitions of Governance Controls
+## Definitions of Contribution/Usage Categories and Their Governance Controls
 
 The infrastructure should support four broad participation modes:
 
@@ -46,7 +47,7 @@ The infrastructure should support four broad participation modes:
 
 These modes should be enforceable through both policy and workflow design. For example, the setup process for a training job should explicitly control which datasets are to be used, based for example on restriction criteria, target use cases (e.g., for domain-specific, tuned models), etc. This governance should be transparent to the training process itself, except for general requirements to track data usage, etc.
 
-## Draft Requirements
+## Requirements (Draft)
 
 Most of these requirements require further details to be defined.
 
