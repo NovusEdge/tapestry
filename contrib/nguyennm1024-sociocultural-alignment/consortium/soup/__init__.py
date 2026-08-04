@@ -1,4 +1,5 @@
 """Model soup -- v1 consortium method (weight-space averaging)."""
+
 from ..base import ConsortiumMethod, Member
 from .model_soup import average_weights
 

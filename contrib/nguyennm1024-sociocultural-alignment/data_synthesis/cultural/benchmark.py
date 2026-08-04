@@ -4,12 +4,12 @@ Runs a fixed batch of cultural questions at several concurrency levels and print
 a comparison table. The first level (`1`) is the sequential baseline; later
 levels measure parallel speedup.
 """
+
 import argparse
 import time
 
 from core import synthesize
 from cultural.personas import get_persona
-
 
 QUESTIONS = [
     "What does April 30 mean to Vietnam?",
@@ -49,13 +49,16 @@ QUESTIONS = [
 
 def run(concurrency: int) -> dict:
     import sys
+
     t0 = time.time()
+
     def progress(done: int, total: int) -> None:
         print(
             f"  [conc={concurrency}] {done}/{total} ({time.time() - t0:.1f}s)",
             file=sys.stderr,
             flush=True,
         )
+
     system_prompt = get_persona("vietnamese")
     records = synthesize(
         QUESTIONS,
@@ -92,8 +95,7 @@ def main() -> None:
 
     print(f"benchmark: {len(QUESTIONS)} questions, persona=vietnamese\n")
     print(
-        f"{'CONC':>6} {'WALL_S':>8} {'OK':>4} {'ERR':>4} "
-        f"{'COMP_TOK':>10} {'TOK/S':>9} {'S/CALL':>8} {'SPEEDUP':>8}"
+        f"{'CONC':>6} {'WALL_S':>8} {'OK':>4} {'ERR':>4} " f"{'COMP_TOK':>10} {'TOK/S':>9} {'S/CALL':>8} {'SPEEDUP':>8}"
     )
     baseline_wall = None
     for level in args.levels:

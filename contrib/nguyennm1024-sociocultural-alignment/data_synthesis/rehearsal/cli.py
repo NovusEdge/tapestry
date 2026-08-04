@@ -13,6 +13,7 @@ Usage:
     python -m rehearsal.cli assemble                                  # not yet implemented
     python -m rehearsal.cli pilot                                     # not yet implemented
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,6 +22,7 @@ import sys
 
 def _cmd_download(args: argparse.Namespace) -> int:
     from .data.download import run_download
+
     results = run_download(
         train_only=args.train_only,
         test_only=args.test_only,
@@ -31,6 +33,7 @@ def _cmd_download(args: argparse.Namespace) -> int:
 
 def _cmd_decontam_build(args: argparse.Namespace) -> int:
     from .data.decontam import build_index
+
     only = args.only.split(",") if args.only else None
     build_index(out_path=args.out, only=only)
     return 0
@@ -38,9 +41,12 @@ def _cmd_decontam_build(args: argparse.Namespace) -> int:
 
 def _cmd_questions_extract(args: argparse.Namespace) -> int:
     from .data.extract import extract_all, EXTRACTORS
+
     if args.source and args.source not in EXTRACTORS:
-        print(f"error: no extractor registered for source '{args.source}'. "
-              f"Available: {sorted(EXTRACTORS)}", file=sys.stderr)
+        print(
+            f"error: no extractor registered for source '{args.source}'. " f"Available: {sorted(EXTRACTORS)}",
+            file=sys.stderr,
+        )
         return 2
     results = extract_all(
         category_filter=args.category,
@@ -48,8 +54,7 @@ def _cmd_questions_extract(args: argparse.Namespace) -> int:
         limit_per_source=args.limit,
     )
     print("", file=sys.stderr)
-    print(f"[questions extract] summary: {len(results)} source(s) processed",
-          file=sys.stderr)
+    print(f"[questions extract] summary: {len(results)} source(s) processed", file=sys.stderr)
     for name, n in sorted(results.items()):
         print(f"  {name}: {n}", file=sys.stderr)
     any_failed = any(n == -1 for n in results.values())
@@ -79,27 +84,23 @@ def main(argv: list[str] | None = None) -> int:
     sp.set_defaults(func=_cmd_download)
 
     # decontam-build ------------------------------------------------------
-    sp = sub.add_parser("decontam-build",
-                        help="Build the exact + 13-gram decontam index.")
-    sp.add_argument("--only", default=None,
-                    help="Comma-separated DecontamTestset names to index.")
+    sp = sub.add_parser("decontam-build", help="Build the exact + 13-gram decontam index.")
+    sp.add_argument("--only", default=None, help="Comma-separated DecontamTestset names to index.")
     from .data.decontam import DEFAULT_INDEX_PATH
-    sp.add_argument("--out", default=str(DEFAULT_INDEX_PATH),
-                    help=f"Output pickle path (default: {DEFAULT_INDEX_PATH}).")
+
+    sp.add_argument(
+        "--out", default=str(DEFAULT_INDEX_PATH), help=f"Output pickle path (default: {DEFAULT_INDEX_PATH})."
+    )
     sp.set_defaults(func=_cmd_decontam_build)
 
     # questions (with sub-operations) ------------------------------------
     qp = sub.add_parser("questions", help="Build the per-category question pool.")
     qsub = qp.add_subparsers(dest="questions_op", required=True)
 
-    qe = qsub.add_parser("extract",
-                         help="Extract questions from cached public HF datasets.")
-    qe.add_argument("--source", default=None,
-                    help="Single source name. Omit to run all wired sources.")
-    qe.add_argument("--category", default=None,
-                    help="Restrict to one category (e.g. mmlu_shaped).")
-    qe.add_argument("--limit", type=int, default=None,
-                    help="Cap rows per source (useful for spot-checks).")
+    qe = qsub.add_parser("extract", help="Extract questions from cached public HF datasets.")
+    qe.add_argument("--source", default=None, help="Single source name. Omit to run all wired sources.")
+    qe.add_argument("--category", default=None, help="Restrict to one category (e.g. mmlu_shaped).")
+    qe.add_argument("--limit", type=int, default=None, help="Cap rows per source (useful for spot-checks).")
     qe.set_defaults(func=_cmd_questions_extract)
 
     for op, help_text in [

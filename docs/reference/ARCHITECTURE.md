@@ -4,6 +4,40 @@ A single-page synthesis of Tapestry's architecture — the structural decisions 
 
 > **Status:** The ADRs this reference summarizes are currently **proposed** (to be ratified at the design workshop). Treat this document as the consolidated view of the current design, not a frozen specification. The ADRs under [`../architecture/decisions/`](../architecture/decisions/README.md) are the source of truth; where this page and an ADR disagree, the ADR wins.
 
+```mermaid
+flowchart LR
+  OW(["Open-weights\nbase model"]):::base
+  subgraph LOOP["Shared-Base Loop — collective · iterative (Phase 1)"]
+    direction TB
+    N1["Contributed CPT\nmember 1"]:::collective
+    N2["Contributed CPT\nmember N"]:::collective
+    COORD{{"Coordinator\nFedAvg-class merge"}}:::coord
+  end
+  SB[("Shared Base")]:::base
+  subgraph BUILD["Sovereign Build — per member · local (Phase 2)"]
+    direction TB
+    SA["Stage A Private CPT"]:::sovereign
+    SBC["Stages B–C\nAlignment & SFT"]:::sovereign
+  end
+  SM(["Sovereign Model\n× N"]):::model
+
+  OW -->|"Phase 1 seed"| LOOP
+  N1 -->|weights| COORD
+  N2 -->|weights| COORD
+  COORD --> SB
+  SB -->|"base checkpoint"| LOOP
+  SB --> BUILD
+  SA --> SBC --> SM
+
+  classDef base fill:#2c7da0,stroke:#a9d6e5,color:#fff,stroke-width:2px
+  classDef collective fill:#1b4965,stroke:#62b6cb,color:#fff,stroke-width:2px
+  classDef coord fill:#2a9d8f,stroke:#8fd9cf,color:#fff,stroke-width:2px
+  classDef sovereign fill:#5e548e,stroke:#9f86c0,color:#fff,stroke-width:2px
+  classDef model fill:#7b6aae,stroke:#e0c3fc,color:#fff,stroke-width:2px
+```
+
+*High-level flow: an open-weights base seeds the Shared-Base Loop, which produces a continuously improving Shared Base (the "1"). Each member's Sovereign Build turns the Shared Base into its own culturally-aligned Sovereign Model (the "N"). Raw data never leaves a node; only Contributed CPT weight vectors cross the wire.*
+
 ---
 
 ## Core-Plus-Sovereign Architecture
@@ -103,6 +137,8 @@ Where the base model comes from is a phased decision ([TAP-006](../architecture/
 
 Sovereign contributions are designed to be **portable across base models**, so the Phase 1 → Phase 2 transition does not discard participants' work. This satisfies anti-capture (DG3) in the temporal sense — "we can switch" — even before instantaneous independence.
 
+**Selecting a base model** is addressed by [TAP-009](../architecture/decisions/adr-009-goal-derived-base-model-selection.md), which defines a goal-derived, multi-view methodology: non-compensable gates first (legal permission, checkpoint type, operational feasibility), then weighted scoring across six evaluation dimensions from three sovereignty perspectives (national, socio-cultural, industrial). The methodology produces comparable rankings rather than a single mandatory choice; participating nodes make the final experiment decision.
+
 ---
 
 ## Cultural Alignment Is the Differentiator
@@ -129,17 +165,65 @@ Tapestry fully supports a spectrum of data-use constraints ([TAP-008](../archite
 
 ## Source Code Structure
 
-The Python package is organized around three subsystems, matching the architecture:
+The Python package is organized around four subsystems, matching the architecture:
 
 ```
 src/tapestry/
 ├── data/              # Data governance, sovereignty enforcement, consent/provenance
 ├── training/          # Consortium training and the sovereign pipeline
 │   └── consortium/    # Implemented slice: coordinator, node, policy, messages, model
+├── evaluation/        # M0 evaluation gate: benchmark specs, result bundles, go/no-go decisions
 └── infrastructure/    # Supporting infrastructure for sovereign nodes
 ```
 
-The implemented slice today is `training/consortium/` (governed shared-base integration, sovereign training nodes, anti-capture contribution weighting). New code should stay aligned with the data / training / infrastructure split.
+The implemented slices today are:
+
+- **`training/consortium/`** — governed shared-base integration, sovereign training nodes (`SovereignTrainingNode`), contribution weighting (`ContributionPolicy`), and the `TinyCausalModel` demo model. See the [PoC README](../../src/tapestry/training/consortium/README.md) for the full module map.
+- **`evaluation/`** — the tool-neutral evaluation gate (`EvaluationGate`, `BenchmarkSpec`, `EvaluationResult`, `EvaluationBundle`). Benchmark runners produce `EvaluationResult` records; the gate produces a deterministic go/no-go `GateDecision`. See the [evaluation gate schema](../work-groups/evaluation-certification/evaluation-gate-schema.md) for the design and usage example.
+
+New code should stay aligned with the data / training / evaluation / infrastructure split.
+
+---
+
+## Open Commons and Sovereign Assets
+
+Tapestry is committed to both an open Shared Commons and participant sovereignty ([TAP-010](../architecture/decisions/adr-010-open-commons-sovereign-assets.md)). These commitments are complementary:
+
+```mermaid
+flowchart LR
+  subgraph COMMONS["Shared Commons — open and independently usable"]
+    direction TB
+    SC1["Source code &\nshared infrastructure"]:::commons
+    SC2["Protocols, schemas,\ninteroperability specs"]:::commons
+    SC3["Shared Base releases\n& evaluation criteria"]:::commons
+  end
+
+  subgraph SOVEREIGN["Participant Sovereign Assets — participant-controlled"]
+    direction TB
+    SA1["Raw & curated data\n(sovereign, private, controlled)"]:::sovereign
+    SA2["Private CPT, post-training\n& alignment artifacts"]:::sovereign
+    SA3["Sovereign Models\n& commercial derivatives"]:::sovereign
+  end
+
+  W(["Weight update\n(no raw data)"]):::weights
+
+  COMMONS -->|"base checkpoint"| W
+  W -->|"Contributed CPT\nweights only"| COMMONS
+  SOVEREIGN -. "stays local" .-> SOVEREIGN
+
+  classDef commons fill:#2d6a4f,stroke:#1b4332,color:#fff,stroke-width:2px
+  classDef sovereign fill:#5e548e,stroke:#4a4170,color:#fff,stroke-width:2px
+  classDef weights fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332,stroke-width:2px
+```
+
+The governing principle is **"open where we share; sovereign where participants retain control."**
+
+| Domain | What it contains | Default |
+| :----- | :--------------- | :------ |
+| **Shared Commons** | Tapestry-created code, protocols, Shared Base releases, public governance rules | Open, permissively licensed, non-exclusive |
+| **Participant Sovereign Assets** | Raw data, Private CPT, post-training artifacts, Sovereign Models, commercial derivatives | Controlled by the participant — no contribution-back requirement |
+
+Weight contribution does not transfer data rights. Only model weight updates cross the network; contributing weights neither discloses nor licenses the underlying training data. Contributions must still satisfy applicable legality, consent, provenance, quality, safety, and compatibility requirements before entering the Shared Base.
 
 ---
 

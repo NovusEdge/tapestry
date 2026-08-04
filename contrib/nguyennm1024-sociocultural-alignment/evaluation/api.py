@@ -13,6 +13,7 @@ NOTE: the suites are GPU/vLLM jobs that currently assume the Docker mount
 (``/workspace``). Wiring ``_run_mmlu`` / ``_run_iw`` to dispatch them (in-process or
 via the eval image) is the path-portability follow-up; the contract below is stable.
 """
+
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -22,9 +23,9 @@ SUITES = ("mmlu", "iw")
 @dataclass
 class EvalReport:
     model: str
-    mmlu_acc: Optional[float] = None        # full-set MMLU accuracy (%)
-    iw_distance: Optional[float] = None      # Euclidean distance to the target country
-    iw_items: dict = field(default_factory=dict)   # per-WVS-item means
+    mmlu_acc: Optional[float] = None  # full-set MMLU accuracy (%)
+    iw_distance: Optional[float] = None  # Euclidean distance to the target country
+    iw_items: dict = field(default_factory=dict)  # per-WVS-item means
     extra: dict = field(default_factory=dict)
 
 
@@ -40,13 +41,9 @@ def evaluate(model_path: str, tag: str, suites=SUITES, target: str = "Vietnam") 
 
 def _run_mmlu(model_path: str, tag: str) -> float:
     """Full-set MMLU via evaluation/zs_full_mmlu.py (vLLM). Returns accuracy (%)."""
-    raise NotImplementedError(
-        "Wire to evaluation/zs_full_mmlu.py (Docker/vLLM); see the path-portability follow-up."
-    )
+    raise NotImplementedError("Wire to evaluation/zs_full_mmlu.py (Docker/vLLM); see the path-portability follow-up.")
 
 
 def _run_iw(model_path: str, tag: str, target: str = "Vietnam"):
     """IW projection via evaluation/iw/ (iw_gen_tao + iw_project). Returns (distance, item means)."""
-    raise NotImplementedError(
-        "Wire to evaluation/iw/ (Docker/vLLM); see the path-portability follow-up."
-    )
+    raise NotImplementedError("Wire to evaluation/iw/ (Docker/vLLM); see the path-portability follow-up.")

@@ -7,14 +7,14 @@ from collections.abc import Sequence
 
 from torch import nn
 
-from .node import SovereignTrainingNode
-from .policy import ContributionPolicy
 from .merge import OuterMerge
 from .messages import (
     ConsortiumRoundResult,
     ModelState,
     SovereignModelArtifact,
 )
+from .node import SovereignTrainingNode
+from .policy import ContributionPolicy
 
 
 class ConsortiumCoordinator:
@@ -69,3 +69,18 @@ class ConsortiumCoordinator:
             contribution_weights=weights,
             outer_merge_strategy=self.outer_merge.strategy.value,
         )
+
+    @staticmethod
+    def _apply_weighted_average(
+        local_states_by_node: dict[str, ModelState],
+        weights: dict[str, float],
+    ) -> ModelState:
+        """FedAvg-class weighted average of contributed local model weight vectors."""
+        sample_state = next(iter(local_states_by_node.values()))
+        next_state: ModelState = {}
+        for name, _base_tensor in sample_state.items():
+            averaged = torch.zeros_like(_base_tensor)
+            for node_id, weight in weights.items():
+                averaged = averaged + local_states_by_node[node_id][name] * weight
+            next_state[name] = averaged
+        return next_state

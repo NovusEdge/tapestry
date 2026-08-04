@@ -187,13 +187,18 @@ the master `make` process works and the customizations you might need to "global
 
 ### Before You Submit a PR...
 
-Before submitting a PR, please make these "quality" targets: `format`, `lint` (which makes `ruff` and `pylint`), `type-check`, and `tests`. This needs to be done in both the _production_ `src` tree and all the `contrib` contributions. Use the convenient make target `before-pr`, which handles all of them for you:
+Before submitting a PR, please make these "quality" targets: `format`, `lint` (which makes `ruff` and `pylint`), `type-check`, and `unit-tests`. This needs to be done in both the _production_ `src` tree and all the `contrib` contributions. Use the convenient make target `before-pr`, which handles all of them for you:
 
 ```shell
 make before-pr
 ```
 
-Make sure everything passes cleanly! This ensures that the _production_ code under `src` and the `contrib` contributions are properly formatted, linted, type checked, and the tests pass (and continue to work, even when you aren't working on one of these "sections" with your PR...).
+Make sure everything passes cleanly! This ensures that the _production_ code under `src` and the `contrib` contributions are properly formatted, linted, type checked, and the tests pass (and continue to work, even when you aren't working on one of these "sections" with your PR...). You can also run these tasks separately for the "top-level" code and for the contributions:
+
+```shell
+make before-pr-top       # The top-level code only.
+make before-pr-contrib   # The contrib/* code only.
+```
 
 However, note that there is a mechanism each `contrib` contribution may use to skip certain of these targets when the contribution is not yet production ready. This mechanism is discussed in the `contrib` [`README`](contrib/README.md).
 

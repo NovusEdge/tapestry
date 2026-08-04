@@ -7,6 +7,7 @@ The spec JSON is the single source of truth for what data is needed and in
 what volumes. HuggingFace paths and per-source filters live in
 `rehearsal.data.sources` — joined to this registry by `source name`.
 """
+
 from __future__ import annotations
 
 import json
@@ -15,12 +16,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Iterator
 
-
 DEFAULT_SPEC_PATH = (
-    Path(__file__).resolve().parent.parent.parent
-    / "topics"
-    / "rehearsal"
-    / "rehearsal_data_structure.json"
+    Path(__file__).resolve().parent.parent.parent / "topics" / "rehearsal" / "rehearsal_data_structure.json"
 )
 
 
@@ -28,9 +25,9 @@ DEFAULT_SPEC_PATH = (
 class SourceSpec:
     """One row from a category's `sources` list."""
 
-    name: str               # e.g. "MMLU_auxiliary_training", "Synthetic_via_Qwen"
-    category: str           # e.g. "mmlu_shaped"
-    volume: int             # target item count after decontamination
+    name: str  # e.g. "MMLU_auxiliary_training", "Synthetic_via_Qwen"
+    category: str  # e.g. "mmlu_shaped"
+    volume: int  # target item count after decontamination
     description: str
 
 
