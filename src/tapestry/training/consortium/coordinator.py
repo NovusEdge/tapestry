@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from collections.abc import Sequence
 
+import torch
 from torch import nn
 
 from .merge import OuterMerge

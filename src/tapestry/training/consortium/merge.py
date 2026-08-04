@@ -38,15 +38,9 @@ class OuterMerge:  # pylint: disable=too-few-public-methods
             raise ValueError("outer_lr must be positive")
         if not 0.0 <= outer_momentum < 1.0:
             raise ValueError("outer_momentum must be in [0, 1)")
-        if (
-            self.strategy is OuterMergeStrategy.WEIGHTED_AVERAGE
-            and outer_lr != 1.0
-        ):
+        if self.strategy is OuterMergeStrategy.WEIGHTED_AVERAGE and outer_lr != 1.0:
             raise ValueError("outer_lr is only active for delta merge strategies")
-        if (
-            self.strategy is not OuterMergeStrategy.MOMENTUM_DELTA
-            and outer_momentum != 0.0
-        ):
+        if self.strategy is not OuterMergeStrategy.MOMENTUM_DELTA and outer_momentum != 0.0:
             raise ValueError("outer_momentum is only active for momentum-delta")
         if self.strategy is OuterMergeStrategy.MOMENTUM_DELTA and outer_momentum == 0.0:
             raise ValueError("momentum-delta requires outer_momentum > 0")
@@ -72,10 +66,7 @@ class OuterMerge:  # pylint: disable=too-few-public-methods
         if self.strategy is OuterMergeStrategy.MOMENTUM_DELTA:
             weighted_delta = self._apply_momentum(weighted_delta)
 
-        return {
-            name: previous_state[name] + weighted_delta[name] * self.outer_lr
-            for name in previous_state
-        }
+        return {name: previous_state[name] + weighted_delta[name] * self.outer_lr for name in previous_state}
 
     @staticmethod
     def _weighted_average(
@@ -103,10 +94,7 @@ class OuterMerge:  # pylint: disable=too-few-public-methods
         for name, base_tensor in previous_state.items():
             delta = torch.zeros_like(base_tensor)
             for node_id, weight in weights.items():
-                delta = (
-                    delta
-                    + (local_states_by_node[node_id][name] - base_tensor) * weight
-                )
+                delta = delta + (local_states_by_node[node_id][name] - base_tensor) * weight
             delta_state[name] = delta
         return delta_state
 
