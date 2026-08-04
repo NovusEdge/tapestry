@@ -12,7 +12,7 @@
 >
 > Because architecture through implementation requirements are covered here, these requirements overlap with the concerns of the [Infrastructure & Operations](../infrastructure-operations/) work group. We may choose to move these requirements under that group, but for now, it is more convenient to work with them in tandem with the governance requirements.
 
-This document supports issue [#27](https://github.com/The-AI-Alliance/tapestry/issues/27) by defining the first iteration ("V0.1") of the data governance requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what the infrastructure must make possible before the project chooses specific tools.
+This document supports issue [#27](https://github.com/The-AI-Alliance/tapestry/issues/27) by defining the first iteration ("V0.1") of the data management requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what the infrastructure must make possible before the project chooses specific tools.
 
 ## Scope of This Document
 
@@ -42,16 +42,16 @@ This document supports issue [#27](https://github.com/The-AI-Alliance/tapestry/i
 | :---- | :---------- | :------ | :-------- |
 | DM:1  | Maintain a consortium-visible dataset and metadata catalog with per-dataset and per-participant visibility controls. | DG:1-4 | A catalog is the best way to manage this information and provide efficient and controlled access to users. |
 | DM:2  | The catalog can manage datasets or point to datasets stored elsewhere, but with enforcement mechanisms to ensure consistency with locally-stored metadata and access restrictions. | DG:6 | The catalog needs flexibility about how data is stored, but with appropriate checks when the data is not under the catalog's control. |
-| DM:2  | The catalog should be flexible in working with dataset formats and metadata schemas. | DG:10 | Even if we have preferred formats, we have to be flexible to use the many datasets available. |
-| DM:2  | Implement a data access API with integrated event capture for tracking all events where data is read or written, including relevant context information, as required for governance controls. | DG:2,4-9 | Providing an API makes it easy to implement and enforce consistent tracking of activity. |
-| DM:3  | All systems that read or write data must use the data access API. | DG:2,4-9 | This is necessary to ensure that all activity is adequately observed and recorded. It is also a tool for preventing inadvertent or malicious, intentional leakage of restricted information. |
-| DM:4  | Track processing state and quality signals for each artifact. | DG:4 | The project needs to distinguish raw, cleaned, deduplicated, filtered, tokenized, held-out, and evaluation-ready data. |
-| DM:5  | The data access API must require that a client process specify the input data and output artifact restrictions, so it can enforce exclusion of non-conformant input data. | DG:5 | This prevents data pipelines from undermining upstream restrictions. |
-| DM:6  | The data access API must require that the output restrictions are not less strict than the input restrictions. | DG:5 | This prevents data pipelines from undermining upstream restrictions. |
-| DM:7  | The data access API must restrict the information delivered to a process to conform to the source dataset restrictions. | DG:5 | For example, if a dataset prevents access to individual records, but allows particular aggregations (e.g., averages), the API must ensure that only the allowed aggregation information is delivered to clients. |
-| DM:8  | All data access API activity is logged in a way that supports auditing. | DG:7 | Public summaries, consortium-private review artifacts, and participant-private logs must be separable. |
-| DM:8  | The data access API integrates with Tapestry policy enforcement tools. | DG:8 | Reviewers need to know which version of a dataset supported a model or claim. |
-| DG:9  | Deliver an MVP that works with local files, manifests, and documented attestations. | N/A | Early work should be useful before the full consortium platform exists. |
+| DM:3  | The catalog should be flexible in working with dataset formats and metadata schemas. | DG:10 | Even if we have preferred formats, we have to be flexible to use the many datasets available. |
+| DM:4  | Implement a data access API with integrated event capture for tracking all events where data is read or written, including relevant context information, as required for governance controls. | DG:2,4-9 | Providing an API makes it easy to implement and enforce consistent tracking of activity. |
+| DM:5  | All systems that read or write data must use the data access API. | DG:2,4-9 | This is necessary to ensure that all activity is adequately observed and recorded. It is also a tool for preventing inadvertent or malicious, intentional leakage of restricted information. |
+| DM:6  | Track processing state and quality signals for each artifact. | DG:4 | The project needs to distinguish raw, cleaned, deduplicated, filtered, tokenized, held-out, and evaluation-ready data. |
+| DM:7  | The data access API must require that a client process specify the input data and output artifact restrictions, so it can enforce exclusion of non-conformant input data. | DG:5 | This prevents data pipelines from undermining upstream restrictions. |
+| DM:8  | The data access API must require that the output restrictions are not less strict than the input restrictions. | DG:5 | This prevents data pipelines from undermining upstream restrictions. |
+| DM:9  | The data access API must restrict the information delivered to a process to conform to the source dataset restrictions. | DG:5 | For example, if a dataset prevents access to individual records, but allows particular aggregations (e.g., averages), the API must ensure that only the allowed aggregation information is delivered to clients. |
+| DM:10 | All data access API activity is logged in a way that supports auditing. | DG:7 | Public summaries, consortium-private review artifacts, and participant-private logs must be separable. |
+| DM:11 | The data access API integrates with Tapestry policy enforcement tools. | DG:8 | Reviewers need to know which version of a dataset supported a model or claim. |
+| DM:12 | Deliver an MVP that works with local files, manifests, and documented attestations. | N/A | Early work should be useful before the full consortium platform exists. |
 
 ## Core Data Model Features
 
