@@ -1,16 +1,13 @@
-# M0 Evaluation Gate Schema
+# Evaluation Gate Schema
 
 | Field       | Value           |
 | :---------- | :-------------- |
 | Status      | Proposal        |
 | Confidence  | Medium (3/5)    |
 | Created     | July 04, 2026   |
-| Last Update | July 31, 2026   |
+| Last Update | August 04, 2026 |
 
-Issue [#119](https://github.com/The-AI-Alliance/tapestry/issues/119) calls
-for a minimally sufficient M0 evaluation framework before Tapestry commits to
-a full benchmark stack. The first production artifact is the tool-neutral gate
-schema in `tapestry.evaluation`.
+Issue [#119](https://github.com/The-AI-Alliance/tapestry/issues/119) now tracks the post-M0/M1 evaluation framework. The initial production artifact is the tool-neutral gate schema in `tapestry.evaluation`, which gives benchmark runners a stable result contract before Tapestry commits to a full benchmark stack.
 
 The schema separates four concerns:
 
@@ -22,9 +19,10 @@ The schema separates four concerns:
 | `EvaluationBundle` | Carries versioned runner output with the benchmark configuration hash, model/checkpoint/artifact id, and runner/version that produced it. |
 | `EvaluationGate` | Produces a deterministic go/no-go decision from specs and results. |
 
-This lets the work group decide benchmark tools and task packaging separately
-from release-gate semantics. It also gives future CI, infrastructure, and
+This lets the work group decide benchmark tools and task packaging separately from release-gate semantics. It also gives future CI, infrastructure, and
 certification work a stable result contract to target.
+
+The current schema version is `evaluation-gate/v1`. Bundles that still declare `m0-evaluation-gate/v1` remain valid as a legacy alias for the original M0 contract.
 
 ## Example
 
@@ -94,12 +92,12 @@ assert decision.passed
 
 - Keep #119 benchmark selection discussions focused on concrete
   `BenchmarkSpec` entries.
-- Require M0 runners to emit `EvaluationResult` records, regardless of the
+- Require runners to emit `EvaluationResult` records, regardless of the
   underlying tool.
 - Include the gate's `config_hash`, model/checkpoint/artifact id, runner id, and
   runner version in each `EvaluationBundle`, so pre-registered thresholds and
   result bundles can be compared across member runs.
-- Keep evidence visibility out of this M0 gate contract until TAP-010 evidence
+- Keep evidence visibility out of this gate contract until TAP-010 evidence
   modes are typed and mapped to release-gate semantics.
 - Treat missing required results and threshold misses as blocking findings.
 - Treat unexpected runner output as reportable but non-blocking, so experiments

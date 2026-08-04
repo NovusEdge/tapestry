@@ -1,7 +1,7 @@
 """Tool-neutral evaluation release gates.
 
-The M0 evaluation work needs a small, machine-readable contract before the
-project commits to a specific benchmark runner. This module records benchmark
+The evaluation work needs a small, machine-readable contract that does not
+depend on a specific benchmark runner. This module records benchmark
 requirements and evaluates runner output against those requirements.
 """
 
@@ -15,12 +15,13 @@ from enum import Enum
 from math import isfinite
 from types import MappingProxyType
 
-SCHEMA_VERSION = "m0-evaluation-gate/v1"
+SCHEMA_VERSION = "evaluation-gate/v1"
+LEGACY_SCHEMA_VERSIONS = frozenset({"m0-evaluation-gate/v1"})
 BUNDLE_FINDING_ID = "__evaluation_bundle__"
 
 
 class BenchmarkKind(str, Enum):
-    """Evaluation areas Tapestry needs to gate for M0 and later releases."""
+    """Evaluation areas Tapestry needs to gate for releases."""
 
     CAPABILITY = "capability"
     CULTURAL_ALIGNMENT = "cultural-alignment"
@@ -236,7 +237,7 @@ class EvaluationGate:
     def decide_bundle(self, bundle: EvaluationBundle) -> GateDecision:
         """Return the go/no-go decision for a versioned result bundle."""
         findings: list[GateFinding] = []
-        if bundle.schema_version != SCHEMA_VERSION:
+        if bundle.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
             findings.append(
                 GateFinding(
                     benchmark_id=BUNDLE_FINDING_ID,
@@ -277,6 +278,9 @@ def benchmark_config_hash(specs: Iterable[BenchmarkSpec]) -> str:
     ]
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+_SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS})
 
 
 def _score_message(spec: BenchmarkSpec, score: float, passed: bool) -> str:
