@@ -82,8 +82,45 @@ We don't require models to be the very best at all the common, general-purpose b
 
 ### BMS-R5: Can Be Culturally Aligned
 
-The work of [Issue #22: PoC for alignment based on Inglehart-Welzel Cultural Map](https://github.com/The-AI-Alliance/tapestry/issues/22) (part of [TAP-003: Cultural Alignment as the Primary Differentiator]( ../../architecture/decisions/adr-003-cultural-alignment.md)), is exploring the feasibility of tuning for cultural alignment. We anticipate that some model families or architectures will respond better than others at this form of post-training alignment that is a key capability for Project Tapestry.
+The work of [Issue #22: PoC for alignment based on Inglehart-Welzel Cultural Map](https://github.com/The-AI-Alliance/tapestry/issues/22) (part of [TAP-003: Cultural Alignment as the Primary Differentiator](../../architecture/decisions/adr-003-cultural-alignment.md)), is exploring the feasibility of tuning for cultural alignment. We anticipate that some model families or architectures will respond better than others at this form of post-training alignment that is a key capability for Project Tapestry.
  
+## Selection Notes
+
+The candidate table below records current observations against BMS-R1 through
+BMS-R5 for [Issue #25](https://github.com/The-AI-Alliance/tapestry/issues/25).
+It is not intended to be the full selection policy.
+
+- Defer selection gates, evaluation dimensions, weights, purpose-specific
+  scoring, and tie-breakers to
+  [TAP-009](https://github.com/The-AI-Alliance/tapestry/issues/158).
+- Defer openness, licensing, evidence-disclosure, participant-control, and
+  Shared Commons boundary rules to
+  [TAP-010](https://github.com/The-AI-Alliance/tapestry/issues/160).
+- Use this document as the working evidence inventory for candidate model
+  families, including known uncertainties and follow-up questions.
+
+For each candidate family, record evidence and uncertainty for:
+
+- BMS-R1: whether weights are available and what usage or redistribution terms
+  apply;
+- BMS-R2: what model sizes are available and whether those sizes fit likely
+  Tapestry environments;
+- BMS-R3: whether the family appears to be under active development;
+- BMS-R4: whether public or internally measured performance appears competitive
+  enough for the relevant experiment;
+- BMS-R5: whether there is evidence, uncertainty, or an experiment plan for
+  cultural-alignment tractability.
+
+The issue #25 decision record should stay concise:
+
+- candidate family and version considered;
+- evidence or source used for each BMS-R1 through BMS-R5 observation;
+- unresolved uncertainties and who should resolve them;
+- selected family or families for the immediate experiment;
+- fallback family or families to reduce dependency and lock-in;
+- references to the TAP-009 selection method and TAP-010 openness and
+  participant-control boundaries used for the final decision.
+
 ## Candidate Model Families
 
 Some of the requirements imply that research model projects will usually be poor candidates, because they are usually designed to explore specific pioneering ideas and are not often engineered for general-purpose _production_ use, e.g., a wide range of sizes, extensive post training for safety and use case alignment, etc. On the other hand, they tend to be the most open model families, not just open weights, but often include open-source tool chains, data sets, etc.
@@ -119,9 +156,9 @@ Key for icons:
 ## Feasibility Study on Cultural Alignment Shift
 
 [Issue #22: PoC for alignment based on Inglehart-Welzel Cultural Map](https://github.com/The-AI-Alliance/tapestry/issues/22), part of 
-[TAP-003: Cultural Alignment as the Primary Differentiator](../../architecture/decisions/adr-003-cultural-alignment.md), is using Llama 3 models for its experiments, with the goal of producing a feasibility study paper that demonstrates simultaneous (a) socio-cultural alignment shift and (b) no performance (e.g., MMLU) shift. They chose Llama simply because it is available and is simple to post-train, due to its permissive license, it is a densce model (not MoE - mixture of experts), etc.
+[TAP-003: Cultural Alignment as the Primary Differentiator](../../architecture/decisions/adr-003-cultural-alignment.md), is using Llama 3 models for its experiments, with the goal of producing a feasibility study paper that demonstrates simultaneous (a) socio-cultural alignment shift and (b) no performance (e.g., MMLU) shift. They chose Llama simply because it is available and is simple to post-train, due to its permissive license, it is a dense model (not MoE - mixture of experts), etc.
 
-More generally, we want to iterate on the model choice based on what gives us the lowest resistance path towards the strategic objectives of (a) high/leading performance while (b) affording sovereignty (national, socio-cultural,industrial). Medium-term, we aim to perform CPT (continued pre-training) and ultimately PT from scratch.
+More generally, we want to iterate on the model choice based on what gives us the lowest resistance path towards the strategic objectives of (a) high/leading performance while (b) affording sovereignty (national, socio-cultural, industrial). Medium-term, we aim to perform CPT (continued pre-training) and ultimately PT from scratch.
 
 Here are some interesting preliminary results (as of June 2026) from work performed by [@nguyennm1024](https://github.com/nguyennm1024), which involves techniques such as rehearsal to avoid catastrophic forgetting.
 
