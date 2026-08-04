@@ -5,8 +5,9 @@ description = "The Python code for Project Tapestry"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch>=2.12.1",
+    "torch>=2.13.0",
     "numpy>=2.5.1",
+    "pathspec>=1.1.1",
 ]
 
 [project.optional-dependencies]
@@ -15,8 +16,8 @@ dev = [
     "pytest-cov>=7.1.0",
     "pylint>=4.0.6",
     "black>=26.5.1",
-    "ruff>=0.15.20",
-    "ty>=0.0.56",
+    "ruff>=0.16.1",
+    "ty>=0.0.65",
 ]
 
 [build-system]
@@ -42,4 +43,4 @@ target-version = "py312"
 max-line-length = 120
 
 [tool.pylint.main]
-init-hook = "import sys; sys.path.insert(0, 'src')"
+init-hook = "import sys" #; sys.path.insert(0, 'src')"

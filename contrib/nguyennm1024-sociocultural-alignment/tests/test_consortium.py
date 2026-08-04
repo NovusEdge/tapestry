@@ -1,4 +1,5 @@
 """Smoke tests for the consortium-learning interface (no GPU/models needed)."""
+
 import os
 import sys
 
@@ -26,7 +27,8 @@ def test_consortium_method_is_abstract():
 def test_soup_is_a_consortium_method():
     import pytest
 
-    pytest.importorskip("torch")  # the soup implementation pulls torch/transformers
+    pytest.importorskip("torch")
+    pytest.importorskip("transformers")
     from consortium import ConsortiumMethod
     from consortium.soup import Soup
 

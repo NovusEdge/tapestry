@@ -10,6 +10,7 @@ output-ensembling, then MoE / routing) implement the same `ConsortiumMethod.comb
 contract, so the rest of the pipeline -- and the shared evaluation harness -- treats
 their output as just another model.
 """
+
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -17,8 +18,9 @@ from dataclasses import dataclass
 @dataclass
 class Member:
     """A trained member model entering the consortium."""
-    path: str            # local dir or HF id of the (merged) member model
-    name: str = ""       # short label, e.g. "culture" or "rehearsal"
+
+    path: str  # local dir or HF id of the (merged) member model
+    name: str = ""  # short label, e.g. "culture" or "rehearsal"
     weight: float = 1.0  # relative weight, for methods that use one
 
 

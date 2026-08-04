@@ -12,6 +12,7 @@ Use as a library:
 Or as a CLI:
     python -m cultural.pipeline pilot
 """
+
 from __future__ import annotations
 
 import json
@@ -22,7 +23,6 @@ from pathlib import Path
 from core import generate_questions, get_scenario, load_spec, synthesize
 from cultural.personas import get_persona
 from cultural.prompts import QUESTION_GEN_PROMPT
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SPEC_PATH = REPO_ROOT / "topics" / "cultural_data_coverage_v2.json"

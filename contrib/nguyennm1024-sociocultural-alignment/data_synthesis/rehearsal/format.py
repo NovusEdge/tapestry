@@ -9,6 +9,7 @@ public items without reasoning (most MC), THINK is empty until a Kimi solve
 pass fills it in. For math/instruction items where the original response IS
 the answer, the original text goes into ANSWER and THINK is filled later.
 """
+
 from __future__ import annotations
 
 import json
@@ -16,24 +17,23 @@ import re
 from pathlib import Path
 from typing import Any, Iterator, Literal, TypedDict
 
-
 Origin = Literal["public", "augmented", "generated", "programmatic"]
 
 
 class Provenance(TypedDict, total=False):
     teacher_model: str | None
-    source_dataset: str | None     # HF path, e.g. "cais/mmlu"
-    source_record_id: str | None   # e.g. "auxiliary_train:18342"
+    source_dataset: str | None  # HF path, e.g. "cais/mmlu"
+    source_record_id: str | None  # e.g. "auxiliary_train:18342"
     batch_id: str | None
-    generated_at: str | None       # ISO8601
+    generated_at: str | None  # ISO8601
 
 
 class Record(TypedDict, total=False):
-    id: str                        # globally unique, deterministic
-    category: str                  # one of 13 from the spec
-    source: str                    # spec source name
+    id: str  # globally unique, deterministic
+    category: str  # one of 13 from the spec
+    source: str  # spec source name
     origin: Origin
-    messages: list[dict[str, Any]] # chat format
+    messages: list[dict[str, Any]]  # chat format
     answer_key: dict[str, Any] | None  # category-specific gold for verification
     provenance: Provenance
     verified: bool | None
@@ -48,14 +48,14 @@ class QuestionRecord(TypedDict, total=False):
     populated where the source has reliable gold).
     """
 
-    id: str                        # "q_" prefix; one per upstream row
-    category: str                  # spec category
-    source: str                    # spec source name
+    id: str  # "q_" prefix; one per upstream row
+    category: str  # spec category
+    source: str  # spec source name
     origin: Origin
 
-    question: str                  # text passed verbatim to Kimi as user content
-    gold_answer: str | None        # extractable atom for comparison; None when no gold
-    metadata: dict[str, Any]       # category-specific extras (options, subject, level, …)
+    question: str  # text passed verbatim to Kimi as user content
+    gold_answer: str | None  # extractable atom for comparison; None when no gold
+    metadata: dict[str, Any]  # category-specific extras (options, subject, level, …)
     provenance: Provenance
 
 
@@ -109,15 +109,14 @@ def build_messages(
     if system:
         msgs.append({"role": "system", "content": system})
     msgs.append({"role": "user", "content": user})
-    msgs.append(
-        {"role": "assistant", "content": wrap_assistant(assistant_reasoning, assistant_answer)}
-    )
+    msgs.append({"role": "assistant", "content": wrap_assistant(assistant_reasoning, assistant_answer)})
     return msgs
 
 
 # ---------------------------------------------------------------------------
 # Record ID generation — deterministic so reruns yield the same IDs
 # ---------------------------------------------------------------------------
+
 
 def make_record_id(category: str, source: str, index: int) -> str:
     """Deterministic id: rhsl_<category-short>_<source-short>_<6-digit-index>."""
@@ -129,6 +128,7 @@ def make_record_id(category: str, source: str, index: int) -> str:
 # ---------------------------------------------------------------------------
 # JSONL I/O — append-mode, line-buffered, crash-safe
 # ---------------------------------------------------------------------------
+
 
 def write_jsonl(path: Path | str, records: list[dict[str, Any]], *, append: bool = False) -> None:
     mode = "a" if append else "w"

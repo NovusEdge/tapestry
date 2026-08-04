@@ -5,6 +5,7 @@ generates `{question, reasoning, answer, ...}` records. Domain-agnostic —
 the caller assembles the system prompt (see `cultural.personas` for one
 example of how a domain package does this).
 """
+
 from __future__ import annotations
 
 import time
@@ -68,11 +69,7 @@ def _generate_one(
             }
     except openai.BadRequestError as e:
         msg = str(e)
-        record["error"] = (
-            "content_filter"
-            if "content_filter" in msg or "high risk" in msg
-            else "bad_request"
-        )
+        record["error"] = "content_filter" if "content_filter" in msg or "high risk" in msg else "bad_request"
         record["error_message"] = msg
     except openai.RateLimitError as e:
         record["error"] = "rate_limit"

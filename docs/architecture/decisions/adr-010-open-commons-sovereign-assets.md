@@ -37,6 +37,37 @@ The degree and audience of disclosure must be sufficient for the applicable purp
 
 ### Two governing domains
 
+```mermaid
+flowchart TB
+  subgraph COMMONS["Shared Commons"]
+    direction LR
+    SC1["Source code &\nshared infrastructure"]:::commons
+    SC2["Protocols, schemas,\ninterop specs"]:::commons
+    SC3["Shared Base releases\n& governance rules"]:::commons
+    SC4["Public evaluation\nmethods & criteria"]:::commons
+  end
+
+  subgraph SOVEREIGN["Participant Sovereign Assets"]
+    direction LR
+    SA1["Raw, curated &\nsovereign data"]:::sovereign
+    SA2["Private CPT,\npost-training artifacts"]:::sovereign
+    SA3["Sovereign Models &\ncommercial derivatives"]:::sovereign
+  end
+
+  LOOP(["Consortium\nShared-Base Loop"]):::scope
+
+  COMMONS -->|"base checkpoint"| LOOP
+  LOOP -->|"weight update only\n(Contributed CPT)"| COMMONS
+  SOVEREIGN -. "stays local\nnever shared" .-> SOVEREIGN
+  LOOP -.->|"proportionate\nverification"| SOVEREIGN
+
+  classDef commons fill:#2d6a4f,stroke:#1b4332,color:#fff,stroke-width:2px
+  classDef sovereign fill:#5e548e,stroke:#4a4170,color:#fff,stroke-width:2px
+  classDef scope fill:#287271,stroke:#1e5a59,color:#fff,stroke-width:2px
+```
+
+*Artifacts move from Participant Sovereign Assets to the Shared Commons only through an explicit, authorized contribution. Participation, access to the Shared Base, or contribution of one artifact does not imply contribution of related assets.*
+
 | Domain | Definition | Default |
 | :----- | :--------- | :------ |
 | **Shared Commons** | Artifacts created collectively by Tapestry or voluntarily contributed for shared use | Open, permissively licensed, non-exclusive, independently usable, and free of contributor-specific encumbrances |

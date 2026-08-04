@@ -10,6 +10,7 @@ Follow this check list for new contributions:
 - [ ] I included a short `README.md` that describes the contribution, its motivation and status, and how to try/evaluate it.
 - [ ] I added a `LICENSE`. (By default, the project uses Apache-2.0 for code, CC-BY-4.0 for docs, and CDLA-2.0 for data - discussed more below).
 - [ ] (If contributing code) I put the code in a `<feature_name>` subdirectory and the unit tests in a `tests` subdirectory.
+- [ ] I confirmed that the command `make before-pr` successfully completes for my contribution (more below).
 
 For the `LICENSE`, we recommend including content like the following: 
 
@@ -46,7 +47,7 @@ Provide an overview of the most important details about the code:
 
 ### Testing Performed
 
-Describe key aspects of automated and/or manual testing of executable code that was performed to validate the contribution:
+For any automated tests you provide, comment on key aspects of automated and/or manual testing of executable code that was performed to validate the contribution:
 
 * Unit tests included in a `tests` subdirectory
 * Integration tests performed
@@ -58,6 +59,16 @@ Include an example of how to use the new function or feature:
 
 * Code snippet demonstrating usage
 * Expected output or results
+
+## Ensure that the Quality Checks Pass
+
+PRs with code require the command `make before-pr` to pass. This command runs the following nested `make` command for _each_ contribution, so you should specifically ensure that it runs successfully for your contribution, where `<my_github_user_name>-<feature_name>` is your contribution's name:
+
+```makefile
+make SRC_DIR=contrib/<my_github_user_name>-<feature_name> --include-dir=contrib/<my_github_user_name>-<feature_name> format ruff pylint type-check unit-tests
+```
+
+See the details in [`contrib/README.md`](https://github.com/The-AI-Alliance/tapestry/blob/develop/contrib/README.md#the-project-wide-make-processes), which also tells you how to disable any of these checks as necessary.
 
 ## Checklist
 
@@ -74,15 +85,18 @@ For code contributions:
 - [ ] I have followed the existing code styles and conventions.
 - [ ] I have removed all API keys and other sensitive information.
 - [ ] I have updated any related documentation.
+- [ ] I have confirmed that the command `make before-pr` completes successfully.
 
 For documentation contributions, including `docs`:
 
 - [ ] I have followed the existing documentation styles and conventions.
 - [ ] I have included helpful diagrams, screenshots, tables, etc.
 
-Currently the content in `website` is for the Tapestry technical "microsite" ([the-ai-alliance.github.io/tapestry/](https://the-ai-alliance.github.io/tapestry/)) just points back to the repo's `docs` locations. Eventually, mature content will be copied or migrated from `docs` to this site for easier reading, searching, etc. **Hence, you should ignore `website` for new contributions.**
+### The Tapestry _Microsite_
+
+The content in `website` is for the Tapestry technical _microsite_ ([the-ai-alliance.github.io/tapestry/](https://the-ai-alliance.github.io/tapestry/)). Currently it just links back to the repo's `docs` locations. Eventually, mature content will be copied or migrated from `docs` to this site for easier reading, searching, etc. **Hence, you probably don't need to propose any changes to the `website` directory.**
 
 However, **if** you are proposing `website` changes:
 
 - [ ] I have verified the microsite `make view-local` runs without errors and the changes render as expected.
-- [ ] I have checked that external links (i.e., those going to different domains) have `target="..."` specifications by running `./check-external-links.sh` and fixing any flagged URLs. (This tool doesn't add missing links itself nor does it verify that the links found are valid.)
+- [ ] I have checked that external links (i.e., those going to different domains) have `target="..."` specifications by running `./check-external-links.sh` and fixing any flagged URLs. (This tool doesn't fix missing `target="..."` links itself nor does it verify that the links found are not 404s!)

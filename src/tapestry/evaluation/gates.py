@@ -1,7 +1,7 @@
 """Tool-neutral evaluation release gates.
 
-The M0 evaluation work needs a small, machine-readable contract before the
-project commits to a specific benchmark runner. This module records benchmark
+The evaluation work needs a small, machine-readable contract that does not
+depend on a specific benchmark runner. This module records benchmark
 requirements and evaluates runner output against those requirements.
 """
 
@@ -9,18 +9,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from math import isfinite
 from types import MappingProxyType
-from typing import Iterable, Mapping
 
-SCHEMA_VERSION = "m0-evaluation-gate/v1"
+SCHEMA_VERSION = "evaluation-gate/v1"
+LEGACY_SCHEMA_VERSIONS = frozenset({"m0-evaluation-gate/v1"})
 BUNDLE_FINDING_ID = "__evaluation_bundle__"
 
 
 class BenchmarkKind(str, Enum):
-    """Evaluation areas Tapestry needs to gate for M0 and later releases."""
+    """Evaluation areas Tapestry needs to gate for releases."""
 
     CAPABILITY = "capability"
     CULTURAL_ALIGNMENT = "cultural-alignment"
@@ -160,8 +161,7 @@ class GateDecision:
         return tuple(
             finding
             for finding in self.findings
-            if finding.status
-            in {GateStatus.FAIL, GateStatus.INVALID, GateStatus.MISSING}
+            if finding.status in {GateStatus.FAIL, GateStatus.INVALID, GateStatus.MISSING}
         )
 
 
@@ -231,24 +231,18 @@ class EvaluationGate:
                 )
             )
 
-        blocking = any(
-            finding.status in {GateStatus.FAIL, GateStatus.MISSING}
-            for finding in findings
-        )
+        blocking = any(finding.status in {GateStatus.FAIL, GateStatus.MISSING} for finding in findings)
         return GateDecision(passed=not blocking, findings=tuple(findings))
 
     def decide_bundle(self, bundle: EvaluationBundle) -> GateDecision:
         """Return the go/no-go decision for a versioned result bundle."""
         findings: list[GateFinding] = []
-        if bundle.schema_version != SCHEMA_VERSION:
+        if bundle.schema_version not in _SUPPORTED_SCHEMA_VERSIONS:
             findings.append(
                 GateFinding(
                     benchmark_id=BUNDLE_FINDING_ID,
                     status=GateStatus.INVALID,
-                    message=(
-                        f"unsupported evaluation schema {bundle.schema_version}; "
-                        f"expected {SCHEMA_VERSION}"
-                    ),
+                    message=(f"unsupported evaluation schema {bundle.schema_version}; " f"expected {SCHEMA_VERSION}"),
                 )
             )
         if bundle.config_hash != self.config_hash:
@@ -282,19 +276,17 @@ def benchmark_config_hash(specs: Iterable[BenchmarkSpec]) -> str:
         }
         for spec in sorted(specs, key=lambda item: item.benchmark_id)
     ]
-    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode(
-        "utf-8"
-    )
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+_SUPPORTED_SCHEMA_VERSIONS = frozenset({SCHEMA_VERSION, *LEGACY_SCHEMA_VERSIONS})
 
 
 def _score_message(spec: BenchmarkSpec, score: float, passed: bool) -> str:
     direction = ">=" if spec.higher_is_better else "<="
     outcome = "meets" if passed else "misses"
-    return (
-        f"{spec.benchmark_id} {outcome} threshold: "
-        f"{score:g} {direction} {spec.threshold:g}"
-    )
+    return f"{spec.benchmark_id} {outcome} threshold: " f"{score:g} {direction} {spec.threshold:g}"
 
 
 def _require_text(name: str, value: str) -> None:
