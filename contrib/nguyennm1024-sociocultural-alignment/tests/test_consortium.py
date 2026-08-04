@@ -1,4 +1,5 @@
 """Smoke tests for the consortium-learning interface (no GPU/models needed)."""
+
 import os
 import sys
 

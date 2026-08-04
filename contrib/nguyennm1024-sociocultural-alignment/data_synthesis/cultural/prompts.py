@@ -97,5 +97,3 @@ AVOID:
 
 {avoid_section}
 OUTPUT exactly {n} questions, one per line. No numbering, no commentary, no leading bullets."""
-
-

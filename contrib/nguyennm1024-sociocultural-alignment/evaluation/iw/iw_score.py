@@ -12,11 +12,11 @@ Porting Tao et al. (Part1_Generation_Pipeline.py) scoring exactly:
 Averages the per-item score over the 10 descriptor variants (we also keep the
 'none' true-default variant separately). Output: per-model 10-dim answer vector.
 """
+
 import json, re, sys, collections
 
 IW_DIR = "/workspace/eval/iw"
-SCALES = ["f063", "y003", "f120", "g006", "e018", "y002", "a008", "f118",
-          "e025", "a165"]
+SCALES = ["f063", "y003", "f120", "g006", "e018", "y002", "a008", "f118", "e025", "a165"]
 NUMERIC = {"f063", "f120", "g006", "e018", "a008", "f118"}
 
 
@@ -81,14 +81,13 @@ def score_row(scale, text):
     if scale in NUMERIC:
         hi = 4 if scale in ("g006", "a008") else 10
         return first_int(text, 1, hi)
-    return {"y003": score_y003, "y002": score_y002,
-            "e025": score_e025, "a165": score_a165}[scale](text)
+    return {"y003": score_y003, "y002": score_y002, "e025": score_e025, "a165": score_a165}[scale](text)
 
 
 def vector_for(name):
     rows = [json.loads(l) for l in open(f"{IW_DIR}/answers_{name}.jsonl")]
-    by = collections.defaultdict(list)            # scale -> [scores over variants]
-    default = {}                                   # 'none' variant only
+    by = collections.defaultdict(list)  # scale -> [scores over variants]
+    default = {}  # 'none' variant only
     refused = collections.Counter()
     for r in rows:
         s = score_row(r["scale"], r["text"])
@@ -106,14 +105,16 @@ if __name__ == "__main__":
     out = {}
     for name in ["base", "ft"]:
         vec, default, refused, counts = vector_for(name)
-        out[name] = {"mean_over_variants": vec, "default_none": default,
-                     "n_parsed": counts, "refused": refused}
+        out[name] = {"mean_over_variants": vec, "default_none": default, "n_parsed": counts, "refused": refused}
         print(f"\n=== {name} ===")
         for sc in SCALES:
             v = vec.get(sc)
-            print(f"  {sc}: mean={v if v is None else round(v,2)} "
-                  f"(n={counts[sc]}, refused={refused.get(sc,0)}) default={default.get(sc)}")
+            print(
+                f"  {sc}: mean={v if v is None else round(v,2)} "
+                f"(n={counts[sc]}, refused={refused.get(sc,0)}) default={default.get(sc)}"
+            )
     json.dump(out, open(f"{IW_DIR}/iw_vectors.json", "w"), indent=2)
     import os
+
     os.chmod(f"{IW_DIR}/iw_vectors.json", 0o666)
     print("\nWROTE iw_vectors.json")

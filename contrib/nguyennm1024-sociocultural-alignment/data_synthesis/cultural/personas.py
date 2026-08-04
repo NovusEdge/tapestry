@@ -46,9 +46,7 @@ GLOSS_NATIVE_TERMS_INSTRUCTION = (
 def get_persona(name: str, *, gloss_native_terms: bool = True) -> str:
     """Return the system prompt for a persona, optionally with composed modules."""
     if name not in PERSONAS:
-        raise ValueError(
-            f"unknown persona '{name}'. Available: {', '.join(sorted(PERSONAS))}"
-        )
+        raise ValueError(f"unknown persona '{name}'. Available: {', '.join(sorted(PERSONAS))}")
     base = PERSONAS[name]
     if gloss_native_terms:
         return f"{base}\n\n{GLOSS_NATIVE_TERMS_INSTRUCTION}"

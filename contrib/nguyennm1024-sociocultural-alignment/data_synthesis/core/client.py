@@ -1,6 +1,7 @@
 """Model client wrapper. Defaults to Moonshot's Kimi K2.6 over the
 OpenAI-compatible endpoint, but the base_url/api_key are overridable so the
 same library can drive other backends."""
+
 import os
 
 import httpx
@@ -41,8 +42,7 @@ def make_client(
     key = api_key or DEFAULT_API_KEY
     if not key:
         raise RuntimeError(
-            "KIMI_API_KEY not set. Create a .env file or export the variable, "
-            "or pass api_key= explicitly."
+            "KIMI_API_KEY not set. Create a .env file or export the variable, " "or pass api_key= explicitly."
         )
     return openai.Client(
         api_key=key,
@@ -58,9 +58,7 @@ def make_deepseek_client(
     """DeepSeek V4 Pro client. Used as fallback when Kimi is exhausted."""
     key = api_key or DEEPSEEK_API_KEY
     if not key:
-        raise RuntimeError(
-            "DEEPSEEK_API_KEY not set. Add it to .env or pass api_key= explicitly."
-        )
+        raise RuntimeError("DEEPSEEK_API_KEY not set. Add it to .env or pass api_key= explicitly.")
     return openai.Client(
         api_key=key,
         base_url=DEEPSEEK_BASE_URL,

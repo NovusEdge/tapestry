@@ -22,6 +22,7 @@ Usage:
     python -m cultural.swap_neutral --dry-run
     python -m cultural.swap_neutral  # actually does the swap
 """
+
 from __future__ import annotations
 
 import argparse
@@ -51,10 +52,11 @@ def _rewrite_jsonl(path: Path, records: list[dict]) -> None:
         for r in records:
             f.write(json.dumps(r, ensure_ascii=False) + "\n")
     tmp.replace(path)
+
+
 from core.client import DEEPSEEK_MODEL, make_deepseek_client
 from core.question_gen import generate_questions_for_scenario
 from cultural.prompts import NEUTRAL_QUESTION_GEN_PROMPT
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_SPEC_PATH = REPO_ROOT / "topics" / "cultural_data_coverage_v2.json"
@@ -206,7 +208,8 @@ def _generate_neutral(
                 f"  [{completed}/{len(todo)}] {s['scenario_id'][:35]:35s} "
                 f"{result['written']}/{d} [{tag}] "
                 f"({time.time() - t0:.0f}s)",
-                file=sys.stderr, flush=True,
+                file=sys.stderr,
+                flush=True,
             )
             if result["gave_up"]:
                 gave_up.append(s["scenario_id"])
@@ -249,8 +252,11 @@ def run(
                 neutral_count[r["scenario_id"]] = neutral_count.get(r["scenario_id"], 0) + 1
         todo = [(s, n_per_universal - neutral_count.get(s["scenario_id"], 0)) for s in universal]
         todo = [(s, d) for s, d in todo if d > 0]
-        print(f"\nResume mode: {len(todo)} scenarios still need neutral questions "
-              f"(total deficit {sum(d for _, d in todo)})", file=sys.stderr)
+        print(
+            f"\nResume mode: {len(todo)} scenarios still need neutral questions "
+            f"(total deficit {sum(d for _, d in todo)})",
+            file=sys.stderr,
+        )
         if not todo:
             print("Nothing to do.", file=sys.stderr)
             return
@@ -261,17 +267,14 @@ def run(
         surviving_by_scn: dict[str, list[str]] = {}
         for r in questions_only:
             surviving_by_scn.setdefault(r["scenario_id"], []).append(r["question"])
-        _generate_neutral(
-            todo, questions_path, surviving_by_scn, model, api_key, concurrency
-        )
+        _generate_neutral(todo, questions_path, surviving_by_scn, model, api_key, concurrency)
         return
 
     # 2. Identify removals (the n_remove highest-VN-score questions)
     remove_keys = _identify_removals(questions_only, n_remove)
     print(f"Will remove top-{n_remove} most VN-explicit", file=sys.stderr)
     by_topic_removed = Counter(
-        r["topic_id"] for r in questions_only
-        if (r["scenario_id"], r["batch_id"], r["gen_index"]) in remove_keys
+        r["topic_id"] for r in questions_only if (r["scenario_id"], r["batch_id"], r["gen_index"]) in remove_keys
     )
     print("Removals by topic:", file=sys.stderr)
     for t, c in by_topic_removed.most_common():
@@ -282,8 +285,11 @@ def run(
     scenarios = list(iter_scenarios(spec))
     universal = [s for s in scenarios if _is_universal(s)]
     print(f"\nUniversal scenarios: {len(universal)}", file=sys.stderr)
-    print(f"Will generate {n_per_universal} neutral questions per universal scenario "
-          f"= {n_per_universal * len(universal)} new questions", file=sys.stderr)
+    print(
+        f"Will generate {n_per_universal} neutral questions per universal scenario "
+        f"= {n_per_universal * len(universal)} new questions",
+        file=sys.stderr,
+    )
 
     if dry_run:
         print("\n--- DRY RUN: not modifying files ---", file=sys.stderr)
@@ -300,19 +306,20 @@ def run(
 
     # 5. Filter questions.jsonl: keep error records + non-removed real questions
     kept_q_records = error_q + [
-        r for r in questions_only
-        if (r["scenario_id"], r["batch_id"], r["gen_index"]) not in remove_keys
+        r for r in questions_only if (r["scenario_id"], r["batch_id"], r["gen_index"]) not in remove_keys
     ]
     _rewrite_jsonl(questions_path, kept_q_records)
-    print(f"Wrote {len(kept_q_records)} records to {questions_path.name} "
-          f"(removed {len(questions_only) - (len(kept_q_records) - len(error_q))})", file=sys.stderr)
+    print(
+        f"Wrote {len(kept_q_records)} records to {questions_path.name} "
+        f"(removed {len(questions_only) - (len(kept_q_records) - len(error_q))})",
+        file=sys.stderr,
+    )
 
     # 6. Filter records.jsonl: drop answers whose question was removed
     if records_path.exists():
         all_recs = list(read_records(records_path))
         kept_recs = [
-            r for r in all_recs
-            if (r.get("scenario_id"), r.get("batch_id"), r.get("gen_index")) not in remove_keys
+            r for r in all_recs if (r.get("scenario_id"), r.get("batch_id"), r.get("gen_index")) not in remove_keys
         ]
         _rewrite_jsonl(records_path, kept_recs)
         n_orphans = len(all_recs) - len(kept_recs)
@@ -329,8 +336,10 @@ def run(
                 neutral_count[r["scenario_id"]] = neutral_count.get(r["scenario_id"], 0) + 1
     todo = [(s, n_per_universal - neutral_count.get(s["scenario_id"], 0)) for s in universal]
     todo = [(s, d) for s, d in todo if d > 0]
-    print(f"\nFilling {len(todo)} scenarios to target={n_per_universal} "
-          f"(total deficit {sum(d for _, d in todo)})", file=sys.stderr)
+    print(
+        f"\nFilling {len(todo)} scenarios to target={n_per_universal} " f"(total deficit {sum(d for _, d in todo)})",
+        file=sys.stderr,
+    )
     _generate_neutral(todo, questions_path, surviving_by_scn, model, api_key, concurrency)
 
     # 8. Final stats
@@ -338,7 +347,10 @@ def run(
     final_vn_cued = sum(1 for r in final_q if _vn_score(r["question"]) > 0)
     print(f"\nFinal corpus: {len(final_q)} questions", file=sys.stderr)
     print(f"  VN-cued (score > 0): {final_vn_cued} ({100*final_vn_cued/len(final_q):.1f}%)", file=sys.stderr)
-    print(f"  Truly neutral:       {len(final_q) - final_vn_cued} ({100*(len(final_q)-final_vn_cued)/len(final_q):.1f}%)", file=sys.stderr)
+    print(
+        f"  Truly neutral:       {len(final_q) - final_vn_cued} ({100*(len(final_q)-final_vn_cued)/len(final_q):.1f}%)",
+        file=sys.stderr,
+    )
 
 
 def main() -> None:
@@ -346,14 +358,19 @@ def main() -> None:
     p.add_argument("--run-dir", default=str(DEFAULT_RUN_DIR))
     p.add_argument("--spec", default=str(DEFAULT_SPEC_PATH))
     p.add_argument("--n-remove", type=int, default=2200)
-    p.add_argument("--n-per-universal", type=int, default=14,
-                   help="Neutral questions per universal scenario (default 14, ~2,268 total)")
+    p.add_argument(
+        "--n-per-universal",
+        type=int,
+        default=14,
+        help="Neutral questions per universal scenario (default 14, ~2,268 total)",
+    )
     p.add_argument("--concurrency", type=int, default=50)
     p.add_argument("--model", default=DEEPSEEK_MODEL)
     p.add_argument("--api-key", default=None)
     p.add_argument("--dry-run", action="store_true", help="Show counts only, don't modify files")
-    p.add_argument("--resume", action="store_true",
-                   help="Skip removal/backup; only generate the deficit for universal scenarios.")
+    p.add_argument(
+        "--resume", action="store_true", help="Skip removal/backup; only generate the deficit for universal scenarios."
+    )
     args = p.parse_args()
 
     run(

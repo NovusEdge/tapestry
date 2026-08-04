@@ -14,6 +14,7 @@ Usage (from data_synthesis/):
     python -m cultural.run_answers --run-dir runs/cultural --concurrency 30
     python -m cultural.run_answers --no-gloss
 """
+
 from __future__ import annotations
 
 import argparse
@@ -30,7 +31,6 @@ from core import (
     synthesize_one,
 )
 from cultural.personas import get_persona
-
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_RUN_DIR = REPO_ROOT / "runs" / "cultural"
@@ -54,15 +54,15 @@ def _plan(
     # call that succeeded but yielded zero content (typically when a reasoning
     # model exhausts max_tokens before emitting any visible output). Treat it
     # as pending so the next run retries it.
-    done_keys = {
-        _question_key(r) for r in read_records(run_dir / "records.jsonl") if r.get("answer")
-    }
+    done_keys = {_question_key(r) for r in read_records(run_dir / "records.jsonl") if r.get("answer")}
     todo = [q for q in all_q if _question_key(q) not in done_keys]
     if num_workers > 1:
         import hashlib
+
         def deterministic_bucket(k: tuple) -> int:
             h = hashlib.md5(repr(k).encode()).digest()
             return int.from_bytes(h[:4], "big") % num_workers
+
         todo = [q for q in todo if deterministic_bucket(_question_key(q)) == worker_index]
     return todo, len(all_q), len(done_keys)
 
@@ -160,13 +160,17 @@ def main() -> None:
         help="LLM base URL. Default Moonshot. For OpenAI use https://api.openai.com/v1.",
     )
     p.add_argument(
-        "--worker-index", type=int, default=0,
+        "--worker-index",
+        type=int,
+        default=0,
         help="0-based worker index for parallel runs. Default 0.",
     )
     p.add_argument(
-        "--num-workers", type=int, default=1,
+        "--num-workers",
+        type=int,
+        default=1,
         help="Total worker count for hash-partitioning pending questions across "
-             "parallel processes. Default 1 (no partition).",
+        "parallel processes. Default 1 (no partition).",
     )
     args = p.parse_args()
 

@@ -1,4 +1,5 @@
 """Smoke tests for the self-contained Inglehart-Welzel projector (no GPU/models/survey data)."""
+
 import math
 import os
 import sys

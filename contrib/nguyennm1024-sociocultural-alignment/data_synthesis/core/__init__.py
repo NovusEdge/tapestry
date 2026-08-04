@@ -3,6 +3,7 @@
 Used by sibling packages (cultural, rehearsal, ...) that wrap these primitives
 with domain-specific personas, prompts, and topic taxonomies.
 """
+
 from .client import DEFAULT_MODEL, make_client
 from .jsonl_store import append_records, read_records
 from .load_topics import get_scenario, iter_scenarios, load_spec

@@ -8,6 +8,7 @@ Each topic has `description` and a `scenarios` list. Each scenario has
 See `topics/cultural_data_coverage_v2.json` for the cultural-alignment
 example. Other domain packages define their own JSON with the same shape.
 """
+
 from __future__ import annotations
 
 import json
