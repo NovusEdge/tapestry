@@ -7,6 +7,7 @@ weight vectors for FedAvg-class integration back into the shared base.
 """
 
 from .coordinator import ConsortiumCoordinator
+from .merge import OuterMerge, OuterMergeStrategy
 from .messages import (
     ConsortiumRoundResult,
     SovereignContribution,
@@ -22,6 +23,8 @@ __all__ = [
     "ConsortiumRoundResult",
     "ContributionPolicy",
     "ContributionWeighting",
+    "OuterMerge",
+    "OuterMergeStrategy",
     "SovereignContribution",
     "SovereignCycleResult",
     "SovereignModelArtifact",
