@@ -23,7 +23,7 @@ with a **Letter of Intent (LOI)**, a short, non-binding statement of intent to
 participate. The AI Alliance provides the LOI and reviews completed ones; this
 does not go through the repository.
 
-**If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI.
+>**If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI.
 
 Notes:
 
