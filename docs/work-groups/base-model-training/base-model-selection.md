@@ -1,5 +1,12 @@
 # Base Model Selection
 
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Proposed        |
+| Confidence  | High (5/5)      |
+| Created     | July 09, 2026   |
+| Last Update | July 31, 2026   |
+
 ## Purpose
 
 This document focuses on the selection of an open-weights base model family (or perhaps more than one), which is covered by [Issue #25: Select the initial base model](https://github.com/The-AI-Alliance/tapestry/issues/25), part of [TAP-006: Phased Base Model Strategy](../../architecture/decisions/adr-006-phased-base-model.md)
@@ -123,7 +130,7 @@ The issue #25 decision record should stay concise:
 
 ## Candidate Model Families
 
-Some of the requirements imply that research model projects will usually be poor candidates, because they are usually designed to explore specific pioneering ideas and are not often engineered for general-purpose _production_ use, e.g., a wide range of sizes, extensive post training for safety and use case alignment, etc. On the other hand, they tend to be the most open model families, not just open weights, but often include open-source tool chains, data sets, etc.
+Some of the requirements imply that research model projects will usually be poor candidates, because they are usually designed to explore specific pioneering ideas and are not often engineered for general-purpose _production_ use, e.g., a wide range of sizes, extensive post training for safety and use case alignment, etc. On the other hand, they tend to be the most open model families, not just open weights, but often include open-source tool chains, datasets, etc.
 
 Here is a starting list of candidates, listed alphabetically. _Please use PRs to correct any errors, add additional model families, etc.!_
 
