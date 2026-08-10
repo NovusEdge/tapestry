@@ -9,10 +9,10 @@
 
 Learn more from our [Kickoff Workshop Blog](https://thealliance.ai/blog/project-tapestry-the-path-to-frontier-sovereign-ai) and check out the [Project Tapestry](https://thealliance.ai/projects/tapestry/) website for more information about partnering, events, and how to support Project Tapestry.
 
-[!IMPORTANT]
-Code and documentation contributions happen here on GitHub.  **Organizational participation in the Tapestry consortium starts with a Letter of Intent (LOI), which is handled by the AI Alliance, not through this repo. Please don't post LOIs, or any confidential details, in GitHub issues, PRs, or discussions — this repository is public.**
-
-If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI.
+>[!IMPORTANT]
+>Code and documentation contributions happen here on GitHub.  **Organizational participation in the Tapestry consortium starts with a Letter >of Intent (LOI), which is handled by the AI Alliance, not through this repo. Please don't post LOIs, or any confidential details, in GitHub >issues, PRs, or discussions — this repository is public.**
+>
+>If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI.
 
 This repo contains the code and technical documentation for the project. We invite you to jump in and help!
 
