@@ -120,8 +120,6 @@ _Organizational_ participation is a separate track. Institutions, companies, res
 
 >[!IMPORTANT]
 >If your organization intends to contribute data, compute, people, or funding, and to join the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI and arrange for further discussions.
-
 >Notes:
->
 >* Don't open an issue or PR to submit an LOI, and don't put confidential information in this public repo.
-> * Proposing a _dataset_ specifically? Use the [Tapestry Dataset Submission Proposal](https://thealliance.ai/projects/tapestry/training-data-proposals) form. An LOI and a dataset proposal can be submitted independently.
+>* Proposing a _dataset_ specifically? Use the [Tapestry Dataset Submission Proposal](https://thealliance.ai/projects/tapestry/training-data-proposals) form. An LOI and a dataset proposal can be submitted independently.
