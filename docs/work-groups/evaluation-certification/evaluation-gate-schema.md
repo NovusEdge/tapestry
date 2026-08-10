@@ -1,10 +1,13 @@
 # Evaluation Gate Schema
 
-Issue [#119](https://github.com/The-AI-Alliance/tapestry/issues/119) now tracks
-the post-M0/M1 evaluation framework. The initial production artifact is the
-tool-neutral gate schema in `tapestry.evaluation`, which gives benchmark
-runners a stable result contract before Tapestry commits to a full benchmark
-stack.
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Proposal        |
+| Confidence  | Medium (3/5)    |
+| Created     | July 04, 2026   |
+| Last Update | August 04, 2026 |
+
+Issue [#119](https://github.com/The-AI-Alliance/tapestry/issues/119) now tracks the post-M0/M1 evaluation framework. The initial production artifact is the tool-neutral gate schema in `tapestry.evaluation`, which gives benchmark runners a stable result contract before Tapestry commits to a full benchmark stack.
 
 The schema separates four concerns:
 
@@ -16,13 +19,10 @@ The schema separates four concerns:
 | `EvaluationBundle` | Carries versioned runner output with the benchmark configuration hash, model/checkpoint/artifact id, and runner/version that produced it. |
 | `EvaluationGate` | Produces a deterministic go/no-go decision from specs and results. |
 
-This lets the work group decide benchmark tools and task packaging separately
-from release-gate semantics. It also gives future CI, infrastructure, and
+This lets the work group decide benchmark tools and task packaging separately from release-gate semantics. It also gives future CI, infrastructure, and
 certification work a stable result contract to target.
 
-The current schema version is `evaluation-gate/v1`. Bundles that still declare
-`m0-evaluation-gate/v1` remain valid as a legacy alias for the original M0
-contract.
+The current schema version is `evaluation-gate/v1`. Bundles that still declare `m0-evaluation-gate/v1` remain valid as a legacy alias for the original M0 contract.
 
 ## Example
 

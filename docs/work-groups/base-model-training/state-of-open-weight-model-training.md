@@ -1,6 +1,13 @@
 # Introduction
 
-The purpose of this paper is to determine the data sets and data pipelines that are used to train the top rated open weight large language models (LLM). This will be used as inputs to give options as to the strategic direction the Tapestry training might take.  
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Proposed        |
+| Confidence  | High (5/5)      |
+| Created     | June ??, 2026   |
+| Last Update | July 31, 2026   |
+
+The purpose of this paper is to determine the datasets and data pipelines that are used to train the top rated open weight large language models (LLM). This will be used as inputs to give options as to the strategic direction the Tapestry training might take.
  
 
 # Open Weight Models
@@ -8,7 +15,6 @@ The purpose of this paper is to determine the data sets and data pipelines that 
 The following open weight models were analyzed, based on the open weight leaderboards at [Onyx.app](https://onyx.app/llm-leaderboard), [Vellum.ai](https://www.vellum.ai/llm-leaderboard) and HuggingFace:
 
  
-
 | Model Family | Source |
 | ----- | ----- |
 | [DeepSeek](#1-deepseek) | DeepSeek |

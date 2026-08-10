@@ -8,7 +8,7 @@ The structure is meant to be necessary and sufficient for the current architectu
 
 | Work group | Directory | Owns |
 | :--------- | :-------- | :--- |
-| Data Governance | [`data-governance/`](data-governance/README.md) | Sovereign data sourcing, licensing, stewardship, residency, provenance, and contribution rights |
+| Data Governance | [`data-governance/`](data-governance/README.md) | Sovereign data sourcing, licensing, stewardship, residency, provenance, and contribution rights. Currently also contains _derived_ requirements, etc. for data _management_, which may be moved under **Infrastructure & Operations**. |
 | Base Model Training | [`base-model-training/`](base-model-training/README.md) | Adopted-base strategy, consortium training loop, shared-base continued pretraining, aggregation, and transition to consortium-owned bases |
 | Sovereign Alignment | [`sovereign-alignment/`](sovereign-alignment/README.md) | Participant-owned continued pretraining, post-training alignment, instruction tuning, and portability of sovereign layers |
 | Evaluation & Certification | [`evaluation-certification/`](evaluation-certification/README.md) | Capability, cultural alignment, safety, benchmark design, certification criteria, audit evidence, and release gates |

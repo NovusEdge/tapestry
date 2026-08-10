@@ -1,0 +1,68 @@
+# Data Governance Requirements
+
+| Field       | Value           |
+| :---------- | :-------------- |
+| Status      | Draft           |
+| Confidence  | Medium (3/5)    |
+| Created     | June 27, 2026   |
+| Last Update | August 03, 2026 |
+
+This document supports issue [#211](https://github.com/The-AI-Alliance/tapestry/issues/211) by defining the first iteration ("V0.1") of the data governance requirements for managing datasets used in Tapestry training, tuning, alignment, and evaluation work. It focuses on what Tapestry must do to enable the use of datasets with various constraints on permissible use.
+
+The core requirement is simple: Tapestry needs to know what data exists, who can use it, where it may reside, what processing has happened to it, and what evidence can be shared without violating participant sovereignty.
+
+From these governance requirements, [Data Management Requirements](data-management-requirements.md) are being derived that guide architecture, design, and implementation choices.
+
+## Scope of This Document
+
+### In scope:
+
+- Definitions of dataset contribution/usage categories, including  metadata such as provenance, lineage, licensing, consent, and allowed-usage constraints.
+- Residency and sovereignty requirements that downstream training and evaluation must respect.
+- Data-quality criteria for culturally grounded continued pretraining and domain specialization.
+- Access controls for user access.
+- Cost and performance constraints.
+- Tracking of dataset life cycles, from discovery, preparation, transformation through pre- and post-training use, providing audit evidence for evaluation, certification, and release gates.
+- Interoperability with participant-operated infrastructure.
+
+### Out of Scope
+
+- The architecture, design, and implementation decisions to meet the data governance requirements.
+- Defining model-update privacy guarantees.
+- Deciding governance rights for non-data contributions.
+- Deciding contribution credit or benefit-sharing policy
+
+See [Data Management Requirements](data-management-requirements.md) for these topics.
+
+## Definitions of Contribution/Usage Categories and Their Governance Controls
+
+The infrastructure should support four broad participation modes:
+
+| Mode | Raw data movement | Metadata visibility | Typical use |
+| :--- | :---------------- | :------------------ | :---------- |
+| **Open** | Raw data may be mirrored or redistributed under its license. | Public metadata is acceptable. | Public corpora, open benchmarks, reference datasets. |
+| **Restricted** | Raw data may be used only under specified terms. | Public summary plus consortium-private details. | Licensed, consent-bound, or attribution-sensitive corpora. |
+| **Local-only** | Raw data must remain inside a participant boundary. | Manifests, hashes, quality summaries, and attestations may be shared. | Sovereign, institutional, or industrial data. |
+| **Participant-private** | Both raw data and most metadata stay private to the participant. | Only claims, approvals, or aggregate evidence may be shared. | Highly sensitive data or internal evaluation sets. |
+
+These modes should be enforceable through both policy and workflow design. For example, the setup process for a training job should explicitly control which datasets are to be used, based for example on restriction criteria, target use cases (e.g., for domain-specific, tuned models), etc. This governance should be transparent to the training process itself, except for general requirements to track data usage, etc.
+
+## Requirements (Draft)
+
+Most of these requirements require further details to be defined.
+
+> [!NOTE]
+> "DG" - Data Governance
+
+| ID    | Requirement | Rationale |
+| :---- | :---------- | :-------- |
+| DG:1  | For each dataset, identify and track the allowed public information for it. | Consortium participants need the ability discover datasets without exposing restricted metadata or data. |
+| DG:2  | Track dataset provenance and lineage from source discovery and acquisition through preparation stages and use in pre-training, post-training, and evaluation purposes. | Training and certification claims need evidence that can be traced back to source and processing history. |
+| DG:3  | Capture rights, consent, license, residency, retention, and allowed-use constraints as structured metadata. | Governance decisions cannot rely on prose scattered across documents or private notes. |
+| DG:4  | Track processing state and quality signals for each artifact. | The project needs to distinguish raw, cleaned, deduplicated, filtered, tokenized, held-out, and evaluation-ready data. |
+| DG:5  | At no stage in a data processing pipeline can any restrictions on the input data be relaxed. | It would defeat the purpose of supporting restricted-use datasets if any steps in the process of using them undermined those restrictions. |
+| DG:6  | Support local-only and pointer-based participation. | Some participants can expose metadata, hashes, manifests, or attestations while keeping raw data inside their sovereign boundary. |
+| DG:7  | Produce audit evidence at every data-related _event_ and with multiple visibility tiers. | Public summaries, consortium-private review artifacts, and participant-private logs must be separable. |
+| DG:8  | Integrate with policy and release-gate checks. | Data-use constraints should be enforceable by downstream training, evaluation, and certification workflows. |
+| DG:9  | Preserve change history for datasets, metadata, processing jobs, and approvals. | Reviewers need to know which version of a dataset supported a model or claim. |
+| DG:10 | Use portable schemas and interfaces. | Tapestry should avoid forcing all participants into one storage or catalog system. |
