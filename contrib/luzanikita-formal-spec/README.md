@@ -87,6 +87,24 @@ npx quint run --invariant=no_raw_data_crosses consortium/leaky.qnt
 npx quint test consortium/compliant_test.qnt --main compliantTest
 ```
 
+### Troubleshooting `npm install`/`npm ci`
+
+- **`npm audit` reports a high-severity `adm-zip` vulnerability.** Quint 0.32.0
+  depends on `adm-zip@^0.5.16`, which resolves to a version with a known
+  advisory ([GHSA-xcpc-8h2w-3j85](https://github.com/advisories/GHSA-xcpc-8h2w-3j85));
+  upstream Quint hasn't bumped that range to the patched `0.6.0` yet.
+  `package.json` pins `adm-zip` to `^0.6.0` via `overrides` to close this
+  without downgrading Quint. **Don't run `npm audit fix --force`** — it can't
+  see the override and will instead offer to downgrade Quint to `0.23.1` (a
+  real breaking change), since that's the only vulnerability-free version
+  resolvable *without* an override. A clean `npm ci` should report
+  `found 0 vulnerabilities`; if it doesn't, check that `package-lock.json` is
+  up to date with the `overrides` entry (`npm install` regenerates it).
+- **`npm warn allow-scripts ... protobufjs@... postinstall`** (or similar
+  install-script warnings) come from script-allowlisting tooling/policy on
+  your own npm setup, not from anything in this repo (there's no `postinstall`
+  script here). It's informational only and doesn't block the install.
+
 ## Reading a violation (and what to do about it)
 
 A `quint run`/`quint verify` failure prints a **counterexample**: the shortest
