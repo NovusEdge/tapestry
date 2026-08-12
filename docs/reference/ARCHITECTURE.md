@@ -179,7 +179,7 @@ src/tapestry/
 The implemented slices today are:
 
 - **`training/consortium/`** — governed shared-base integration, sovereign training nodes (`SovereignTrainingNode`), contribution weighting (`ContributionPolicy`), and the `TinyCausalModel` demo model. See the [PoC README](../../src/tapestry/training/consortium/README.md) for the full module map.
-- **`evaluation/`** — the tool-neutral M0 evaluation gate (`EvaluationGate`, `BenchmarkSpec`, `EvaluationResult`, `EvaluationBundle`). Benchmark runners produce `EvaluationResult` records; the gate produces a deterministic go/no-go `GateDecision`. See the [M0 gate schema](../work-groups/evaluation-certification/m0-gate-schema.md) for the design and usage example.
+- **`evaluation/`** — the tool-neutral evaluation gate (`EvaluationGate`, `BenchmarkSpec`, `EvaluationResult`, `EvaluationBundle`). Benchmark runners produce `EvaluationResult` records; the gate produces a deterministic go/no-go `GateDecision`. See the [evaluation gate schema](../work-groups/evaluation-certification/evaluation-gate-schema.md) for the design and usage example.
 
 New code should stay aligned with the data / training / evaluation / infrastructure split.
 

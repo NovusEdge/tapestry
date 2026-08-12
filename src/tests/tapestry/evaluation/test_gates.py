@@ -38,7 +38,7 @@ def _bundle(
     gate: EvaluationGate,
     results: tuple[EvaluationResult, ...],
     config_hash: str | None = None,
-    schema_version: str = "m0-evaluation-gate/v1",
+    schema_version: str = "evaluation-gate/v1",
 ) -> EvaluationBundle:
     return EvaluationBundle(
         results=results,
@@ -238,6 +238,27 @@ class EvaluationGateTest(unittest.TestCase):
         )
         gate = EvaluationGate([spec])
         bundle = _bundle(gate, (EvaluationResult("capability-core", 0.7),))
+
+        decision = gate.decide_bundle(bundle)
+
+        self.assertTrue(decision.passed)
+        self.assertEqual(decision.findings[0].status, GateStatus.PASS)
+
+    def test_gate_accepts_legacy_m0_schema_version(self) -> None:
+        spec = BenchmarkSpec(
+            benchmark_id="capability-core",
+            name="Capability Core",
+            kind=BenchmarkKind.CAPABILITY,
+            metric="accuracy",
+            config=_config(task_version="capability-core/v1"),
+            threshold=0.6,
+        )
+        gate = EvaluationGate([spec])
+        bundle = _bundle(
+            gate,
+            (EvaluationResult("capability-core", 0.7),),
+            schema_version="m0-evaluation-gate/v1",
+        )
 
         decision = gate.decide_bundle(bundle)
 
