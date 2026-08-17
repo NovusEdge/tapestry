@@ -2,14 +2,14 @@ include .common.mk
 include .website.mk
 
 define help-top-level-message
-${HIGHLIGHT}For additional help:${_END}
+${HIGHLIGHT} For additional help: ${_END}
 
 ${CODE}make help-targets${_END}       # Print help on custom targets, e.g., demonstration commands, etc. (including "contribs").
 endef
 
 define help_top_level_targets_message
 
-${HIGHLIGHT}Help for the consortium-training prototype targets:${_END}
+${HIGHLIGHT} Help for the consortium-training prototype targets: ${_END}
 
 ${CODE}make consortium-demo${_END}           # Run the N+1 consortium-training proof-of-concept demo.
 endef

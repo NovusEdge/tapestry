@@ -19,14 +19,14 @@ help-custom-website::
 
 define help-custom-website-message
 
-${HIGHLIGHT}Quick help for this project's website-specific targets:${_END}
+${HIGHLIGHT} Quick help for this project's website-specific targets: ${_END}
 
 ${CODE}make help-website${_END}       # Help on the website targets.
 
 endef
 
 define help-website-message
-${HIGHLIGHT}Help for the GitHub Pages website targets:${_END}
+${HIGHLIGHT} Help for the GitHub Pages website targets: ${_END}
 
 ${CODE}make view-pages${_END}         # View the published GitHub pages in a browser.
 ${CODE}make view-local${_END}         # View the pages locally (requires Jekyll).
@@ -44,7 +44,7 @@ endef
 .PHONY: print-info-website
 print-info:: print-info-website
 print-info-website::
-	@echo "${HIGHLIGHT}For the GitHub Pages website:${_END}"
+	@echo "${HIGHLIGHT} For the GitHub Pages website: ${_END}"
 	@echo
 	@echo "  ${DARK_GREEN}GitHub Pages URL:${_END}   ${CODE}${PAGES_URL}${_END}"
 	@echo "  ${DARK_GREEN}Website files:${_END}      ${CODE}${WEBSITE_DIR}${_END}"
@@ -85,7 +85,7 @@ setup-jekyll:: ruby-installed-check ruby-gem-installation bundle-command-check b
 ruby-gem-installation::
 	@command -v jekyll > /dev/null && \
 	  echo "${INFO_LABEL}jekyll already installed." || \
-	  { echo "${NOTE}Installing Ruby gems...${_END}"; \
+	  { echo "${NOTE} Installing Ruby gems... ${_END}"; \
 	    gem install jekyll bundler jemoji || ${MAKE} gem-error; }
 
 bundle-installation::
@@ -105,17 +105,17 @@ bundle-command-check:
 # invoked, independent of the shell script logic. Hence, the only way to make
 # this invocation conditional is to use a make target invocation, as shown above.
 jekyll-error:
-	$(error "${ERROR}Failed to run Jekyll.${_END} Try running 'make setup-jekyll'.")
+	$(error "${ERROR} Failed to run Jekyll. ${_END} Try running 'make setup-jekyll'.")
 ruby-missing-error:
-	$(error "${ERROR}'ruby' is required.${_END} ${ruby-installation-message}")
+	$(error "${ERROR} 'ruby' is required. ${_END} ${ruby-installation-message}")
 gem-missing-error:
-	$(error "${ERROR}Ruby's 'gem' is required.${_END} ${ruby-installation-message}")
+	$(error "${ERROR} Ruby's 'gem' is required. ${_END} ${ruby-installation-message}")
 gem-error:
 	$(error ${gem-error-message})
 bundle-error:
 	$(error ${bundle-error-message})
 bundle-missing-error:
-	$(error "${ERROR}Ruby gem command 'bundle' is required.${_END} I tried ${CODE}gem install bundle${_END}, but it apparently didn't work!")
+	$(error "${ERROR} Ruby gem command 'bundle' is required. ${_END} I tried ${CODE}gem install bundle${_END}, but it apparently didn't work!")
 
 define gem-error-message
 
