@@ -434,12 +434,6 @@ ${INFO_LABEL}The CLI command ${CODE}jq${_END} is useful, but not required, for p
 ${INFO_LABEL}See ${CODE}https://jqlang.org/download/${_END} for installation instructions.
 endef
 
-define help-command-node-message
-${INFO_LABEL}The JavaScript runtime ${CODE}node${_END} is required if you want to use the MCP server
-${INFO_LABEL}inspector ${CODE}@modelcontextprotocol/inspector${_END}. Otherwise, node is not used in
-${INFO_LABEL}this project. See ${CODE}https://nodejs.org/en/download/${_END} for installation instructions.
-endef
-
 open-url-message = ${TIP_LABEL}Try ${CODE}⌘+click${_END} or ${CODE}^+click${_END} on the URL.
 
 define skip-contrib-target
