@@ -16,10 +16,11 @@
 
 We follow normal _GitOps_ practices. Contribute your work (code and docs) as a pull request where it will be go through the usual build and validation, review, etc. If you are new to _GitOps_ practices, see our community [Contributing Guide](https://github.com/The-AI-Alliance/community/blob/main/CONTRIBUTING.md#processes-for-contributing-to-existing-projects) for an explanation.
 
-There are two additional requirements that may be new to you:
+There are additional requirements that may be new to you:
 
 * We use _DCO_, discussed [next](#developer-certificate-of-origin-dco).
-* For new contributions, we ask that you put them in the `contrib` directory, discussed [below](#new-contributions)
+* For new contributions, we ask that you put them in the `contrib` directory, discussed [below](#new-contributions).
+* We ask you to help us avoid "AI Slop".
 
 ### Developer Certificate of Origin (DCO)
 
