@@ -54,7 +54,6 @@ git commit -s -m 'bug fix' ...
 
 If you don't want to make this a global alias, omit `--global` and run the `git config` command in the root directory for your local copy of the `tapestry` repo. The alias will be added to the `.git/config` file.
 
-
 ### New Contributions
 
 To stimulate submission and discussion of more "speculative" or "incomplete" ideas, we ask that PRs with new contributions be staged into the `contrib` directory, but otherwise follow the same practices for any code or documentation changes.
@@ -80,6 +79,17 @@ This contribution follows the repository default licenses:
 ```
 
 Because having too many licenses can make managing the project difficult, please justify any choices that don't follow our defaults.
+
+### Avoiding "AI Slop"
+
+Make sure you and your coding agent do the following:
+
+1. Read our general [contributing guidelines](https://github.com/The-AI-Alliance/tapestry/blob/develop/CONTRIBUTING.md).
+2. Read how new contributions are supposed to be structured, as discussed in the top-level [`README.md`](https://github.com/The-AI-Alliance/tapestry), the section on [Making Contributions](https://github.com/The-AI-Alliance/tapestry#making-contributions), and with additional details in [`contrib/README.md`](https://github.com/The-AI-Alliance/tapestry/blob/develop/contrib/README.md).
+3. Follow our [DCO requirement](https://github.com/The-AI-Alliance/tapestry/blob/develop/CONTRIBUTING.md#developer-certificate-of-origin-dco) for all code commits.
+4. Remove the AI slop in Python files.
+5. When creating a pull request (PR), do not quote the whole content of the PR in its description.
+6. Make sure you run `make before-pr` locally and that it passes successfully. (Some steps may modify your code. Be sure to commit those modifications, too.)
 
 ## What Else to Know Before Contributing to Project Tapestry
 
