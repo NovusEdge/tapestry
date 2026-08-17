@@ -5,22 +5,31 @@ This repository is the technical home for Project Tapestry. Use this file as the
 ## Repository Map
 
 - `README.md` is the top-level overview for contributors and developers.
+- `CONTRIBUTING.md` describes our requirements and guidelines for those people who wish to contribute to Project Tapestry.
+- `SECURITY.md` describes the project security policy and how to report vulnerabilities and related issues.
 - `Makefile` is the main task entry point for setup, tests, formatting, linting, type checking, and local docs serving.
+- `.*.mk` (e.g., `.common.mk`, `.console-colors.mk`, `.website.mk`, etc.) are support `make` files read by `Makefile`.
+- `pyproject.toml` describes the Python dependencies and provides some configuration settings for them.
+- `LICENSES/` contains our preferred licenses, which are described in `CONTRIBUTING.md`.
 - `docs/` is the main home for design and technical decision docs.
 - `src/tapestry/` is the Python package under active development.
-- `src/tests/` mirrors the package structure and holds the test suite.
+- `src/tests/tapestry` mirrors the `src/tapestry` package structure and holds the test suite.
+- `contrib/` is the directory where user contributions reside for new, potential capabilities, experiments, etc.
 - `examples/` contains runnable examples and demos.
-- `website/` is the GitHub Pages site. It is the user-facing technical website and follows Jekyll / Just the Docs conventions.
-- `ctn.local/` is local workspace material and is intentionally excluded from repo-wide navigation guidance unless a task explicitly says otherwise.
+- `website/` is the GitHub Pages site. It is the user-facing technical website.
+- `GITHUB_PAGES.md` describes the website that is published using GitHub Pages.
+- `Gemfile` and `Gemfile.lock` are used by Ruby for serving the GitHub Pages website locally.
+- `*.local/` (e.g., `ctn.local/`) is local workspace material and is intentionally excluded from repo-wide navigation guidance unless a task explicitly says otherwise.
 
 ## Where To Look First
 
-- For repo setup and contributor workflow: `README.md`
-- For local build and verification commands: `Makefile`
-- For the website structure and pages: `website/index.markdown`, `website/contributing.markdown`, `website/about.markdown`
+- For repo setup and contributor workflow: `README.md` and `CONTRIBUTING.md`
+- For local build and verification commands: `Makefile` and `.*.mk`
+- For the website structure and pages: `GITHUB_PAGES.md`, `website/index.markdown`, `website/contributing.markdown`, `website/about.markdown`, and any other `website/*.markdown` files
 - For project-level design docs and technical direction: `docs/README.md`
 - For the current Python implementation surface: `src/tapestry/training/consortium/`
 - For the current tests: `src/tests/tapestry/training/consortium/`
+- For the current user contributions: `contrib/README.md`
 
 ## `docs` Map
 
@@ -29,6 +38,7 @@ This repository is the technical home for Project Tapestry. Use this file as the
 - `docs/architecture/1-stakeholder-map.md` through `4-design-goals.md` are the requirements-side TVA phases.
 - `docs/architecture/5-architectural-options.md` is the option-space / decision analysis stage.
 - `docs/architecture/decisions/` holds the numbered ADRs.
+- `docs/architecture/diagrams/` holds diagrams and other images used in the architecture documents.
 - `docs/governance/` holds governance design, including the anti-capture principle.
 - `docs/work-groups/` holds lifecycle work-group charters (data governance, base training, sovereign alignment, evaluation/certification, security/privacy, infrastructure, deployment, and governance participation).
 - `docs/strategic-plan/` holds higher-level execution strategy.
@@ -41,6 +51,7 @@ Start with `docs/README.md` and `docs/architecture/README.md` when you need the 
 The Python code is organized around three major subsystems:
 
 - `data/` for data governance and management
+- `evaluation/` for evaluating models, including benchmarks
 - `training/` for distributed training and tuning
 - `infrastructure/` for supporting infrastructure
 
@@ -63,15 +74,16 @@ Keep new code aligned with that split. Add tests under the matching `src/tests/t
   - `make format`
   - `make lint`
   - `make type-check`
+  - `make before-pr`
   - `make view-local`
 - The default repo test command is `make tests` / `make unit-tests`, which runs discovery from `src`.
 - `pytest` is also configured in `pyproject.toml` and is useful for targeted test runs.
-- Keep Python formatting consistent with `black` and the repo line length of 88.
+- Keep Python formatting consistent with `black` and the repo line length setting in `pyproject.toml` for `tool.black` formatting.
 - Keep lint/type annotations compatible with `ruff`, `pylint`, and `ty`.
-- Preserve the docs site style in `website/`: Markdown pages, Jekyll front matter, and Just the Docs structure.
+- Preserve the website style in `website/`: Markdown pages, Jekyll front matter, and Just the Docs structure.
 - When editing documentation, keep the audience technical and contributor-focused rather than promotional.
 - When creating or editing Markdown under `docs/`, do not hard-wrap prose paragraphs; use soft wrap and break only for Markdown structure (see `docs/README.md` § Writing conventions).
-- For new inline Mermaid in architecture/reference docs, follow the conventions in `docs/architecture/diagrams/README.md` § Inline Mermaid style (TAP-009 for decision/sovereignty flows; `0-tva-methodology.md` for phased process/status diagrams).
+- For new inline Mermaid diagrams in `architecture/reference` docs, follow the conventions in `docs/architecture/diagrams/README.md` § Inline Mermaid style (TAP-009 for decision/sovereignty flows; `0-tva-methodology.md` for phased process/status diagrams).
 - Treat governance documents as load-bearing design constraints, not after-the-fact policy notes.
 
 ## Plain English (PRs and issues)
@@ -85,7 +97,7 @@ Write so a busy reviewer or contributor can understand the point without decodin
 
 This applies especially to **issue bodies**, **issue comments**, **PR titles**, and **PR description openings**.
 
-## Pull request descriptions
+## Pull Request Descriptions
 
 Write PR titles and bodies for human skimming first. Detail is welcome later; the opening must stand alone in plain English.
 
@@ -127,4 +139,4 @@ Then add background, acceptance criteria, links to ADRs/issues, and checklists. 
 - Avoid broad refactors unless they are required to keep boundaries clear.
 - Prefer small, focused changes that stay inside the subsystem you are touching.
 - Treat `docs/` as the first stop for architecture, requirements, and design context.
-- For repo-wide navigation, ignore `ctn.local/` unless the task specifically asks for it.
+- For repo-wide navigation, ignore `*.local/` directories (e.g., `ctn.local/`) unless the task specifically asks for it.
