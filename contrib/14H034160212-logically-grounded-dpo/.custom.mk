@@ -4,5 +4,5 @@
 # This effectively skips the "pylint" and "type-check" targets defined in the
 # top-level Makefile.
 ruff-default pylint-default type-check-default unit-tests-default:
-	@echo "${skip-contrib-target}"
+	@echo "${skip-default-target-message}"
 	@true

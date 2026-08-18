@@ -73,7 +73,7 @@ PYTEST_COV_REPORT_CMD    := ${UV_RUN} coverage report -m ${PYTEST_COV_OPT_ARGS}
 
 
 # The environment:
-MAKEFLAGS                 = --warn-undefined-variables
+MAKEFLAGS                ?= --warn-undefined-variables
 UNAME                    ?= $(shell uname)
 ARCHITECTURE             ?= $(shell uname -m)
 LOCAL_REPO_PATH          ?= $(shell git rev-parse --show-toplevel)
@@ -158,33 +158,38 @@ define help_targets_message
 ${NOTE} No custom targets defined in ${CODE}${SRC_DIR}${_END}. ${_END}
 endef
 
-.PHONY: all help help-general print-info clean
-.PHONY: help-command-no-message help-command-not-installed
+define no-help-for-command-message
+${WARNING_LABEL}Sorry, no built-in help is available for CLI command '${CODE}${CMD}${_END}'.
+endef
+
+.PHONY: all print-info clean
+.PHONY: help help-general help-command-not-installed
+
 all:: help print-info
 
 clean::
 	rm -rf ${CLEAN_DIRS}
 
+# When you see @true commands, like here, they ensure that the recipe ends
+# with a "clean" successful status and no confusing messages are printed,
+# like "make: Nothing to be done for `help'".
 help:: help-general
 	@true
+
+# NOTE: The order of declaration is important for the help-* targets, because
+# the help-*-% targets should come last.
+
 help-general::
 	$(info )
 	$(info ${help-message-general})
-
-# NOTE: The order of declaration is important for the help-* targets.
-help-command-no-message::
-	$(info ${WARNING_LABEL}Sorry, no built-in help is available for CLI command '${CODE}${CMD}${_END}'.")
-	@true
 
 help-command-not-installed::
 	$(info ${WARNING_LABEL}Command ${CODE}${CMD}${_END} is not installed.)
 	@true
 
 help-command-%::
-	$(info ${INFO_LABEL}Help on ${CODE}${@:help-command-%=%}${_END}:)
-	$(info ${${@}-message})
-	$(info ${INFO_LABEL})
-	$(info ${INFO_LABEL}(If no help is shown, then none is defined for ${CODE}${@:help-command-%=%}${_END} in this Makefile.))
+	$(info ${${LABEL}_LABEL}Help on ${CODE}${@:help-command-%=%}${_END}:)
+	$(info $(if ${${@}-message},${${@}-message},${no-help-for-command-message}))
 	@true
 
 help-targets:: help-top-level-targets-prefix help-top-level-targets contrib-custom-program-help
@@ -197,6 +202,7 @@ help-top-level-targets:
 	$(info ${help_top_level_targets_message})
 	$(info )
 	@true
+
 custom-program-help:
 	$(info )
 	$(info ${help_targets_message})
@@ -249,6 +255,43 @@ print-info-env::
 	@echo "  ${DARK_GREEN}WHICH_TESTS:${_END}           ${CODE}${WHICH_TESTS}${_END}"
 	@echo
 
+# In what follows, note the structure used for common tasks, like running the unit tests:
+#   unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
+# The *-prerequisite and *-postrequisite are hooks that permit a Makefile to APPEND
+# additional dependencies or recipes to execute before or after the "core" command is
+# run by *-default. You use the double-colon syntax, "::", for additional *-prerequisite
+# and *-postrequisite definitions:
+#   unit-tests-prerequisite:: even-more
+#   even-more::
+#     @echo "Even more stuff!"
+#
+# NOTE: Because .common.mk is included in the Makefile before your definitions, your
+# definitions APPEND dependencies and/or recipes.
+#
+# In contrast, the *-default targets are designed to be OVERRIDDEN. They
+# are declared below with a single ":", so that a new definition in a Makefile
+# OVERRIDES them, instead of adding additional dependencies and/or recipes
+# to run. A common usage is to disable a task. For example, if there are no
+# unit tests in the project, then unit-tests-default will fail, because of how
+# it is defined below. (This isn't true for ruff, black, pylint, and ty, which
+# silently ignore when there is no python code.) In this case, the Makefile
+# should use this idiom:
+#
+#   unit-tests-default:  # note the single ":"!
+#     @echo "${skip-default-target-message}"
+#     @true
+#
+# The "skip-default-target-message" variable is defined in .common.mk to provide a useful
+# notice to the reader that the target is skipped.
+#
+# Using a single colon, ":", vs. two, "::", is essential. Using two colons would
+# add dependencies or recipes, not replace them. However, because the *-default
+# targets are defined below with one colon, if you use two colons, it triggers a
+# make error. One or two has to be used consistently for all target definitions.
+# Note that a warning will be issued when make detects a target override. These
+# are harmless, although "noisy".
+# See the bottom of this file for more details.
+
 .PHONY: before-pr before-pr-top before-pr-contrib print-pwd
 .PHONY: before-pr-no-tests before-pr-top-no-tests before-pr-contrib-no-tests
 
@@ -261,7 +304,7 @@ before-pr-top-no-tests:: print-pwd ${QUALITY_CHECKS_NO_TESTS}
 before-pr-contrib-no-tests:: ${QUALITY_CHECKS_NO_TESTS:%=contrib-%}
 
 print-pwd::
-	$(info ${INFO_LABEL}In directory: ${CODE}${PWD} ${_END})
+	$(info ${INFO_LABEL}In directory: ${CODE}${PWD}${_END})
 	@true
 
 .PHONY: tests unit-tests unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
@@ -363,10 +406,9 @@ ${NOTE}   .common.mk:N: warning: ignoring old commands for target ... ${_END}
 ${NOTE}   `VIRTUAL_ENV=.../.venv` does not match the project environment path `.venv` ... ${_END}
 endef
 
-# A special contrib target that
-# These are really test targets for testing contrib-%, but they are reasonably useful,
-# e.g., using "make contrib-list" to list all the contrib/* directories.
-# Try "make LIST_FILTER='*.md' contrib-list", for example.
+# The following are really test targets for testing contrib-%, but they are
+# reasonably useful, e.g., using "make contrib-list" to list all the contrib/*
+# directories. Try "make LIST_FILTER='*.md' contrib-list", for example.
 LIST_FILTER :=
 .PHONY: list pwd
 list:
@@ -376,23 +418,13 @@ pwd:
 
 .PHONY: one-time-setup clean-setup uninstall-uv
 .PHONY: force-setup force-one-time-setup rm-venv
-.PHONY: command-check-uv install-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
+.PHONY: command-check-uv uv-venv install-dev-dependencies install-requirements-txt-dependencies
 
 setup one-time-setup:: install-uv uv-venv install-dev-dependencies
 force-setup force-one-time-setup:: rm-venv contrib-rm-venv setup
 rm-venv::
 	rm -rf .venv
 	rm -f uv.lock
-
-install-%::
-	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
-		echo "${INFO_LABEL}command ${CODE}$$cmd${_END} is already installed." || ${MAKE} help-command-not-installed help-command-$$cmd
-
-uv-venv:: command-check-uv
-	@test -d .venv && echo "${INFO_LABEL}directory ${CODE}.venv${_END} already exists; not running ${CODE}uv venv${_END}." || uv venv
-	@echo "${TIP_LABEL}Try running ${CODE}source .venv/bin/activate${_END} if subsequent make commands fail."
-	@echo "${TIP_LABEL}If they ${RED}still${_END} don't work, try ${CODE}make force-setup${_END}, which deletes ${CODE}.venv${_END}"
-	@echo "${TIP_LABEL}and runs ${CODE}setup${_END} again."
 
 install-dev-dependencies::
 	uv pip install -e ".[dev]"
@@ -401,6 +433,22 @@ install-dev-dependencies::
 # that needs to be used for local setup. Otherwise, it isn't used by the main uv process.
 install-requirements-txt-dependencies::
 	uv pip install --requirements requirements.txt
+
+# Check if a command is installed. If not, try to provide help on installing it.
+# If make is invoked by the || clause, we unset MAKEFLAGS to hack around suppressing
+# a warning about a potentially-undefined variable used in the targets
+# help-command-not-installed and  help-command-$$cmd.
+install-%::
+	@cmd=${@:install-%=%} && command -v $$cmd > /dev/null && \
+		echo "${INFO_LABEL}Command ${CODE}$$cmd${_END} is already installed." || \
+		${MAKE} MAKEFLAGS= CMD=$$cmd LABEL=WARNING help-command-not-installed help-command-$$cmd
+		@true
+
+uv-venv:: command-check-uv
+	@test -d .venv && echo "${INFO_LABEL}directory ${CODE}.venv${_END} already exists; not running ${CODE}uv venv${_END}." || uv venv
+	@echo "${TIP_LABEL}Try running ${CODE}source .venv/bin/activate${_END} if subsequent make commands fail."
+	@echo "${TIP_LABEL}If they ${RED}still${_END} don't work, try ${CODE}make force-setup${_END}, which deletes ${CODE}.venv${_END}"
+	@echo "${TIP_LABEL}and runs ${CODE}setup${_END} again."
 
 uninstall-uv::
 	$(info ${help-command-${@}-message})
@@ -436,8 +484,8 @@ endef
 
 open-url-message = ${TIP_LABEL}Try ${CODE}⌘+click${_END} or ${CODE}^+click${_END} on the URL.
 
-define skip-contrib-target
-${WARNING_LABEL}Skipping target ${CODE}${@:%-default=%}${_END} in ${CODE}${SRC_DIR}${_END}! Support target ${CODE}$@${_END} is overridden in ${CODE}${SRC_DIR}/.custom.mk${_END}.
+define skip-default-target-message
+${WARNING_LABEL}Skipping ${CODE}${@:%-default=%}${_END} in ${CODE}${SRC_DIR}${_END}! Target ${CODE}$@${_END} is overridden in ${CODE}${SRC_DIR}/.custom.mk${_END}.
 endef
 
 # Include a .custom.mk that _may or may not_ exist. The leading "-"
@@ -447,20 +495,18 @@ endef
 # location. This is another tool for customizing the make process,
 # in addition to overrides and other definitions the Makefile.
 # One use is to add additional dependencies to standard targets defined
-# in this file. This is why many targets are defined like this:
+# in this file. As discussed above, this is why many targets are defined
+# like this:
 #   foo:: foo-prerequisite foo-default foo-postrequisite
+#
 # The "foo-default" is where the main work is done, such as running
 # tests or linting code. If you need to do something before "foo-default",
 # then add a dependency to "foo-prerequisite" and have it do the work
 # required. Similarly, after "foo-default", use "foo-postrequisite" as a
 # hook for any cleanup, etc.
-# Similarly, you can *disable* a command by overriding the definition of
-# foo-default, e.g., do the following, so a reminder message is printed
-# for the user:
 #
-#   foo-default:  # note the SINGLE COLON. This is how we redefine a target.
-#     @echo "${skip-contrib-target}"
-#     @true
+# Similarly, you can *disable* a command by overriding the definition of
+# foo-default, as discussed in a long comment above.
 #
 # For most projects, this sort of customization is easy enough to do in
 # the main Makefile. We use the .custom.mk files in Tapestry "contrib"

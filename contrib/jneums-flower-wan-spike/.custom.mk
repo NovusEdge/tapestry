@@ -2,5 +2,5 @@
 # and black, we have to skip the format task. Also, pylint doesn't
 # currently pass.
 format-default pylint-default:
-	@echo "${skip-contrib-target}"
+	@echo "${skip-default-target-message}"
 	@true
