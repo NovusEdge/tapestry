@@ -9,6 +9,6 @@ endef
 
 # This definition effectively skips the "pylint" and "type-check" targets defined
 # in the top-level Makefile.
-pylint-default type-check-default:
-	@echo "${skip-default-target-message}"
+pylint-command type-check-command:
+	@echo "${skip-command-target-message}"
 	@true

@@ -1,5 +1,41 @@
 # .common.mk
-# See comment at the bottom of this file about "-include .custom.mk".
+
+# First, include a .custom.mk that _may or may not_ exist. The leading "-"
+# means that make will ignore the error if a file isn't found.
+# If this file is in a different directory, pass the option
+# "--include-dir that_dir" to make, where "that_dir" is the file's
+# location. This is another tool for customizing the make process,
+# in addition to overrides and other definitions the Makefile.
+# One use is to add additional dependencies to standard targets defined
+# in this file. As discussed above, this is why many targets are defined
+# like this:
+#   foo:: foo-prerequisite foo-command foo-postrequisite
+#
+# The "foo-command" is where the main work is done, such as running
+# tests or linting code. If you need to do something before "foo-command",
+# then add a dependency to "foo-prerequisite" and have it do the work
+# required. Similarly, after "foo-command", use "foo-postrequisite" as a
+# hook for any cleanup, etc.
+#
+# Similarly, you can *disable* a command by overriding the definition of
+# foo-command, as discussed in a long comment below.
+#
+# For most projects, this sort of customization is easy enough to do in
+# the main Makefile. We use the .custom.mk files in Tapestry "contrib"
+# directories for customization of make targets *just in those directories*.
+# When targets defined elsewhere in this file, like contrib-%, are
+# executed, the argument "--include-dir $$dir" is passed to the nested
+# invocation of make, where "$$dir" will be set to the contribution's
+# directory. So, if a particular contribution has a .custom.mk file,
+# it will be found and read _for that directory only_.
+# Note that because .custom.mk is loaded before anything else is defined
+# in the top-level Makefile, except of possible override definitions,
+# if you add a dependency to a target defined in Makefile
+# it will be the _first_ dependency, so your addition will be made first.
+# Similarly, if you add commands for a common target, those commands will be
+# executed before the commands defined in this file.
+
+-include .custom.mk
 
 # Definitions of RED, GREEN, etc., and INFO, ERROR, etc. for console output.
 # To see them in action, try "make show-colors".
@@ -256,41 +292,49 @@ print-info-env::
 	@echo
 
 # In what follows, note the structure used for common tasks, like running the unit tests:
-#   unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
-# The *-prerequisite and *-postrequisite are hooks that permit a Makefile to APPEND
-# additional dependencies or recipes to execute before or after the "core" command is
-# run by *-default. You use the double-colon syntax, "::", for additional *-prerequisite
-# and *-postrequisite definitions:
-#   unit-tests-prerequisite:: even-more
-#   even-more::
-#     @echo "Even more stuff!"
+#   unit-tests:: unit-tests-prerequisite unit-tests-command unit-tests-postrequisite
+# The *-prerequisite and *-postrequisite are hooks that permit a .custom.mk (or a Makefile)
+# to add additional dependencies or recipes to execute before or after the "core" command is
+# executed by the *-command target.  The *-prerequisite and *-postrequisite all have empty
+# recipes in this file. So, if you want to define them with custom behaviors, you must use
+# the double-colon syntax, "::", like this:
 #
-# NOTE: Because .common.mk is included in the Makefile before your definitions, your
-# definitions APPEND dependencies and/or recipes.
+# unit-tests-prerequisite:: even-more
+#   @echo "Doing some unit testing setup..."
+# even-more::
+#   @echo "Doing even more stuff!"
 #
-# In contrast, the *-default targets are designed to be OVERRIDDEN. They
-# are declared below with a single ":", so that a new definition in a Makefile
-# OVERRIDES them, instead of adding additional dependencies and/or recipes
-# to run. A common usage is to disable a task. For example, if there are no
-# unit tests in the project, then unit-tests-default will fail, because of how
-# it is defined below. (This isn't true for ruff, black, pylint, and ty, which
-# silently ignore when there is no python code.) In this case, the Makefile
-# should use this idiom:
+# In contrast, the *-command targets are designed to be OVERRIDDEN. A common usage is to
+# disable a task. For example, if there are no unit tests in the project, then
+# unit-tests-command will fail, because of how it is defined below. (This isn't true for
+# ruff, black, pylint, and ty, which silently ignore when there is no python code.)
+# So, projects without python tests should have the following definition in their Makefile:
 #
-#   unit-tests-default:  # note the single ":"!
-#     @echo "${skip-default-target-message}"
-#     @true
+# unit-tests-command::
+#   @echo "${skip-command-target-message}"
+#   @true
 #
-# The "skip-default-target-message" variable is defined in .common.mk to provide a useful
-# notice to the reader that the target is skipped.
+# The "skip-command-target-message" variable is defined in .common.mk to provide a
+# useful notice to the reader that the target is skipped.
 #
-# Using a single colon, ":", vs. two, "::", is essential. Using two colons would
-# add dependencies or recipes, not replace them. However, because the *-default
-# targets are defined below with one colon, if you use two colons, it triggers a
-# make error. One or two has to be used consistently for all target definitions.
-# Note that a warning will be issued when make detects a target override. These
-# are harmless, although "noisy".
-# See the bottom of this file for more details.
+# There is one more point to explain for how this is implemented. The _default_ way
+# *-command is actually declared is as follows:
+#
+# %-command::
+#  	@${MAKE} ${@:%-command=%-default}
+#
+# Take for example, unit-tests-command. Because the .custom.mk file (if any) is read
+# before this point in .common.mk, The target pattern "%-command" is _only_ used if
+# .custom.mk (and Makefile) do not define unit-tests-command themselves. When
+# this happens, the recipe calls `make unit-tests-default` to invoke the "default"
+# command for unit tests.
+#
+# See the bottom of this file for a note about a previous, alternative
+# implementation we used for this feature.
+
+# The default implementation of any *-command target:
+%-command:
+	@${MAKE} ${@:%-command=%-default}
 
 .PHONY: before-pr before-pr-top before-pr-contrib print-pwd
 .PHONY: before-pr-no-tests before-pr-top-no-tests before-pr-contrib-no-tests
@@ -307,6 +351,9 @@ print-pwd::
 	$(info ${INFO_LABEL}In directory: ${CODE}${PWD}${_END})
 	@true
 
+# Note that *-default targets are declared phony, but the dependencies for * targets
+# are *: *-prerequisite *-command *-postrequisite
+
 .PHONY: tests unit-tests unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
 .PHONY: format format-prerequisite format-default format-postrequisite black
 .PHONY: ruff ruff-prerequisite ruff-default ruff-postrequisite
@@ -317,7 +364,7 @@ print-pwd::
 .PHONY: lint
 
 tests:: unit-tests
-unit-tests:: unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
+unit-tests:: unit-tests-prerequisite unit-tests-command unit-tests-postrequisite
 unit-tests-prerequisite unit-tests-postrequisite::
 unit-tests-default:
 	@echo "${INFO_LABEL}Target ${CODE}unit-tests${_END}: Running the unit tests (with coverage)."
@@ -327,13 +374,13 @@ unit-tests-default:
 # Convenient short hand for the two linters.
 lint:: ruff pylint
 
-format black:: format-prerequisite format-default format-postrequisite
+format black:: format-prerequisite format-command format-postrequisite
 format-prerequisite format-postrequisite::
 format-default:
 	@echo "${INFO_LABEL}Target ${CODE}format${_END}: Running ${CODE}black${_END} on the code in ${CODE}${SRC_DIR}${_END}."
 	cd ${SRC_DIR} && ${UV_RUN} black ${BLACK_ARGS} ${BLACK_OPT_ARGS} .
 
-ruff:: ruff-prerequisite ruff-default ruff-postrequisite
+ruff:: ruff-prerequisite ruff-command ruff-postrequisite
 ruff-prerequisite ruff-postrequisite::
 ruff-default:
 	@echo "${INFO_LABEL}Target ${CODE}ruff${_END}: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END}."
@@ -343,21 +390,21 @@ ruff-watch-default:
 	@echo "${INFO_LABEL}Target ${CODE}ruff${_END}: Running ${CODE}ruff${_END} to lint the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
 	cd ${SRC_DIR} && ${UV_RUN} ruff ${RUFF_ARGS} --watch ${RUFF_OPT_ARGS} .
 
-pylint:: pylint-prerequisite pylint-default pylint-postrequisite
+pylint:: pylint-prerequisite pylint-command pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
 pylint-default:
 	@echo "${INFO_LABEL}Target ${CODE}pylint${_END}: Running ${CODE}pylint${_END} on the code in ${CODE}${SRC_DIR}${_END} (configuration in ${CODE}pylintrc.toml${_END})"
 	cd ${SRC_DIR} && ${UV_RUN} pylint ${PYLINT_ARGS} ${PYLINT_OPT_ARGS} .
 
 type-check:: ty
-ty:: type-check-prerequisite type-check-default type-check-postrequisite
+ty:: type-check-prerequisite type-check-command type-check-postrequisite
 type-check-prerequisite type-check-postrequisite::
 type-check-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END}."
 	cd ${SRC_DIR} && ${UV_RUN} ty ${TY_ARGS} ${TY_OPT_ARGS} .
 
 type-check-watch:: ty-watch
-ty-watch:: type-check-prerequisite type-check-watch-default type-check-postrequisite
+ty-watch:: type-check-prerequisite type-check-watch-command type-check-postrequisite
 type-check-watch-default:
 	@echo "${INFO_LABEL}Target ${CODE}type-check-watch${_END}: Running ${CODE}ty${_END} to type check the code in ${CODE}${SRC_DIR}${_END} using 'watch' mode."
 	cd ${SRC_DIR} && ${UV_RUN} ty ${TY_ARGS} --watch ${TY_OPT_ARGS} .
@@ -401,10 +448,10 @@ contrib-%::
 
 define ignore-warnings-message
 ${NOTE} You can ignore the following warnings you might see: ${_END}
-${NOTE}   .custom.mk:N: warning: overriding commands for target ... ${_END}
-${NOTE}   .common.mk:N: warning: ignoring old commands for target ... ${_END}
 ${NOTE}   `VIRTUAL_ENV=.../.venv` does not match the project environment path `.venv` ... ${_END}
 endef
+# ${NOTE}   .custom.mk:N: warning: overriding commands for target ... ${_END}
+# ${NOTE}   .common.mk:N: warning: ignoring old commands for target ... ${_END}
 
 # The following are really test targets for testing contrib-%, but they are
 # reasonably useful, e.g., using "make contrib-list" to list all the contrib/*
@@ -484,43 +531,26 @@ endef
 
 open-url-message = ${TIP_LABEL}Try ${CODE}⌘+click${_END} or ${CODE}^+click${_END} on the URL.
 
-define skip-default-target-message
-${WARNING_LABEL}Skipping ${CODE}${@:%-default=%}${_END} in ${CODE}${SRC_DIR}${_END}! Target ${CODE}$@${_END} is overridden in ${CODE}${SRC_DIR}/.custom.mk${_END}.
+define skip-command-target-message
+${WARNING_LABEL}Skipping ${CODE}${@:%-command=%}${_END} in ${CODE}${SRC_DIR}${_END}! Target ${CODE}$@${_END} is overridden in ${CODE}${SRC_DIR}/.custom.mk${_END}.
 endef
 
-# Include a .custom.mk that _may or may not_ exist. The leading "-"
-# means that make will ignore the error if a file isn't found.
-# If this file is in a different directory, pass the option
-# "--include-dir that_dir" to make, where "that_dir" is the file's
-# location. This is another tool for customizing the make process,
-# in addition to overrides and other definitions the Makefile.
-# One use is to add additional dependencies to standard targets defined
-# in this file. As discussed above, this is why many targets are defined
-# like this:
-#   foo:: foo-prerequisite foo-default foo-postrequisite
-#
-# The "foo-default" is where the main work is done, such as running
-# tests or linting code. If you need to do something before "foo-default",
-# then add a dependency to "foo-prerequisite" and have it do the work
-# required. Similarly, after "foo-default", use "foo-postrequisite" as a
-# hook for any cleanup, etc.
-#
-# Similarly, you can *disable* a command by overriding the definition of
-# foo-default, as discussed in a long comment above.
-#
-# For most projects, this sort of customization is easy enough to do in
-# the main Makefile. We use the .custom.mk files in Tapestry "contrib"
-# directories for customization of make targets *just in those directories*.
-# When targets defined elsewhere in this file, like contrib-%, are
-# executed, the argument "--include-dir $$dir" is passed to the nested
-# invocation of make, where "$$dir" will be set to the contribution's
-# directory. So, if a particular contribution has a .custom.mk file,
-# it will be found and read _for that directory only_.
-# Note that because .custom.mk is loaded before anything else is defined
-# in the top-level Makefile, except of possible override definitions,
-# if you add a dependency to a target defined in Makefile
-# it will be the _first_ dependency, so your addition will be made first.
-# Similarly, if you add commands for a common target, those commands will be
-# executed before the commands defined in this file.
+# Definitions for the website:
+include .website.mk
 
--include .custom.mk
+# Note on a previous implementation of the %-command behavior:
+#
+# An earlier implementation of this feature used the fact that two or more
+# definitions of the _same_ target with a _single_ colon act as overrides,
+# rather than appending behavior, which is what the double colon does:
+#
+# foo: foo-dependency-one
+#   @echo "Foo recipe 1"
+#
+# foo: foo-dependency-two
+#   @echo "Foo recipe 2"
+#
+# As written, `make foo` would print "Foo recipe 2". Unfortunately, make
+# would also print two warnings about overriding the previous definition!
+# The current "hack" we use with a wild-card target "%-command" above
+# effectively implements the same behavior, but without the annoying warnings.
