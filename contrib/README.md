@@ -175,7 +175,7 @@ pylint-command::
   uv run pylint ${SRC_DIR}
 ```
 
-Actually, this is _conceptually_ what happens; the implementation is a little more involved. A more sophisticated technique is used to suppress some warnings from make about overriding targets like `pylint-command`. If you are interested in the details, read the long comments in `.common.mk` that explain what is done.
+Actually, this is _conceptually_ what happens; the implementation is a little more involved. A more sophisticated technique is used to suppress some warnings from `make` about overriding targets like `pylint-command`. If you are interested in the details, read the long comments in `.common.mk` that explain what is done.
 
 If you don't override the definition of `pylint-command` in your `.custom.mk`, the definition in `.common.mk` will be used to run `pylint` on your code.
 
