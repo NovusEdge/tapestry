@@ -14,6 +14,9 @@ on:
       - "examples/**"
       - "**/pyproject.toml"
 
+permissions:
+  contents: read
+
 jobs:
   quality:
     name: Format · Lint · Type-check · Tests
@@ -59,7 +62,7 @@ jobs:
       - name: Create virtual environment (if cache miss)
         run: |
           if [ ! -d .venv ]; then
-            uv venv
+            uv venv --no-managed-python
           fi
 
       - name: Install dependencies

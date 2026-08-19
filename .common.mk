@@ -106,13 +106,13 @@ endif
 # to make it easier to line up multi-line description comments.
 
 define help-message-general
-${HIGHLIGHT}Quick help for this make process: General Targets${_END}
+${HIGHLIGHT} Quick help for this make process: General Targets ${_END}
 
 ${CODE}make all${_END}                # Makes the ${CODE}help${_END} and ${CODE}print-info${_END} targets.
 ${CODE}make help${_END}               # Prints this output.
 ${CODE}make print-info${_END}         # Print the current values of some make and environment variables.
 
-${HIGHLIGHT}Working with the code:${_END}
+${HIGHLIGHT} Working with the code: ${_END}
 
 ${CODE}make one-time-setup${_END}     # "One time setup" of ${CODE}uv${_END} dependencies (in ${CODE}.venv${_END}).
 ${CODE}make setup${_END}              # Alias for ${CODE}one-time-setup${_END}.
@@ -155,7 +155,7 @@ ${help-top-level-message}
 endef
 
 define help_targets_message
-  ${NOTE}No custom targets defined in ${CODE}${SRC_DIR}${_END}.${_END}
+${NOTE} No custom targets defined in ${CODE}${SRC_DIR}${_END}. ${_END}
 endef
 
 .PHONY: all help help-general print-info clean
@@ -235,7 +235,7 @@ silent-command-check-%:
 .PHONY: print-info-env
 print-info:: print-info-env
 print-info-env::
-	@echo "${HIGHLIGHT}Some 'environment' settings:${_END}"
+	@echo "${HIGHLIGHT} Some 'environment' settings: ${_END}"
 	@echo
 	@echo "  ${DARK_GREEN}MAKEFLAGS:${_END}             ${CODE}${MAKEFLAGS}${_END}"
 	@echo "  ${DARK_GREEN}UNAME:${_END}                 ${CODE}${UNAME}${_END}"
@@ -261,7 +261,7 @@ before-pr-top-no-tests:: print-pwd ${QUALITY_CHECKS_NO_TESTS}
 before-pr-contrib-no-tests:: ${QUALITY_CHECKS_NO_TESTS:%=contrib-%}
 
 print-pwd::
-	$(info ${HIGHLIGHT}In directory: ${CODE}${PWD}${_END})
+	$(info ${INFO_LABEL}In directory: ${CODE}${PWD} ${_END})
 	@true
 
 .PHONY: tests unit-tests unit-tests-prerequisite unit-tests-default unit-tests-postrequisite
@@ -329,7 +329,7 @@ contrib-help::
 # .targets.mk, etc.
 .PHONY: contrib-audit
 contrib-audit::
-	@echo "\n${HIGHLIGHT} Which contrib/* have the required or optional files? ${_END}"
+	@echo "\n${HIGHLIGHT}  Which contrib/* have the required or optional files? ${_END}"
 	@printf "  %-45s  ${CODE}README.md      LICENSE      .custom.mk   .targets.mk${_END}  \n" ""
 	@printf "  %-45s  ${BLUE}(required)  (recommended)  (recommended) (optional)${_END}\n" ""
 	@no="${RED}NO ${_END}"; yes="${GREEN}yes${_END}"; \
@@ -352,15 +352,15 @@ contrib-%::
 	$(info ${ignore-warnings-message})
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
-		echo "\n${HIGHLIGHT}For directory ${CODE}$$d${_END}${HIGHLIGHT}, target ${CODE}${@:contrib-%=%}${_END}:${_END}\n"; \
+		echo "\n${HIGHLIGHT} For directory ${CODE}$$d${_END}${HIGHLIGHT}, target ${CODE}${@:contrib-%=%}${_END}${HIGHLIGHT}: ${_END}\n"; \
 		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
 	done 2>&1
 
 define ignore-warnings-message
-${NOTE}You can ignore the following warnings you might see:${_END}
-${NOTE}  .custom.mk:N: warning: overriding commands for target ...${_END}
-${NOTE}  .common.mk:N: warning: ignoring old commands for target ...${_END}
-${NOTE}  `VIRTUAL_ENV=.../.venv` does not match the project environment path `.venv` ...${_END}
+${NOTE} You can ignore the following warnings you might see: ${_END}
+${NOTE}   .custom.mk:N: warning: overriding commands for target ... ${_END}
+${NOTE}   .common.mk:N: warning: ignoring old commands for target ... ${_END}
+${NOTE}   `VIRTUAL_ENV=.../.venv` does not match the project environment path `.venv` ... ${_END}
 endef
 
 # A special contrib target that
