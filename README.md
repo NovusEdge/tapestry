@@ -9,11 +9,6 @@
 
 Learn more from our [Kickoff Workshop Blog](https://thealliance.ai/blog/project-tapestry-the-path-to-frontier-sovereign-ai) and check out the [Project Tapestry](https://thealliance.ai/projects/tapestry/) website for more information about partnering, events, and how to support Project Tapestry.
 
->[!IMPORTANT]
->Code and documentation contributions happen here on GitHub.  **Organizational participation in the Tapestry consortium starts with a Letter of Intent (LOI), which is handled by the AI Alliance, not through this repo. Please don't post LOIs, or any confidential details, in GitHub issues, PRs, or discussions — this repository is public.**
->
->If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email - kbhatta [at] thealliance [dot] ai - with the subject line `Project Tapestry LOI - <your organization>` to request the LOI.
-
 This repo contains the code and technical documentation for the project. We invite you to jump in and help!
 
 <p align="center">
@@ -251,6 +246,10 @@ Have an idea, technique, or experiment you'd like the project to consider? The [
 
 You can also join one or more work groups that are being organized to identify requirements in several areas and to start the engineering work to prototype and test ideas, followed by the initial implementation iterations. Details are being documented in [**`docs/work-groups/`**](docs/work-groups/).
 
+>[!IMPORTANT]
+>Code and documentation contributions happen here on GitHub.  **Organizational participation in the Tapestry consortium starts with a Letter of Intent (LOI), which is handled by the AI Alliance, not through this repo.**
+>
+>If your organization intends to contribute data, compute, people, or funding, and joining the Tapestry consortium, please email [Kaushik Bhatta](mailto:kbhatta@thealliance.ai?subject=Project Tapestry LOI) to request the LOI.
 
 ### Licenses
 
@@ -275,4 +274,4 @@ The website sources are written in Markdown, HTML, JavaScript, etc. and are foun
 
 ----
 
-_Project Tapestry is an initiative of the AI Alliance Innovation Association, 501(c)(6) non-profit._
+_Project Tapestry is an initiative of the AI Alliance Innovation Association, a 501(c)(6) non-profit._
