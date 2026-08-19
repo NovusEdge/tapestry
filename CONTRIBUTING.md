@@ -110,3 +110,17 @@ The AI Alliance leaves open the possibility of additional terms concerning safe 
 
 [DCO]: https://developercertificate.org/
 [Linux-DCO]: https://docs.kernel.org/process/submitting-patches.html#sign-your-work-the-developer-s-certificate-of-origin
+
+## Letters of Intent (LOIs) for Organizational Participation
+
+This guide covers _technical_ contributions — code, documentation, experiments —
+made here as pull requests, issues, and discussions.
+
+_Organizational_ participation is a separate track. Institutions, companies, research labs, and national programs that intend to join the consortium begin with a **Letter of Intent (LOI)**, a short, non-binding statement of intent to participate. The AI Alliance provides the LOI and reviews completed ones; this does not go through the repository.
+
+>[!IMPORTANT]
+>If your organization intends to contribute data, compute, people, or funding, and to join the Tapestry consortium, please email [Kaushik Bhatta](mailto:kbhatta@thealliance.ai?subject=Project Tapestry LOI) to request the LOI and arrange for further discussions.
+>
+> [!NOTE].
+>* Don't open an issue or PR to submit an LOI, and don't put confidential information in this public repo.
+>* Proposing a _dataset_ specifically? Use the [Tapestry Dataset Submission Proposal](https://thealliance.ai/projects/tapestry/training-data-proposals) form. An LOI and a dataset proposal can be submitted independently.
