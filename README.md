@@ -246,6 +246,12 @@ Have an idea, technique, or experiment you'd like the project to consider? The [
 
 You can also join one or more work groups that are being organized to identify requirements in several areas and to start the engineering work to prototype and test ideas, followed by the initial implementation iterations. Details are being documented in [**`docs/work-groups/`**](docs/work-groups/).
 
+### Individual vs. Organizational Participation
+
+> [!IMPORTANT]
+> Code and documentation contributions happen here on GitHub.  **Organizational participation in the Tapestry consortium starts with a Letter of Intent (LOI), which is handled by the AI Alliance, not through this repo.**
+
+If your organization wants to join the Tapestry consortium and it intends to contribute data, compute, people, or funding, please email <a href="mailto:kbhatta@thealliance.ai?subject=Project Tapestry LOI">Kaushik Bhatta</a> to request the LOI.
 
 ### Licenses
 
@@ -270,4 +276,4 @@ The website sources are written in Markdown, HTML, JavaScript, etc. and are foun
 
 ----
 
-_Project Tapestry is an initiative of the AI Alliance Innovation Association, 501(c)(6) non-profit._
+_Project Tapestry is an initiative of the AI Alliance Innovation Association, a 501(c)(6) non-profit._
