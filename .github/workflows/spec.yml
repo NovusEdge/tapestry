@@ -1,9 +1,6 @@
 name: Spec coherence (Quint)
 
-# Validates formal specs via the shared, repo-root Quint toolchain and the
-# top-level make targets. Currently gates the INV-1 pilot staged in
-# contrib/luzanikita-formal-spec/ (SPEC_DIR override below). It will also
-# cover the canonical top-level `spec/` directory once specs land there.
+# Validates formal specs (Quint) under spec/ via the top-level make targets.
 
 on:
   push:
