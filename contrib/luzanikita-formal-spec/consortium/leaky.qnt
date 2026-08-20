@@ -21,7 +21,7 @@
 //
 // Run (see ../README.md for the full command set):
 //   quint typecheck leaky.qnt
-//   quint run leaky.qnt --main leaky --invariant no_raw_data_crosses
+//   quint run --invariant no_raw_data_crosses leaky.qnt
 //     -> expected: violation found (concrete counterexample trace)
 module leaky {
   import shared(NODES = Set(1, 2, 3)).* from "./shared"
@@ -75,4 +75,12 @@ module leaky {
       curiousAggregatorInspect(n),
     }
   }
+
+  // Deliberately declares no `val main`: this is the negative fixture, and
+  // `formal-spec-verify` only *runs* files whose `main` invariant is expected
+  // to HOLD. leaky's whole point is that INV-1 does NOT hold here, which is an
+  // expect-violation assertion (`! quint run --invariant no_raw_data_crosses
+  // leaky.qnt`) — the opposite of an invariant that must hold. So leaky is
+  // typechecked but not run; its counterexample is walked through manually in
+  // ../README.md ("Reading a violation").
 }

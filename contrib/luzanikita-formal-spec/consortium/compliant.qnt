@@ -10,9 +10,7 @@
 //
 // Run (see ../README.md for the full command set):
 //   quint typecheck compliant.qnt
-//   quint run compliant.qnt --main compliant --invariant no_raw_data_crosses
-//   quint run compliant.qnt --main compliant --invariant only_cpt_feeds_base
-//   quint run compliant.qnt --main compliant --invariant weights_portable
+//   quint run --invariant main compliant.qnt
 module compliant {
   import shared(NODES = Set(1, 2, 3)).* from "./shared"
 
@@ -27,4 +25,10 @@ module compliant {
       migrateBaseProvider,
     }
   }
+
+  // Combined invariant for this module, checked generically by
+  // `make formal-spec-verify` via the `val main: bool` convention in
+  // .formal-spec.mk. Keep this in sync with shared.qnt's individual
+  // invariants.
+  val main: bool = no_raw_data_crosses and only_cpt_feeds_base and weights_portable
 }

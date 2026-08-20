@@ -182,3 +182,6 @@ runs/
 
 # AI artifacts
 docs/superpowers/
+
+# Node.js (shared Quint formal-spec toolchain, installed at repo root)
+node_modules/

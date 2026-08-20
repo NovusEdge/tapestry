@@ -1,9 +1,9 @@
 name: Spec coherence (Quint)
 
-# Validates the canonical top-level `spec/` directory via the top-level make
-# targets. While `spec/` is empty (the pilot is staged in
-# contrib/luzanikita-formal-spec/), the make targets no-op and this job is a
-# green skip. It activates automatically once specs land under `spec/`.
+# Validates formal specs via the shared, repo-root Quint toolchain and the
+# top-level make targets. Currently gates the INV-1 pilot staged in
+# contrib/luzanikita-formal-spec/ (SPEC_DIR override below). It will also
+# cover the canonical top-level `spec/` directory once specs land there.
 
 on:
   push:
@@ -11,6 +11,8 @@ on:
       - develop
     paths:
       - "spec/**"
+      - "package.json"
+      - "package-lock.json"
       - ".formal-spec.mk"
       - ".github/workflows/spec.yml"
   pull_request:
@@ -18,6 +20,8 @@ on:
       - develop
     paths:
       - "spec/**"
+      - "package.json"
+      - "package-lock.json"
       - ".formal-spec.mk"
       - ".github/workflows/spec.yml"
 
@@ -25,6 +29,9 @@ jobs:
   quint:
     name: install · verify
     runs-on: ubuntu-latest
+    env:
+      SPEC_TOOLCHAIN_DIR: "."
+      SPEC_DIR: "spec/"
 
     steps:
       - name: Checkout
@@ -35,8 +42,8 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Install the pinned Quint toolchain (skips if spec/ is empty)
+      - name: Install the pinned Quint toolchain
         run: make formal-spec-install
 
-      - name: Verify formal specs — typecheck, invariants, tests (skips if spec/ is empty)
+      - name: Verify formal specs — typecheck, invariants, tests
         run: make formal-spec-verify

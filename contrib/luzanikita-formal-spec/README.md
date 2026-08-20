@@ -15,8 +15,9 @@ check becomes mechanical, and demonstrates the counterexample-driven workflow.
 directory with a repo-wide coherence CI gate if the practice is adopted. Until
 then it lives and runs entirely inside this directory.
 
-**How to try it.** See [Running it](#running-it) below — `npm ci` then
-`npm run spec:check` from this directory.
+**How to try it.** See [Running it](#running-it) below — `make formal-spec-install`
+then `make formal-spec-verify SPEC_DIR=contrib/luzanikita-formal-spec` from the
+repo root.
 
 ## Quint in ~6 concepts
 
@@ -42,11 +43,28 @@ contrib/luzanikita-formal-spec/
     compliant.qnt        # instantiates shared + a step — the honest protocol
     compliant_test.qnt   # deterministic quint-test scenarios
     leaky.qnt             # instantiates shared + adversarial actions — violates INV-1
-  package.json            # pins the Quint CLI version for CI/local parity
   LICENSE                 # Apache-2.0 / CC-BY-4.0 / CDLA-2.0 (repo defaults)
 ```
 
-**CI integration:** `.github/workflows/spec.yml` runs `make formal-spec-verify SPEC_DIR=contrib/luzanikita-formal-spec` to validate the pilot. Local and CI share this entry point via `.formal-spec.mk` (see top-level `Makefile`).
+The Quint toolchain (`package.json`, lockfile, `node_modules`) is shared and
+lives at the repo root, not in this directory — see [Running it](#running-it).
+
+**CI integration.** `.github/workflows/spec.yml` runs the same `make formal-spec-verify`
+entry point from `.formal-spec.mk` (see top-level `Makefile`), but points it at
+the canonical top-level `spec/`, which is intentionally empty for now — so CI is
+a green no-op until specs are promoted there. This staged pilot is therefore
+validated **locally** by pointing `SPEC_DIR` at this directory (see [Running
+it](#running-it)); it is not yet gated by CI.
+
+`formal-spec-verify` is generic: for every `*.qnt` file found under `SPEC_DIR`
+it typechecks the file, runs it via `quint test` if the name matches
+`*_test.qnt`, and runs `quint run --invariant main` on it if it declares a
+top-level `val main` (see [the `val main`
+convention](#getting-an-invariant-checked-by-make-the-val-main-convention)
+below). `leaky.qnt`, the expect-violation fixture, deliberately declares no
+`val main`, so it is typechecked but not run — check it manually instead (see
+[Checking a deliberately-failing
+fixture](#checking-a-deliberately-failing-fixture-leakyqnt)).
 
 ## The INV-1 pilot (`consortium/`)
 
@@ -58,36 +76,57 @@ ADR-002/004/005/006/008.
 
 ## Running it
 
-**Recommended: use the top-level make targets** (aligned with CI):
+**Use the top-level make targets** (same entry point CI uses, pointed here):
 ```bash
-# Install the pinned Quint toolchain
-make formal-spec-install SPEC_DIR=contrib/luzanikita-formal-spec
+make formal-spec-install
 
-# Typecheck + run invariants + tests (what CI uses)
+# Typechecks every *.qnt file, runs compliant_test.qnt via quint test, and
+# runs "quint run --invariant main" on compliant.qnt (the only file here
+# that declares "val main"):
 make formal-spec-verify SPEC_DIR=contrib/luzanikita-formal-spec
 ```
 
-**Or run manually** (same as what make does — installs Quint and runs `npm run spec:check`):
-```bash
-cd contrib/luzanikita-formal-spec
-npm install
+### Getting an invariant checked by `make`: the `val main` convention
 
-# Type-check every module
-npm run typecheck
+`make formal-spec-verify` runs `quint run --invariant main` on **every `*.qnt`
+file that declares a top-level `val main`** — that per-file `main` is how a
+module opts into invariant checking. Invariant names can't be discovered
+automatically (they're ordinary boolean `val`s, and are often declared in an
+imported module rather than the file being run), so you name the combined
+property `main` and the runner finds it. Combine whatever invariants you want
+enforced into that one boolean, as `compliant.qnt` does:
 
-# The compliant protocol satisfies all three invariants (expect "No violation found")
-npx quint run --invariant=no_raw_data_crosses consortium/compliant.qnt
-npx quint run --invariant=only_cpt_feeds_base consortium/compliant.qnt
-npx quint run --invariant=weights_portable consortium/compliant.qnt
-
-# The leaky variant violates the headline invariant (expect a counterexample trace)
-npx quint run --invariant=no_raw_data_crosses consortium/leaky.qnt
-
-# Deterministic scenario tests
-npx quint test consortium/compliant_test.qnt --main compliantTest
+```quint
+val main: bool = no_raw_data_crosses and only_cpt_feeds_base and weights_portable
 ```
 
+A file with no `val main` (e.g. `shared.qnt`, a library module) is still
+typechecked, just not run.
+
+### Checking a deliberately-failing fixture (`leaky.qnt`)
+
+`leaky.qnt` is the negative fixture — it is *meant* to violate INV-1, so it
+declares **no `val main`** and `make formal-spec-verify` skips it for the run
+step. ("Expected to fail" can't be expressed as an invariant that must hold; it
+is the opposite.) To watch the violation yourself, run it directly and expect a
+counterexample:
+
+```bash
+npx quint run --invariant=no_raw_data_crosses contrib/luzanikita-formal-spec/consortium/leaky.qnt
+```
+
+This should report `[violation] Found an issue` with a `[State N]`
+counterexample trace and exit non-zero — that failure **is** the expected
+result. See [Reading a violation](#reading-a-violation-and-what-to-do-about-it)
+below for how to interpret the trace. (In a script, wrap it with `!` to assert
+the violation, i.e. `! npx quint run --invariant=no_raw_data_crosses …`, so a
+found violation counts as success.)
+
 ### Troubleshooting `npm install`/`npm ci`
+
+These commands now run from the repo root (via `make formal-spec-install`),
+not from inside `contrib/luzanikita-formal-spec/` — the Quint toolchain is
+shared across the repo rather than installed per-contribution.
 
 - **`npm audit` reports a high-severity `adm-zip` vulnerability.** Quint 0.32.0
   depends on `adm-zip@^0.5.16`, which resolves to a version with a known
