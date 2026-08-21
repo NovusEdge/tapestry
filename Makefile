@@ -1,5 +1,6 @@
 include .common.mk
 include .website.mk
+include .formal-spec.mk
 
 define help-top-level-message
 ${HIGHLIGHT} For additional help: ${_END}

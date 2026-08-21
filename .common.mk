@@ -187,7 +187,7 @@ help-command-%::
 	$(info ${INFO_LABEL}(If no help is shown, then none is defined for ${CODE}${@:help-command-%=%}${_END} in this Makefile.))
 	@true
 
-help-targets:: help-top-level-targets-prefix help-top-level-targets contrib-custom-program-help
+help-targets:: help-top-level-targets-prefix help-top-level-targets help-formal-spec contrib-custom-program-help
 	@true  # for some reason, this needs to be here to avoid some undesirable, extra output
 
 help-top-level-targets-prefix:
@@ -353,7 +353,7 @@ contrib-%::
 	@for d in ${CONTRIB_DIRS}; \
 	do [ -d "$$d" ] || continue; \
 		echo "\n${HIGHLIGHT} For directory ${CODE}$$d${_END}${HIGHLIGHT}, target ${CODE}${@:contrib-%=%}${_END}${HIGHLIGHT}: ${_END}\n"; \
-		${MAKE} SRC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
+		${MAKE} SRC_DIR=$$d SPEC_DIR=$$d --include-dir=$$d ${@:contrib-%=%} || exit $$?; \
 	done 2>&1
 
 define ignore-warnings-message
