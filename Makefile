@@ -1,7 +1,3 @@
-include .common.mk
-include .website.mk
-include .formal-spec.mk
-
 define help-top-level-message
 ${HIGHLIGHT} For additional help: ${_END}
 
@@ -25,3 +21,7 @@ consortium-demo::
 # includes each one individually to define custom targets for the contributions.
 #$(foreach prog_mk,$(CONTRIB_TARGETS_MKS),$(eval -include $(prog_mk)))
 include ${CONTRIB_TARGETS_MKS}
+
+# Finally, include all the common targets, including those not overridden above
+include .common.mk
+include .formal-spec.mk

@@ -141,8 +141,8 @@ endef
 
 # This definition effectively skips the "pylint" and "type-check" targets defined
 # in the top-level Makefile.
-pylint-default type-check-default:
-  @echo "${skip-contrib-target}"
+pylint-command type-check-command:
+  @echo "${skip-command-target-message}"
   @true
 ```
 
@@ -163,26 +163,28 @@ Try `make help-targets` in the top-level directory to see all the help messages 
 
 #### Disable Some Quality Checks
 
-The second customization mechanism is shown for `pylint` and `type-check` in the example contribution. These quality targets don't currently pass (and don't really need to pass at this time). Hence, they are _disabled_ by _overriding_ the definitions of the `pylint-default` and `type-check-default` targets to print a warning message (as a reminder to the user), but not actually invoke `pylint` and `type-check`, respectively.
+The second customization mechanism is shown for `pylint` and `type-check` in the example contribution. These quality targets don't currently pass (and don't really need to pass at this time). Hence, they are _disabled_ by _overriding_ the definitions of the `pylint-command` and `type-check-command` targets to print a warning message (as a reminder to the user), but not actually invoke `pylint` and `type-check`, respectively.
 
 In the top level `.common.mk`, the `pylint` target is defined as follows (the other quality targets like `type-check` are similar):
 
 ```makefile
-pylint:: pylint-prerequisite pylint-default pylint-postrequisite
+pylint:: pylint-prerequisite pylint-command pylint-postrequisite
 pylint-prerequisite pylint-postrequisite::
-pylint-default:
+pylint-command::
   @echo "${INFO} $@: Running 'pylint' on the code in ${SRC_DIR}.${_END} (configuration in pylintrc.toml)"
   uv run pylint ${SRC_DIR}
 ```
 
-So, if you don't override the definition of `pylint-default` in your `.custom.mk`, the definition in the top level `.common.mk` will be used to run `pylint` on your code.
+Actually, this is _conceptually_ what happens; the implementation is a little more involved. A more sophisticated technique is used to suppress some warnings from `make` about overriding targets like `pylint-command`. If you are interested in the details, read the long comments in `.common.mk` that explain what is done.
+
+If you don't override the definition of `pylint-command` in your `.custom.mk`, the definition in `.common.mk` will be used to run `pylint` on your code.
 
 > [!NOTE]
-> Anytime you disable a quality check by overriding the definition of `x-default`, please use the commands shown in the example above, so the warning message is issued for the user's benefit!
+> Anytime you disable a quality check by overriding the definition of `*-command`, please use the _recipe_ shown in the example above, so the warning message is issued for the user's benefit!
 
-The third and fourth customization mechanisms can be "suggested" in the snippet from the top level `.common.mk` above. The `pylint-prerequisite` target does nothing by default, but if you need to do something _before_ `pylint` is invoked, you can add a definition for this target in your `.custom.mk` file. Similarly, `pylint-postrequisite` does nothing by default, but it can be defined to do work after `pylint` finishes, for example, cleaning up temporary files.
+The third and fourth customization mechanisms are "suggested" in the snippet from the top level `.common.mk` above. The `pylint-prerequisite` target does nothing by default, but if you need to do something _before_ `pylint` is invoked, you can add a definition for this target in your `.custom.mk` file. Similarly, `pylint-postrequisite` does nothing by default, but it can be defined to do work after `pylint` finishes, for example, cleaning up temporary files.
 
-Let's look at how a prerequisite hook can be used before tests are run to set up a custom environment in a different contribution, adapted from `contrib/nguyennm1024-sociocultural-alignment/`:
+Let's look at an example, adapted from `contrib/nguyennm1024-sociocultural-alignment/`, of how a prerequisite hook can be used before tests are run to set up a custom environment in that _contribution_:
 
 ```makefile
 unit-tests-prerequisite::
@@ -196,63 +198,15 @@ unit-tests-prerequisite::
     fi
 ```
 
-Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` by the top level `.common.mk` before this target is built. The `${INFO_LABEL}` renders as a bright green `INFO:` prefix, so the messages stand out. 
+Recall from above that `SRC_DIR` will be defined to `contrib/nguyennm1024-sociocultural-alignment` in a recursive invocation of `make` for this contribution. The `${INFO_LABEL}` is optional. It renders a bright green `INFO:` prefix, so the messages stand out. Of course, these messages are optional.
 
-In this recipe, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-default` target.
-
-> [!WARNING]
->
-> **One or Two Trailing Colons??**
->
-> Did you notice that the top level `.common.mk` has `pylint-prerequisite::` (two trailing colons) and `pylint-default:` (one trailing colon)?? This is deliberate and reflects how we exploit the different behaviors in `make` for our purposes.
->
-> When a target has two trailing colons, `make` allows _more than one_ definition of that target. This is a tool for adding additional dependencies to a target or additional commands to execute. consider this contrived example,
->
-> ```makefile
-> foo::
->   @echo "foo - no dependencies"
-> foo:: a
->   @echo "foo - dependency: a"
-> foo:: b
-> a::
->   @echo "a"
-> b::
->   @echo "b"
-> foo::
->   @echo "finished!"
-> ```
-> If you run `make foo`, this is what gets printed:
-> ```text
-> foo - no dependencies
-> a
-> foo - dependency: a
-> b
-> finished!
-> ```
-> We exploit this feature to have a "no-op" default behavior for `pylint-prerequisite` and allow contributions to define any additional prerequisite behavior they want.
->
-> In contrast, `pylint-default:` has one trailing colon; _the last definition overrides all previous definitions seen._ We only want a _single_ definition of this target to be used. For example,
-> ```makefile
-> bar:
->   @echo "bar V1!"
-> bar:
->   @echo "bar V2!"
-> ```
-> Running `make bar` prints the following:
-> ```text
-> Makefile:32: warning: overriding commands for target `bar'
-> Makefile:30: warning: ignoring old commands for target `bar'
-> bar V2!
-> ```
-> Two warnings are printed about overriding a previous definition of `bar` (ignore the line numbers shown...). These warnings are expected when using this override mechanism.
->
-> You have to use `::` or `:` consistently for a given target or `make` will throw an error for the target definition. So, if and when you define a `x-prerequisite::`,  `x-postrequisite::`, or `x-default:` target, be careful to use one or two colons, as shown.
+In this recipe, `uv` installs some additional dependencies in `contrib/nguyennm1024-sociocultural-alignment/.venv`, used just for this contribution, _before_ any tests are executed by building the `tests-command` target.
 
 ### How to Add Custom Targets
 
-The optional `.targets.mk` allows you to define custom targets that will be visible to the top-level `make` process. For example, you should consider adding targets to run demonstrations of your contribution. _Also add help messages for them, as mentioned above, using `.custom.mk`._
+An optional `.targets.mk` in your contribution directory allows you to define custom targets that will be visible to the top-level `make` process. For example, you should consider adding targets to run demonstrations of your contribution. _Also add help messages for them, as mentioned above, defined in `.custom.mk`._
 
-Here is an example from `contrib/jneums-consortium-experiment/.targets.mk`:
+Here is an example adapted from `contrib/jneums-consortium-experiment/.targets.mk`:
 
 ```makefile
 .PHONY: consortium-experiment ...
@@ -260,18 +214,18 @@ Here is an example from `contrib/jneums-consortium-experiment/.targets.mk`:
 CONSORTIUM_EXPERIMENT_DIR := contrib/jneums-consortium-experiment
 
 consortium-experiment::
-  @echo "${INFO}Running the consortium-training experiment metrics...${_END}"
+  @echo "${INFO} Running the consortium-training experiment metrics... ${_END}"
   PYTHONPATH="${PWD}/${SRC_DIR}:${PWD}/${CONSORTIUM_EXPERIMENT_DIR}" uv run python ${CONSORTIUM_EXPERIMENT_DIR}/run.py
 
 ...
 ```
 
 > [!NOTE]
-> These targets are meant to be built in the top-level directory, not the contribution's directory. Also, when they are built, `${SRC_DIR}`, if used, will refer to the production code's `src` directory. This is different from how this variable is defined when content in `.custom.mk` is used, where it will be defined to be the contribution's directory.
+> These targets are meant to be built in the top-level directory, not the contribution's directory. Also, when they are built, `${SRC_DIR}`, if used, will refer to the production code's `src` directory. This is different from how this variable is defined when content in `.custom.mk` is used, where it will be defined to be the contribution's root directory.
 
-Because the `.targets.mk` files are included in the top level `Makefile`, the `.targets.mk` files don't need to include the top level `.common.mk`. The definitions in `.common.mk` will already be visible to it.
+Because the `.targets.mk` files are included in the top level `Makefile`, the `.targets.mk` files don't need to include the top level `.common.mk`. The definitions in `.common.mk` will be visible to it.
 
-Once you have added one or more custom targets to a `.targets.mk`, verify they work by going to the project's top level directory and running `make my_target`, such as `make consortium-experiment` in the example just shown.
+Once you have added one or more custom targets to a `.targets.mk`, verify they work by going to the project's top level directory and running `make my_target`, such as `make consortium-experiment` in the example just shown. Or, if the target takes a long time to run, try `make -n my_target` and verify that the correct commands that _would be run_ are printed out.
 
 ## Reviewer-Friendly Checklist
 

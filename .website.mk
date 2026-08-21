@@ -10,7 +10,7 @@ CLEAN_DIRS   += ${CLEAN_WEBSITE_DIRS}
 JEKYLL_PORT  ?= 4000
 
 ifndef WEBSITE_DIR
-$(error ${ERROR}There is no ${WEBSITE_DIR} directory!${_END})
+$(error ${ERROR} There is no ${WEBSITE_DIR} directory! ${_END})
 endif
 
 help:: help-custom-website
@@ -62,7 +62,7 @@ clean-website::
 
 view-pages::
 	@python -m webbrowser "${PAGES_URL}" || \
-		$(error "${ERROR}I could not open the GitHub Pages URL.${_END} Try ⌘-click or ^-click on this URL instead: ${CODE}${PAGES_URL}${_END}")
+		$(error "${ERROR} I could not open the GitHub Pages URL. ${_END} Try ⌘-click or ^-click on this URL instead: ${CODE}${PAGES_URL}${_END}")
 
 view-local:: setup-jekyll run-jekyll
 
