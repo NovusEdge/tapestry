@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: '0 0 * * *' # Run daily at 5 AM UTC
 
+permissions:
+  contents: read
+
 jobs:
   collect-and-upload-metrics:
     # Disable the workflow, because started failing regularly in early 2026

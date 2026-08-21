@@ -17,6 +17,6 @@ endef
 
 # This definition effectively skips the "pylint" and "type-check" targets defined
 # in the top-level Makefile.
-ruff-default pylint-default type-check-default:
-	@echo "${skip-contrib-target}"
+ruff-command pylint-command type-check-command:
+	@echo "${skip-command-target-message}"
 	@true

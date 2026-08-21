@@ -3,6 +3,6 @@
 # of the project's own dependency set, so pylint/type-check are not meaningful here.
 # This effectively skips the "pylint" and "type-check" targets defined in the
 # top-level Makefile.
-ruff-default pylint-default type-check-default unit-tests-default:
-	@echo "${skip-contrib-target}"
+ruff-command pylint-command type-check-command unit-tests-command:
+	@echo "${skip-command-target-message}"
 	@true
