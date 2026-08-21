@@ -22,6 +22,9 @@ on:
       - ".formal-spec.mk"
       - ".github/workflows/spec.yml"
 
+permissions:
+  contents: read
+
 jobs:
   quint:
     name: install · verify
