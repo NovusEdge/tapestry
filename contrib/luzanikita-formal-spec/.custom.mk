@@ -4,6 +4,6 @@
 # `SPEC_DIR=contrib/luzanikita-formal-spec make formal-spec-verify`
 #
 # Skip all Python quality targets so `make before-pr` passes for this contrib.
-format-default ruff-default pylint-default type-check-default unit-tests-default:
-	@echo "${skip-contrib-target}"
+format-command ruff-command pylint-command type-check-command unit-tests-command:
+	@echo "${skip-command-target-message}"
 	@true
