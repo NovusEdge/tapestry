@@ -5,7 +5,7 @@
 | Status      | Proposed        |
 | Confidence  | High (5/5)      |
 | Created     | July 09, 2026   |
-| Last Update | July 31, 2026   |
+| Last Update | August 23, 2026 |
 
 ## Purpose
 
@@ -17,6 +17,7 @@ This document focuses on the selection of an open-weights base model family (or 
 ## References
 
 * A comprehensive list of models (open and closed) and details about them: [https://models.dev/](https://models.dev/) ([GitHub repo](https://github.com/anomalyco/models.dev)).
+* Apertus model cards: [Apertus v1.5 8B](https://huggingface.co/swiss-ai/Apertus-v1.5-8B), [Apertus v1.5 70B](https://huggingface.co/swiss-ai/Apertus-v1.5-70B), and [Apertus 70B 2509](https://huggingface.co/swiss-ai/Apertus-70B-2509).
 
 ## Requirements
 
@@ -144,6 +145,7 @@ Key for icons:
 
 | Family   | [R1](#bms-r1-weights-are-open "BMS-R1: Weights Are Open") | [R1A](#bms-r1-weights-are-open "BMS-R1A: Zero restrictions on any use") | [R2](#bms-r2-multiple-sizes-are-available "BMS-R2: Multiple Sizes Are Available") | [R2A](#bms-r2-multiple-sizes-are-available "BMS-R2A: All model sizes available are open weight") | [R3](#bms-r3-under-active-development "BMS-R3: Under Active Development") | [R4](#bms-r4-performance-is-competitive "BMS-R4: Performance Is Competitive") | [R5](#bms-r5-can-be-culturally-aligned "BMS-R5: Can Be Culturally Aligned") | Comments |
 | :------- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :------- |
+| Apertus  | ✅ | ⚠️ - Apache 2.0 weights with AUP and access acknowledgement to review | ✅ | ✅ | ✅ | ✅ | **?** | Built by the Swiss AI Initiative. Relevant because it emphasizes fully open training data, training recipes, transparency, and broad multilingual coverage; verify whether the access gate, AUP, and multimodal/checkpoint variants fit Tapestry participant-control and long-term base-model requirements. |
 | DeepSeek | ✅ | ✅ | ⚠️ - Large only | ✅ | ✅ | ✅ | **?** | Built by DeepSeek in China; possible geopolitical concerns |
 | Gemma4   | ✅ | ✅ | ⚠️ - Smaller sizes only today; will Google expand the size choices? | Larger Google models are proprietary | ⚠️ - Will Google keep releasing updated versions of OW Gemma? | ✅ | **?** | Built by Google. Will they continue to develop open-weight models and expand the size options? |
 | GLM | ✅ | ✅ | ✅ | ⚠️ - Large only | ✅ | ✅ | **?** | Built by Z.ai in China; possible geopolitical concerns |
